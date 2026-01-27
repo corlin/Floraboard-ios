@@ -1,0 +1,28 @@
+# Xcode
+.DS_Store
+*.swp
+*.lock
+*~.nib
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xccheckout
+*.moved-aside
+*~
+*.hmap
+*.ipa
+*.pkg
+console.log
+
+# Xcode 8 and later
+build/
+DerivedData/
+*.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+!default.xcworkspace/contents.xcworkspacedata
+xcshareddata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.users
