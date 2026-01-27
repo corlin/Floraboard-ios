@@ -33,6 +33,9 @@ struct DesignView: View {
                 Text(Tx.t("design.tabs.pro")).tag(true)
               }
               .pickerStyle(SegmentedPickerStyle())
+              .onChange(of: viewModel.isProfessionalMode) { _, _ in
+                HapticManager.shared.impact(style: .medium)
+              }
             }
             .padding()
             .glassmorphic()
@@ -267,7 +270,10 @@ struct DesignView: View {
             }
 
             // Button
-            Button(action: viewModel.generateDesign) {
+            Button(action: {
+              HapticManager.shared.notification(type: .success)
+              viewModel.generateDesign()
+            }) {
               if viewModel.isLoading {
                 ProgressView().tint(.white)
               } else {

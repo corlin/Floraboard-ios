@@ -46,9 +46,11 @@ struct InventoryView: View {
                   FlowerRow(
                     flower: flower,
                     onEdit: {
+                      HapticManager.shared.impact(style: .light)
                       editingFlower = flower
                     },
                     onDelete: {
+                      HapticManager.shared.notification(type: .warning)
                       viewModel.delete(flower)
                     })
                 }
@@ -68,7 +70,10 @@ struct InventoryView: View {
           Spacer()
           HStack {
             Spacer()
-            Button(action: { showingAddSheet = true }) {
+            Button(action: {
+              HapticManager.shared.impact(style: .medium)
+              showingAddSheet = true
+            }) {
               Image(systemName: "plus")
                 .font(.title2.bold())
                 .foregroundColor(.white)
@@ -282,6 +287,7 @@ struct EditFlowerSheet: View {
         Section(header: Text(Tx.t("inventory.form.culture"))) {
           ForEach(availableCultures, id: \.self) { culture in
             Button(action: {
+              HapticManager.shared.selection()
               if selectedCultures.contains(culture) {
                 selectedCultures.remove(culture)
               } else {
@@ -330,6 +336,7 @@ struct EditFlowerSheet: View {
         }
         ToolbarItem(placement: .confirmationAction) {
           Button(Tx.t("general.save")) {
+            HapticManager.shared.notification(type: .success)
             save()
             presentationMode.wrappedValue.dismiss()
           }
