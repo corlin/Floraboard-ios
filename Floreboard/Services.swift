@@ -67,7 +67,7 @@ class InventoryService: ObservableObject {
     {
       self.flowers = saved
     } else {
-      self.flowers = FlowerType.mocks
+      self.flowers = FlowerType.initialData
     }
   }
 

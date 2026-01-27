@@ -284,19 +284,4 @@ struct AIProvider: Identifiable {
 
 // MARK: - Extension for Mock Data
 
-extension FlowerType {
-  static let mocks: [FlowerType] = [
-    FlowerType(
-      name: "Red Rose", color: "Red", quantity: 50, initialStock: 100, category: .main,
-      unitCost: 5.0, retailPrice: 15.0, meaning: "Love"),
-    FlowerType(
-      name: "White Lily", color: "White", quantity: 30, initialStock: 50, category: .main,
-      unitCost: 8.0, retailPrice: 20.0, meaning: "Purity"),
-    FlowerType(
-      name: "Baby's Breath", color: "White", quantity: 200, initialStock: 200, category: .filler,
-      unitCost: 1.0, retailPrice: 3.0),
-    FlowerType(
-      name: "Eucalyptus", color: "Green", quantity: 80, initialStock: 100, category: .foliage,
-      unitCost: 2.0, retailPrice: 5.0),
-  ]
-}
+// Mocks removed in favor of Services/InitialInventory.swift
