@@ -160,42 +160,42 @@ struct DesignView: View {
             .padding()
             .glassmorphic()
 
-            // Section: Preferences
-            VStack(alignment: .leading, spacing: 16) {
-              Text(Tx.t("design.step.scene"))
-                .font(AppTheme.serifFont(size: 22, weight: .bold))
-                .foregroundColor(AppTheme.foreground)
-
-              HStack {
+            // Section: Preferences (Quick Mode Only)
+            if !viewModel.isProfessionalMode {
+              VStack(alignment: .leading, spacing: 16) {
                 Text(Tx.t("design.step.scene"))
-                Spacer()
-                Picker("", selection: $viewModel.request.occasion) {
-                  ForEach(OccasionType.allCases) { type in Text(type.displayName).tag(type) }
-                }.pickerStyle(.menu).tint(AppTheme.primary)
-              }
-              Divider()
-              HStack {
-                Text(Tx.t("design.style.title"))
-                Spacer()
-                Picker("", selection: $viewModel.request.style) {
-                  ForEach(StyleType.allCases) { type in Text(type.displayName).tag(type) }
-                }.pickerStyle(.menu).tint(AppTheme.primary)
-              }
-              Divider()
-              HStack {
-                Text(Tx.t("design.budget.title"))
-                Spacer()
-                TextField("500", value: $viewModel.request.budget, format: .number)
-                  .keyboardType(.decimalPad)
-                  .multilineTextAlignment(.trailing)
-                  .foregroundColor(AppTheme.primary)
-                  .font(.system(size: 18, weight: .bold))
-                  .onTapGesture {}  // Prevent propagation only on the field itself if needed, but actually we want tap OUTSIDE.
+                  .font(AppTheme.serifFont(size: 22, weight: .bold))
+                  .foregroundColor(AppTheme.foreground)
 
+                HStack {
+                  Text(Tx.t("design.step.scene"))
+                  Spacer()
+                  Picker("", selection: $viewModel.request.occasion) {
+                    ForEach(OccasionType.allCases) { type in Text(type.displayName).tag(type) }
+                  }.pickerStyle(.menu).tint(AppTheme.primary)
+                }
+                Divider()
+                HStack {
+                  Text(Tx.t("design.style.title"))
+                  Spacer()
+                  Picker("", selection: $viewModel.request.style) {
+                    ForEach(StyleType.allCases) { type in Text(type.displayName).tag(type) }
+                  }.pickerStyle(.menu).tint(AppTheme.primary)
+                }
+                Divider()
+                HStack {
+                  Text(Tx.t("design.budget.title"))
+                  Spacer()
+                  TextField("500", value: $viewModel.request.budget, format: .number)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .foregroundColor(AppTheme.primary)
+                    .font(.system(size: 18, weight: .bold))
+                }
               }
+              .padding()
+              .glassmorphic()
             }
-            .padding()
-            .glassmorphic()
 
             // Section: Professional Details
             if viewModel.isProfessionalMode {
@@ -264,6 +264,58 @@ struct DesignView: View {
                 .padding()
                 .background(Color.white.opacity(0.5))
                 .cornerRadius(8)
+              }
+              .padding()
+              .glassmorphic()
+
+              // Pro Mode Additional Fields (Proportion, Season, Budget)
+              VStack(alignment: .leading, spacing: 16) {
+                // Proportion Rule
+                HStack {
+                  Text(Tx.t("design.pro.proportion.title"))  // Ensure translation key exists or use fallback
+                  Spacer()
+                  Picker(
+                    "Proportion",
+                    selection: Binding(
+                      get: { viewModel.request.proportionRule ?? "free" },
+                      set: { viewModel.request.proportionRule = $0 }
+                    )
+                  ) {
+                    ForEach(PROPORTIONS) { p in
+                      Text(p.name).tag(p.id)
+                    }
+                  }.tint(AppTheme.primary)
+                }
+                Divider()
+
+                // Seasonality
+                HStack {
+                  Text(Tx.t("design.pro.season.title"))
+                  Spacer()
+                  Picker(
+                    "Season",
+                    selection: Binding(
+                      get: { viewModel.request.seasonality ?? "all" },
+                      set: { viewModel.request.seasonality = $0 }
+                    )
+                  ) {
+                    ForEach(SEASONS) { s in
+                      Text(s.name).tag(s.id)
+                    }
+                  }.tint(AppTheme.primary)
+                }
+                Divider()
+
+                // Budget (Required for Pro too)
+                HStack {
+                  Text(Tx.t("design.budget.title"))
+                  Spacer()
+                  TextField("500", value: $viewModel.request.budget, format: .number)
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .foregroundColor(AppTheme.primary)
+                    .font(.system(size: 18, weight: .bold))
+                }
               }
               .padding()
               .glassmorphic()
