@@ -46,6 +46,17 @@ The app follows a modern **MVVM (Model-View-ViewModel)** architecture:
 4.  **API Keys**:
     User API keys (for AI services) are stored securely in the Keychain. You can configure them inside the app's **Settings** tab.
 
+## 🔧 Development Scripts
+
+The project includes helper scripts in the `scripts/` directory to automate common tasks.
+
+### App Icon Generation
+To generate standard iOS icon sizes from the master 1024pt icon:
+```bash
+python3 scripts/generate_icons.py
+```
+This will populate `misc/icons/` with resized assets (e.g., for marketing or legacy support). The app itself uses the single-size `AppIcon.png` in `Assets.xcassets`.
+
 ## 📂 Project Structure
 
 ```
