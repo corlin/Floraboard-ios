@@ -56,7 +56,6 @@ To generate standard iOS icon sizes from the master 1024pt icon:
 python3 scripts/generate_icons.py
 ```
 This will populate `misc/icons/` with resized assets (e.g., for marketing or legacy support). The app itself uses the single-size `AppIcon.png` in `Assets.xcassets`.
-
 ## 📂 Project Structure
 
 ```
