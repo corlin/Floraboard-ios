@@ -341,6 +341,7 @@ struct DesignView: View {
           viewModel.generateDesign()
         }
       }
+      .keyboardDismissToolbar()
       // Loading Overlay
       .overlay {
         if viewModel.isLoading {

@@ -301,4 +301,16 @@ extension View {
     UIApplication.shared.sendAction(
       #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
   }
+
+  func keyboardDismissToolbar() -> some View {
+    self.toolbar {
+      ToolbarItemGroup(placement: .keyboard) {
+        Spacer()
+        Button(Tx.t("general.done")) {
+          UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
+      }
+    }
+  }
 }

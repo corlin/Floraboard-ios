@@ -352,6 +352,7 @@ struct EditFlowerSheet: View {
           .disabled(name.isEmpty)
         }
       }
+      .keyboardDismissToolbar()
     }
     .onAppear {
       if let flower = flowerToEdit {
