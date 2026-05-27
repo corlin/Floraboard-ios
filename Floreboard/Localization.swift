@@ -183,6 +183,10 @@ struct Locales {
     "history.search": "Search designs...",
     "history.empty": "No designs found",
     "history.empty.desc": "Your saved designs will appear here.",
+    "history.empty.action": "Start a Design",
+    "history.search.empty": "No matching designs",
+    "history.search.empty.desc": "Try another keyword or clear the search.",
+    "history.search.clear": "Clear Search",
 
     // Inventory
     "inventory.title": "Inventory Management",
@@ -448,6 +452,10 @@ struct Locales {
     "history.search": "搜索方案...",
     "history.empty": "暂无设计记录",
     "history.empty.desc": "您的设计方案将显示在这里。",
+    "history.empty.action": "开始设计",
+    "history.search.empty": "没有匹配方案",
+    "history.search.empty.desc": "换个关键词，或清空当前搜索。",
+    "history.search.clear": "清空搜索",
 
     // Inventory
     "inventory.title": "花材库存",

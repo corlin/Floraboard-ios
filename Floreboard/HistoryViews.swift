@@ -10,6 +10,7 @@ import SwiftUI
 struct HistoryView: View {
   @StateObject private var historyService = HistoryService.shared
   @State private var searchText = ""
+  var onStartDesign: (() -> Void)? = nil
 
   var filteredDesigns: [DesignResult] {
     if searchText.isEmpty {
@@ -38,18 +39,49 @@ struct HistoryView: View {
 
             if filteredDesigns.isEmpty {
               VStack(alignment: .center, spacing: 16) {
-                Image(systemName: "clock.arrow.circlepath")
+                Image(systemName: historyService.savedDesigns.isEmpty ? "sparkles" : "magnifyingglass")
                   .font(.system(size: 60))
                   .foregroundColor(AppTheme.primary.opacity(0.3))
-                Text(Tx.t("history.empty"))
+
+                Text(historyService.savedDesigns.isEmpty ? Tx.t("history.empty") : Tx.t("history.search.empty"))
                   .font(AppTheme.serifFont(size: 20, weight: .bold))
                   .foregroundColor(AppTheme.foreground)
-                Text(Tx.t("history.empty.desc"))
+
+                Text(
+                  historyService.savedDesigns.isEmpty
+                    ? Tx.t("history.empty.desc")
+                    : Tx.t("history.search.empty.desc")
+                )
                   .font(AppTheme.sansFont(size: 14))
                   .foregroundColor(AppTheme.mutedText)
+                  .multilineTextAlignment(.center)
+
+                if historyService.savedDesigns.isEmpty, let onStartDesign {
+                  Button {
+                    onStartDesign()
+                  } label: {
+                    Label(Tx.t("history.empty.action"), systemImage: "sparkles")
+                  }
+                  .buttonStyle(PrimaryButtonStyle())
+                  .padding(.top, 4)
+                } else if !searchText.isEmpty {
+                  Button {
+                    HapticManager.shared.impact(style: .light)
+                    searchText = ""
+                  } label: {
+                    Label(Tx.t("history.search.clear"), systemImage: "xmark.circle")
+                      .font(AppTheme.sansFont(size: 14, weight: .semibold))
+                  }
+                  .buttonStyle(.plain)
+                  .foregroundColor(AppTheme.primary)
+                  .padding(.top, 4)
+                }
               }
               .frame(maxWidth: .infinity)
-              .padding(.top, 60)
+              .padding(24)
+              .padding(.top, 36)
+              .glassmorphic()
+              .padding(.horizontal)
             } else {
               LazyVStack(spacing: 16) {
                 ForEach(filteredDesigns) { design in

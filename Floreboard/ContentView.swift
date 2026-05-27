@@ -28,7 +28,10 @@ struct ContentView: View {
             }
             .tag(1)
 
-          HistoryView()
+          HistoryView(onStartDesign: {
+            HapticManager.shared.impact(style: .light)
+            selection = 3
+          })
             .tabItem {
               Label(localizationManager.t("app.nav.history"), systemImage: "clock.arrow.circlepath")
             }
