@@ -81,8 +81,8 @@ struct LoginView: View {
           TextField(Tx.t("login.storeName"), text: $storeName)
             .padding()
             .background(AppTheme.surfaceElevated)
-            .cornerRadius(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppTheme.hairline, lineWidth: 1))
+            .cornerRadius(AppTheme.controlRadius)
+            .overlay(RoundedRectangle(cornerRadius: AppTheme.controlRadius).stroke(AppTheme.hairline, lineWidth: 1))
 
           Button(action: login) {
             if isLoading {
@@ -180,7 +180,7 @@ struct HomeView: View {
 
             // Quick Stats Grid
             LazyVGrid(
-              columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],
+              columns: [GridItem(.adaptive(minimum: 108), spacing: 12)],
               spacing: 12
             ) {
               StatCard(
@@ -238,8 +238,12 @@ struct HomeView: View {
 
               // Inspiration Box
               HStack(alignment: .top, spacing: 12) {
-                Text("💡")
-                  .font(.title2)
+                Image(systemName: "lightbulb.max.fill")
+                  .font(.system(size: 16, weight: .semibold))
+                  .foregroundColor(AppTheme.accent)
+                  .frame(width: 30, height: 30)
+                  .background(AppTheme.accent.opacity(0.12))
+                  .clipShape(Circle())
                 VStack(alignment: .leading, spacing: 4) {
                   Text(loc.t("home.quickActions.inspirationTitle"))
                     .font(AppTheme.sansFont(size: 14, weight: .bold))
@@ -361,14 +365,15 @@ struct StatCard: View {
         Text(title)
           .font(AppTheme.sansFont(size: 10))
           .foregroundColor(AppTheme.mutedText)
-          .lineLimit(1)
+          .lineLimit(2)
+          .fixedSize(horizontal: false, vertical: true)
       }
     }
     .padding(12)
     .background(AppTheme.surfaceElevated)
-    .cornerRadius(16)
+    .cornerRadius(AppTheme.cardRadius)
     .overlay(
-      RoundedRectangle(cornerRadius: 16)
+      RoundedRectangle(cornerRadius: AppTheme.cardRadius)
         .stroke(AppTheme.hairline, lineWidth: 1)
     )
     .shadow(color: AppTheme.shadow.opacity(0.6), radius: 5, x: 0, y: 2)
@@ -385,6 +390,7 @@ struct QuickActionCard: View {
       Image(systemName: icon)
         .font(.title3)
         .foregroundColor(color)
+        .frame(width: 20, height: 20)
         .padding(10)
         .background(color.opacity(0.1))
         .clipShape(Circle())
@@ -392,11 +398,15 @@ struct QuickActionCard: View {
       Text(title)
         .font(AppTheme.sansFont(size: 14, weight: .medium))
         .foregroundColor(AppTheme.foreground)
+        .lineLimit(2)
+        .fixedSize(horizontal: false, vertical: true)
 
       Spacer()
     }
     .padding()
+    .frame(maxWidth: .infinity, minHeight: 64)
     .glassmorphic()
+    .contentShape(Rectangle())
   }
 }
 
@@ -411,9 +421,9 @@ struct CompactThumbnail: View {
           .resizable()
           .scaledToFill()
           .frame(width: 40, height: 40)
-          .clipShape(RoundedRectangle(cornerRadius: 8))
+          .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
       } else {
-        RoundedRectangle(cornerRadius: 8)
+        RoundedRectangle(cornerRadius: AppTheme.controlRadius)
           .fill(AppTheme.primary.opacity(0.1))
           .frame(width: 40, height: 40)
           .overlay(Image(systemName: "leaf").font(.caption))  // Replaced flower

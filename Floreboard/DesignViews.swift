@@ -54,9 +54,9 @@ struct DesignView: View {
                       .scaledToFill()
                       .frame(height: 200)
                       .clipped()
-                      .cornerRadius(12)
+                      .cornerRadius(AppTheme.controlRadius)
                       .overlay(
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: AppTheme.controlRadius)
                           .stroke(AppTheme.primary.opacity(0.3), lineWidth: 1)
                       )
                   } else {
@@ -71,9 +71,9 @@ struct DesignView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 180)
                     .background(AppTheme.surfaceGlass)
-                    .cornerRadius(12)
+                    .cornerRadius(AppTheme.controlRadius)
                     .overlay(
-                      RoundedRectangle(cornerRadius: 12)
+                      RoundedRectangle(cornerRadius: AppTheme.controlRadius)
                         .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
                         .foregroundColor(AppTheme.primary.opacity(0.3))
                     )
@@ -263,7 +263,7 @@ struct DesignView: View {
                 )
                 .padding()
                 .background(AppTheme.surfaceGlass)
-                .cornerRadius(8)
+                .cornerRadius(AppTheme.controlRadius)
               }
               .padding()
               .glassmorphic()
@@ -364,13 +364,13 @@ struct DesignView: View {
                 .padding(.horizontal)
             }
             .padding(40)
-            .background(.ultraThinMaterial)
-            .cornerRadius(20)
+            .background(AppTheme.card)
+            .cornerRadius(AppTheme.cardRadius)
             .overlay(
-              RoundedRectangle(cornerRadius: 20)
+              RoundedRectangle(cornerRadius: AppTheme.cardRadius)
                 .stroke(AppTheme.hairline.opacity(0.7), lineWidth: 1)
             )
-            .shadow(radius: 20)
+            .shadow(color: AppTheme.shadow, radius: 10, x: 0, y: 4)
             .padding(.horizontal, 40)
           }
           .transition(.opacity.animation(.easeInOut))

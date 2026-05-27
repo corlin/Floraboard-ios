@@ -27,7 +27,7 @@ struct InventoryView: View {
             }
             .padding()
             .background(AppTheme.surfaceGlass)
-            .cornerRadius(10)
+            .cornerRadius(AppTheme.controlRadius)
             .padding(.horizontal)
 
             LazyVStack(spacing: 16) {

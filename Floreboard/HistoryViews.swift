@@ -38,7 +38,7 @@ struct HistoryView: View {
             }
             .padding()
             .background(AppTheme.surfaceGlass)
-            .cornerRadius(12)
+            .cornerRadius(AppTheme.controlRadius)
             .padding(.horizontal)
 
             if filteredDesigns.isEmpty {
@@ -89,11 +89,11 @@ struct HistoryRow: View {
             .resizable()
             .scaledToFill()
             .frame(width: 60, height: 60)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
             .overlay(
-              RoundedRectangle(cornerRadius: 12).stroke(AppTheme.hairline, lineWidth: 1))
+              RoundedRectangle(cornerRadius: AppTheme.controlRadius).stroke(AppTheme.hairline, lineWidth: 1))
         } else {
-          RoundedRectangle(cornerRadius: 12)
+          RoundedRectangle(cornerRadius: AppTheme.controlRadius)
             .fill(AppTheme.primary.opacity(0.1))
             .frame(width: 60, height: 60)
           Image(systemName: "leaf")  // Replaced flower
@@ -181,7 +181,7 @@ struct DesignDetailView: View {
               .resizable()
               .scaledToFit()
               .frame(maxWidth: .infinity)
-              .clipShape(RoundedRectangle(cornerRadius: 16))
+              .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
               .shadow(color: AppTheme.shadow, radius: 8, x: 0, y: 4)
               .padding(.horizontal)
               .padding(.top, 20)
@@ -323,7 +323,7 @@ struct DesignDetailView: View {
               .frame(maxWidth: .infinity)
               .padding()
               .background(AppTheme.primary)
-              .cornerRadius(12)
+              .cornerRadius(AppTheme.controlRadius)
               .shadow(color: AppTheme.primary.opacity(0.4), radius: 8, x: 0, y: 4)
             }
             .padding(.horizontal)
@@ -338,7 +338,7 @@ struct DesignDetailView: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(AppTheme.success.opacity(0.12))
-            .cornerRadius(12)
+            .cornerRadius(AppTheme.controlRadius)
             .padding(.horizontal)
           }
         }
