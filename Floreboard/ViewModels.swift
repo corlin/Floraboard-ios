@@ -256,6 +256,9 @@ class DesignViewModel: ObservableObject {
 class SettingsViewModel: ObservableObject {
   @Published var config: ApiConfig
   @Published var selectedProviderID: String = "custom"
+  @Published var statusMessage: String?
+  @Published var isStatusError = false
+  @Published var isTestingConnection = false
 
   init() {
     // Load initial config from service (which loads from UserDefaults)
@@ -284,5 +287,32 @@ class SettingsViewModel: ObservableObject {
 
   func save() {
     AIService.shared.updateConfig(config)
+    statusMessage = Tx.t("settings.saveSuccess")
+    isStatusError = false
+  }
+
+  func testConnection() {
+    guard !isTestingConnection else { return }
+
+    isTestingConnection = true
+    statusMessage = nil
+    isStatusError = false
+
+    Task {
+      do {
+        try await AIService.shared.testConnection(using: config)
+        await MainActor.run {
+          self.statusMessage = Tx.t("settings.test.success")
+          self.isStatusError = false
+          self.isTestingConnection = false
+        }
+      } catch {
+        await MainActor.run {
+          self.statusMessage = error.localizedDescription
+          self.isStatusError = true
+          self.isTestingConnection = false
+        }
+      }
+    }
   }
 }

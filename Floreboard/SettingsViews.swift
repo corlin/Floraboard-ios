@@ -149,6 +149,23 @@ struct SettingsView: View {
           Button(localizationManager.t("settings.saveConfig")) {
             viewModel.save()
           }
+
+          Button(action: viewModel.testConnection) {
+            HStack {
+              Text(localizationManager.t("settings.testConnection"))
+              Spacer()
+              if viewModel.isTestingConnection {
+                ProgressView()
+              }
+            }
+          }
+          .disabled(viewModel.isTestingConnection)
+
+          if let message = viewModel.statusMessage {
+            Text(message)
+              .font(.footnote)
+              .foregroundColor(viewModel.isStatusError ? .red : .green)
+          }
         }
       }
       .scrollContentBackground(.hidden)

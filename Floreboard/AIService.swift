@@ -84,6 +84,48 @@ class AIService: ObservableObject {
     }
   }
 
+  func testConnection(using candidateConfig: ApiConfig) async throws {
+    var testConfig = candidateConfig
+    if testConfig.apiKey.isEmpty, let storedKey = KeychainManager.shared.load(forKey: "api_key") {
+      testConfig.apiKey = storedKey
+    }
+
+    guard !testConfig.apiKey.isEmpty else {
+      throw AIError.missingApiKey
+    }
+
+    guard let url = URL(string: "\(testConfig.endpoint)/chat/completions") else {
+      throw AIError.invalidURL
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.addValue("Bearer \(testConfig.apiKey)", forHTTPHeaderField: "Authorization")
+    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    applyProviderHeaders(to: &request, endpoint: testConfig.endpoint)
+
+    let body: [String: Any] = [
+      "model": testConfig.textModel,
+      "messages": [
+        ["role": "system", "content": "You are a connectivity checker."],
+        ["role": "user", "content": "Reply with OK."],
+      ],
+      "temperature": 0,
+      "max_tokens": 8,
+    ]
+
+    request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+    let (data, response) = try await URLSession.shared.data(for: request)
+
+    guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+      if let errText = String(data: data, encoding: .utf8) {
+        print("AI Test Error: \(errText)")
+      }
+      throw AIError.apiError(statusCode: (response as? HTTPURLResponse)?.statusCode ?? 500)
+    }
+  }
+
   /// Generates a floral design plan based on user request
   func generateFlowerPlan(request: DesignRequest, inventory: [FlowerType]) async throws
     -> DesignResult
@@ -236,6 +278,13 @@ class AIService: ObservableObject {
 
   // MARK: - Private Helpers
 
+  private func applyProviderHeaders(to request: inout URLRequest, endpoint: String) {
+    if endpoint.contains("openrouter") {
+      request.addValue("https://floreboard.app", forHTTPHeaderField: "HTTP-Referer")
+      request.addValue("Floreboard", forHTTPHeaderField: "X-Title")
+    }
+  }
+
   private func decodeDesignResponse(from response: String) throws -> AIDesignResponse {
     let jsonString = extractJSONObject(from: response)
     return try JSONDecoder().decode(AIDesignResponse.self, from: Data(jsonString.utf8))
@@ -380,6 +429,7 @@ class AIService: ObservableObject {
     request.httpMethod = "POST"
     request.addValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    applyProviderHeaders(to: &request, endpoint: config.endpoint)
 
     let body: [String: Any] = [
       "model": model,
@@ -429,6 +479,7 @@ class AIService: ObservableObject {
     request.httpMethod = "POST"
     request.addValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    applyProviderHeaders(to: &request, endpoint: config.endpoint)
 
     let body: [String: Any] = [
       "model": model,

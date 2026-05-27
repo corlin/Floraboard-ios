@@ -323,6 +323,9 @@ struct Locales {
     "settings.defaultBudget": "Default Budget (¥)",
     "settings.lowStockWarning": "Low Stock Warning",
     "settings.saveConfig": "Save Configuration",
+    "settings.saveSuccess": "Settings saved.",
+    "settings.testConnection": "Test Connection",
+    "settings.test.success": "Connection test succeeded.",
   ]
 
   static let zh: [String: String] = [
@@ -582,5 +585,8 @@ struct Locales {
     "settings.defaultBudget": "默认预算 (元)",
     "settings.lowStockWarning": "库存预警阈值",
     "settings.saveConfig": "保存配置",
+    "settings.saveSuccess": "配置已保存。",
+    "settings.testConnection": "测试连接",
+    "settings.test.success": "连接测试成功。",
   ]
 }
