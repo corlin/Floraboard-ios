@@ -165,6 +165,9 @@ struct DesignDetailView: View {
   let design: DesignResult
   @State private var designImage: UIImage? = nil
   @State private var isShowingFullScreen = false
+  @State private var displayedStatus: DesignStatus?
+  @State private var showStockWarning = false
+  @State private var shortages: [InventoryService.StockShortage] = []
 
   var body: some View {
     ZStack {
@@ -192,9 +195,24 @@ struct DesignDetailView: View {
               }
           } else {
             // Placeholder or missing
-            Rectangle()
-              .fill(Color.clear)
-              .frame(height: 20)
+            if let imageError = design.imageError, !imageError.isEmpty {
+              VStack(alignment: .leading, spacing: 8) {
+                Label(Tx.t("result.imageError.title"), systemImage: "photo.badge.exclamationmark")
+                  .font(AppTheme.sansFont(size: 14, weight: .bold))
+                  .foregroundColor(AppTheme.primary)
+                Text(imageError)
+                  .font(AppTheme.sansFont(size: 13))
+                  .foregroundColor(AppTheme.secondary)
+              }
+              .padding()
+              .glassmorphic()
+              .padding(.horizontal)
+              .padding(.top, 20)
+            } else {
+              Rectangle()
+                .fill(Color.clear)
+                .frame(height: 20)
+            }
           }
 
           // Header Card
@@ -221,7 +239,7 @@ struct DesignDetailView: View {
 
           // Meaning Card
           VStack(alignment: .leading, spacing: 10) {
-            Label("Symbolism", systemImage: "heart.text.square.fill")
+            Label(Tx.t("result.meaning.title"), systemImage: "heart.text.square.fill")
               .font(AppTheme.sansFont(size: 14, weight: .bold))
               .foregroundColor(AppTheme.primary)
 
@@ -235,7 +253,7 @@ struct DesignDetailView: View {
 
           // Flower Recipe Card
           VStack(alignment: .leading, spacing: 16) {
-            Label("Flower Recipe", systemImage: "leaf.fill")
+            Label(Tx.t("result.bom.title"), systemImage: "leaf.fill")
               .font(AppTheme.sansFont(size: 18, weight: .bold))
               .foregroundColor(AppTheme.primary)
 
@@ -253,7 +271,7 @@ struct DesignDetailView: View {
             }
 
             HStack {
-              Text("Total Estimated Cost")
+              Text(Tx.t("result.cost.title"))
                 .font(AppTheme.sansFont(size: 16, weight: .medium))
                 .foregroundColor(AppTheme.secondary)
               Spacer()
@@ -269,7 +287,7 @@ struct DesignDetailView: View {
           // Instructions Card
           if !design.steps.isEmpty {
             VStack(alignment: .leading, spacing: 16) {
-              Label("Instructions", systemImage: "list.number")
+              Label(Tx.t("result.steps.title"), systemImage: "list.number")
                 .font(AppTheme.sansFont(size: 18, weight: .bold))
                 .foregroundColor(AppTheme.primary)
 
@@ -294,13 +312,11 @@ struct DesignDetailView: View {
           }
 
           // Action Buttons
-          if design.status == .draft {
-            Button(action: {
-              HistoryService.shared.executeDesign(design)
-            }) {
+          if currentStatus == .draft {
+            Button(action: executeDesign) {
               HStack {
                 Image(systemName: "checkmark.circle.fill")
-                Text("Execute Plan")
+                Text(Tx.t("design.action.execute"))
               }
               .font(.headline)
               .foregroundColor(.white)
@@ -315,7 +331,7 @@ struct DesignDetailView: View {
             HStack {
               Image(systemName: "checkmark.seal.fill")
                 .foregroundColor(.green)
-              Text("Plan Executed")
+              Text(Tx.t("design.action.executed"))
                 .font(AppTheme.serifFont(size: 18, weight: .bold))
                 .foregroundColor(.green)
             }
@@ -333,6 +349,44 @@ struct DesignDetailView: View {
     .onAppear {
       loadDetailImage()
     }
+    .alert(Tx.t("inventory.shortage.title"), isPresented: $showStockWarning) {
+      Button(Tx.t("general.cancel"), role: .cancel) {}
+      Button(Tx.t("inventory.shortage.continue"), role: .destructive) {
+        commitExecution()
+      }
+    } message: {
+      Text(shortageMessage)
+    }
+  }
+
+  private var shortageMessage: String {
+    let rows = shortages.map {
+      Tx.t(
+        "inventory.shortage.item",
+        ["name": $0.flowerName, "requested": "\($0.requested)", "available": "\($0.available)"]
+      )
+    }
+    return rows.joined(separator: "\n")
+  }
+
+  private var currentStatus: DesignStatus {
+    displayedStatus ?? design.status
+  }
+
+  private func executeDesign() {
+    let currentShortages = InventoryService.shared.stockShortages(for: design.flowerList)
+    guard currentShortages.isEmpty else {
+      shortages = currentShortages
+      showStockWarning = true
+      return
+    }
+
+    commitExecution()
+  }
+
+  private func commitExecution() {
+    HistoryService.shared.executeDesign(design)
+    displayedStatus = .completed
   }
 
   private func loadDetailImage() {

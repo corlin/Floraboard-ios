@@ -462,6 +462,16 @@ struct ResultView: View {
           }
           .padding(.horizontal)
 
+          if let imageError = result.imageError, !imageError.isEmpty {
+            GroupBox(label: Label(Tx.t("result.imageError.title"), systemImage: "photo.badge.exclamationmark")) {
+              Text(imageError)
+                .font(.callout)
+                .foregroundColor(.secondary)
+                .padding(.vertical, 8)
+            }
+            .padding(.horizontal)
+          }
+
           // Steps
           GroupBox(label: Label(Tx.t("result.steps.title"), systemImage: "text.book.closed")) {
             VStack(alignment: .leading, spacing: 10) {

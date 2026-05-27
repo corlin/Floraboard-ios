@@ -176,6 +176,7 @@ struct Locales {
     "result.cost.title": "Estimated Cost",
     "result.steps.title": "Instructions",
     "result.meaning.title": "Symbolism",
+    "result.imageError.title": "Image generation issue",
 
     // History
     "history.title": "Design History",
@@ -199,6 +200,9 @@ struct Locales {
     "inventory.row.stock": "Stock",
     "inventory.row.used": "Used",
     "inventory.row.margin": "Margin",
+    "inventory.shortage.title": "Inventory shortage",
+    "inventory.shortage.item": "{{name}}: need {{requested}}, available {{available}}",
+    "inventory.shortage.continue": "Execute Anyway",
 
     // Enums
     "enum.category.foliage": "Foliage",
@@ -431,6 +435,7 @@ struct Locales {
     "result.cost.title": "预估成本",
     "result.steps.title": "制作步骤",
     "result.meaning.title": "设计寓意",
+    "result.imageError.title": "效果图生成异常",
 
     // History
     "history.title": "设计方案历史",
@@ -454,6 +459,9 @@ struct Locales {
     "inventory.row.stock": "库存",
     "inventory.row.used": "已用",
     "inventory.row.margin": "利润率",
+    "inventory.shortage.title": "库存不足",
+    "inventory.shortage.item": "{{name}}：需要 {{requested}}，现有 {{available}}",
+    "inventory.shortage.continue": "仍然执行",
 
     // Enums
     "enum.category.foliage": "叶材",

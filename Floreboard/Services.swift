@@ -52,6 +52,14 @@ class InventoryService: ObservableObject {
 
   static let shared = InventoryService()
 
+  struct StockShortage: Identifiable, Hashable {
+    let flowerName: String
+    let requested: Int
+    let available: Int
+
+    var id: String { flowerName }
+  }
+
   init() {
     loadInventory()
   }
@@ -132,6 +140,30 @@ class InventoryService: ObservableObject {
       saveInventory()
     }
     return changedFlowers
+  }
+
+  func stockShortages(for items: [DesignFlowerItem]) -> [StockShortage] {
+    items.compactMap { item in
+      guard let flower = findFlower(named: item.flowerName, in: flowers),
+        item.count > flower.quantity
+      else {
+        return nil
+      }
+
+      return StockShortage(
+        flowerName: item.flowerName,
+        requested: item.count,
+        available: flower.quantity
+      )
+    }
+  }
+
+  private func findFlower(named name: String, in flowerList: [FlowerType]) -> FlowerType? {
+    flowerList.first {
+      $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame
+        || $0.name.localizedCaseInsensitiveContains(name)
+        || name.localizedCaseInsensitiveContains($0.name)
+    }
   }
 }
 
