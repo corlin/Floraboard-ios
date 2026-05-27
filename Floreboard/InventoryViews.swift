@@ -113,7 +113,7 @@ struct FlowerRow: View {
     if marginPercent >= 60 {
       return AppTheme.success
     } else if marginPercent >= 40 {
-      return AppTheme.warning
+      return AppTheme.stockRisk
     } else {
       return AppTheme.danger
     }
@@ -161,7 +161,7 @@ struct FlowerRow: View {
 
           Text("\(Tx.t("inventory.row.used")): \(flower.totalUsed ?? 0)")
             .font(AppTheme.sansFont(size: 12))
-            .foregroundColor(AppTheme.info)
+            .foregroundColor(AppTheme.operationalInfo)
         }
 
         // Tags

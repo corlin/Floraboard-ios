@@ -63,7 +63,7 @@ struct DesignView: View {
                     VStack(spacing: 12) {
                       Image(systemName: "sparkles")
                         .font(.system(size: 40))
-                        .foregroundColor(AppTheme.primary)
+                        .foregroundColor(AppTheme.aiDesign)
                       Text(Tx.t("design.scene.uploadBtn"))
                         .font(AppTheme.sansFont(size: 16, weight: .medium))
                         .foregroundColor(AppTheme.foreground.opacity(0.7))
@@ -75,7 +75,7 @@ struct DesignView: View {
                     .overlay(
                       RoundedRectangle(cornerRadius: AppTheme.controlRadius)
                         .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5]))
-                        .foregroundColor(AppTheme.primary.opacity(0.3))
+                        .foregroundColor(AppTheme.aiDesign.opacity(0.35))
                     )
                   }
                 }
@@ -97,7 +97,7 @@ struct DesignView: View {
                 }) {
                   Label(Tx.t("design.scene.clearImage"), systemImage: "trash")
                     .font(AppTheme.sansFont(size: 14))
-                    .foregroundColor(AppTheme.primary)
+                    .foregroundColor(AppTheme.danger)
                 }
                 .padding(.leading, 4)
 

@@ -188,7 +188,7 @@ struct HomeView: View {
                 value: "\(inventoryService.flowers.count)",
                 subValue: "\(totalStock) " + loc.t("home.stats.itemCount"),
                 icon: "leaf.fill",
-                color: AppTheme.secondary
+                color: AppTheme.inventory
               )
 
               StatCard(
@@ -205,7 +205,7 @@ struct HomeView: View {
                 subValue: "\(recentDesigns.count) "
                   + loc.t("home.stats.designCount", ["count": ""]),  // Need to handle plurals or just append text? For now just append generic
                 icon: "yensign.circle.fill",
-                color: AppTheme.warning
+                color: AppTheme.revenue
               )
             }
             .padding(.horizontal)
@@ -222,7 +222,7 @@ struct HomeView: View {
                   QuickActionCard(
                     title: loc.t("home.quickActions.addInventory"),
                     icon: "plus.circle.fill",
-                    color: AppTheme.info
+                    color: AppTheme.inventory
                   )
                 }
 
@@ -230,7 +230,7 @@ struct HomeView: View {
                   QuickActionCard(
                     title: loc.t("home.quickActions.smartDesign"),
                     icon: "sparkles",
-                    color: AppTheme.creative
+                    color: AppTheme.aiDesign
                   )
                 }
               }
