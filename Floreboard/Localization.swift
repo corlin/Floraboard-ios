@@ -326,6 +326,9 @@ struct Locales {
     "settings.saveSuccess": "Settings saved.",
     "settings.testConnection": "Test Connection",
     "settings.test.success": "Connection test succeeded.",
+    "settings.logoutHint": "Requires confirmation to prevent accidental sign-out.",
+    "settings.logoutConfirmTitle": "Log out?",
+    "settings.logoutConfirmMessage": "You will return to the sign-in screen.",
   ]
 
   static let zh: [String: String] = [
@@ -588,5 +591,8 @@ struct Locales {
     "settings.saveSuccess": "配置已保存。",
     "settings.testConnection": "测试连接",
     "settings.test.success": "连接测试成功。",
+    "settings.logoutHint": "需要二次确认，避免误触退出。",
+    "settings.logoutConfirmTitle": "确认退出登录？",
+    "settings.logoutConfirmMessage": "退出后会回到登录页面。",
   ]
 }

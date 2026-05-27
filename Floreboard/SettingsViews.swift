@@ -11,6 +11,8 @@ struct SettingsView: View {
   @StateObject private var viewModel = SettingsViewModel()
   @StateObject private var auth = AuthService.shared
   @StateObject private var localizationManager = LocalizationManager.shared  // Added for localization
+  @FocusState private var isEditingText: Bool
+  @State private var isShowingLogoutConfirmation = false
 
   var body: some View {
     NavigationView {
@@ -35,11 +37,6 @@ struct SettingsView: View {
             Text(auth.currentTenant?.name ?? "Unknown")
               .foregroundColor(.secondary)
           }
-
-          Button(localizationManager.t("settings.logout")) {
-            auth.logout()
-          }
-          .foregroundColor(.red)
         }
 
         Section(header: Text(localizationManager.t("settings.apiProvider"))) {
@@ -57,11 +54,15 @@ struct SettingsView: View {
 
           SecureField(localizationManager.t("settings.apiKey"), text: $viewModel.config.apiKey)
             .textContentType(.password)
+            .focused($isEditingText)
 
           if viewModel.selectedProviderID == "custom" {
             TextField(localizationManager.t("settings.endpoint"), text: $viewModel.config.endpoint)
               .autocapitalization(.none)
               .disableAutocorrection(true)
+              .keyboardType(.URL)
+              .textInputAutocapitalization(.never)
+              .focused($isEditingText)
           }
         }
 
@@ -80,6 +81,9 @@ struct SettingsView: View {
           } else {
             TextField(
               localizationManager.t("settings.modelName"), text: $viewModel.config.textModel)
+              .textInputAutocapitalization(.never)
+              .disableAutocorrection(true)
+              .focused($isEditingText)
           }
         }
 
@@ -97,6 +101,9 @@ struct SettingsView: View {
           } else {
             TextField(
               localizationManager.t("settings.modelName"), text: $viewModel.config.visionModel)
+              .textInputAutocapitalization(.never)
+              .disableAutocorrection(true)
+              .focused($isEditingText)
           }
         }
 
@@ -120,6 +127,9 @@ struct SettingsView: View {
               text: Binding(
                 get: { viewModel.config.imageModel },
                 set: { viewModel.config.imageModel = $0 }))
+              .textInputAutocapitalization(.never)
+              .disableAutocorrection(true)
+              .focused($isEditingText)
           }
 
           if viewModel.selectedProviderID == "custom" {
@@ -128,6 +138,10 @@ struct SettingsView: View {
               text: Binding(
                 get: { viewModel.config.imageEndpoint ?? "" },
                 set: { viewModel.config.imageEndpoint = $0 }))
+              .keyboardType(.URL)
+              .textInputAutocapitalization(.never)
+              .disableAutocorrection(true)
+              .focused($isEditingText)
           }
         }
 
@@ -138,6 +152,7 @@ struct SettingsView: View {
             TextField("500", value: $viewModel.config.budget, format: .number)
               .keyboardType(.numberPad)
               .multilineTextAlignment(.trailing)
+              .focused($isEditingText)
           }
 
           Stepper(
@@ -167,14 +182,44 @@ struct SettingsView: View {
               .foregroundColor(viewModel.isStatusError ? .red : .green)
           }
         }
+
+        Section {
+          Button(role: .destructive) {
+            isShowingLogoutConfirmation = true
+          } label: {
+            HStack {
+              Spacer()
+              Text(localizationManager.t("settings.logout"))
+              Spacer()
+            }
+          }
+        } footer: {
+          Text(localizationManager.t("settings.logoutHint"))
+        }
       }
       .scrollContentBackground(.hidden)
       .background(AppTheme.premiumGradient.ignoresSafeArea())
-      .background(AppTheme.premiumGradient.ignoresSafeArea())
-      .scrollDismissesKeyboard(.interactively)  // iOS 16+ friendly replacement if available, or just remove gesture.
-      // If scrollDismissesKeyboard is not available in the project's target, simple removal is best.
-      // Assuming iOS 16+.
-
+      .scrollDismissesKeyboard(.interactively)
+      .toolbar {
+        ToolbarItemGroup(placement: .keyboard) {
+          Spacer()
+          Button(localizationManager.t("general.done")) {
+            isEditingText = false
+          }
+        }
+      }
+      .confirmationDialog(
+        localizationManager.t("settings.logoutConfirmTitle"),
+        isPresented: $isShowingLogoutConfirmation,
+        titleVisibility: .visible
+      ) {
+        Button(localizationManager.t("settings.logout"), role: .destructive) {
+          auth.logout()
+        }
+        Button(localizationManager.t("general.cancel"), role: .cancel) {}
+      } message: {
+        Text(localizationManager.t("settings.logoutConfirmMessage"))
+      }
       .navigationTitle(localizationManager.t("settings.title"))
     }
   }
