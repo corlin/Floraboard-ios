@@ -321,29 +321,26 @@ struct DesignView: View {
               .glassmorphic()
             }
 
-            // Button
-            Button(action: {
-              HapticManager.shared.notification(type: .success)
-              viewModel.generateDesign()
-            }) {
-              if viewModel.isLoading {
-                ProgressView().tint(AppTheme.iconOnAccent)
-              } else {
-                Text(Tx.t("design.generate.button"))
-              }
-            }
-            .buttonStyle(PrimaryButtonStyle())
-            .padding(.top, 10)
-            .disabled(viewModel.isLoading)
-            .padding(.bottom, 40)
-
           }
           .padding()
+          .padding(.bottom, 96)
         }
       }
       .scrollDismissesKeyboard(.interactively)
 
       .navigationTitle(Tx.t("app.nav.design"))
+      .safeAreaInset(edge: .bottom, spacing: 0) {
+        WorkbenchPrimaryActionBar(
+          title: viewModel.isLoading ? Tx.t("design.generate.loading") : Tx.t("design.generate.button"),
+          systemImage: "sparkles",
+          isLoading: viewModel.isLoading,
+          isEnabled: !viewModel.isLoading
+        ) {
+          hideKeyboard()
+          HapticManager.shared.notification(type: .success)
+          viewModel.generateDesign()
+        }
+      }
       // Loading Overlay
       .overlay {
         if viewModel.isLoading {

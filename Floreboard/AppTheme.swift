@@ -221,38 +221,74 @@ struct WorkbenchSearchField: View {
 struct WorkbenchBottomActionBar: View {
   let title: String
   let systemImage: String
+  var isLoading = false
+  var isEnabled = true
   let action: () -> Void
 
   var body: some View {
     VStack(spacing: 0) {
       Spacer()
 
-      Button(action: action) {
-        Label(title, systemImage: systemImage)
-          .font(AppTheme.sansFont(size: 16, weight: .semibold))
-          .foregroundColor(AppTheme.iconOnAccent)
-          .frame(maxWidth: .infinity)
-          .padding(.vertical, 14)
-          .background(AppTheme.primary)
-          .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
-          .shadow(color: AppTheme.primary.opacity(0.22), radius: 8, x: 0, y: 4)
-      }
-      .buttonStyle(.plain)
-      .padding(.horizontal)
-      .padding(.top, 18)
-      .padding(.bottom, 10)
-      .background(
-        LinearGradient(
-          colors: [
-            AppTheme.background.opacity(0.0),
-            AppTheme.background.opacity(0.92)
-          ],
-          startPoint: .top,
-          endPoint: .bottom
-        )
-        .allowsHitTesting(false)
+      WorkbenchPrimaryActionBar(
+        title: title,
+        systemImage: systemImage,
+        isLoading: isLoading,
+        isEnabled: isEnabled,
+        action: action
       )
     }
+  }
+}
+
+struct WorkbenchPrimaryActionBar: View {
+  let title: String
+  let systemImage: String
+  var isLoading = false
+  var isEnabled = true
+  let action: () -> Void
+
+  var body: some View {
+    Button(action: action) {
+      HStack(spacing: 8) {
+        if isLoading {
+          ProgressView()
+            .tint(AppTheme.iconOnAccent)
+        } else {
+          Image(systemName: systemImage)
+            .font(.system(size: 15, weight: .semibold))
+        }
+
+        Text(title)
+          .font(AppTheme.sansFont(size: 16, weight: .semibold))
+      }
+      .foregroundColor(AppTheme.iconOnAccent)
+      .frame(maxWidth: .infinity)
+      .padding(.vertical, 14)
+      .background((isEnabled && !isLoading) ? AppTheme.primary : AppTheme.mutedText.opacity(0.45))
+      .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
+      .shadow(
+        color: (isEnabled && !isLoading) ? AppTheme.primary.opacity(0.22) : Color.clear,
+        radius: 8,
+        x: 0,
+        y: 4
+      )
+    }
+    .buttonStyle(.plain)
+    .disabled(!isEnabled || isLoading)
+    .padding(.horizontal)
+    .padding(.top, 18)
+    .padding(.bottom, 10)
+    .background(
+      LinearGradient(
+        colors: [
+          AppTheme.background.opacity(0.0),
+          AppTheme.background.opacity(0.92)
+        ],
+        startPoint: .top,
+        endPoint: .bottom
+      )
+      .allowsHitTesting(false)
+    )
   }
 }
 
