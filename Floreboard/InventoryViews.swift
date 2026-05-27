@@ -19,15 +19,10 @@ struct InventoryView: View {
 
         ScrollView {
           VStack(spacing: 16) {
-            // Search Bar
-            HStack {
-              Image(systemName: "magnifyingglass")
-                .foregroundColor(AppTheme.mutedText)
-              TextField(Tx.t("general.search") + "...", text: $viewModel.searchText)
-            }
-            .padding()
-            .background(AppTheme.surfaceGlass)
-            .cornerRadius(AppTheme.controlRadius)
+            WorkbenchSearchField(
+              placeholder: Tx.t("general.search") + "...",
+              text: $viewModel.searchText
+            )
             .padding(.horizontal)
 
             LazyVStack(spacing: 16) {

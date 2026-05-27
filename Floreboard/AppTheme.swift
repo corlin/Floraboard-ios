@@ -178,6 +178,46 @@ struct PrimaryButtonStyle: ButtonStyle {
   }
 }
 
+struct WorkbenchSearchField: View {
+  let placeholder: String
+  @Binding var text: String
+
+  var body: some View {
+    HStack(spacing: 10) {
+      Image(systemName: "magnifyingglass")
+        .font(.system(size: 14, weight: .semibold))
+        .foregroundColor(AppTheme.mutedText)
+        .frame(width: 18)
+
+      TextField(placeholder, text: $text)
+        .font(AppTheme.sansFont(size: 15))
+        .foregroundColor(AppTheme.foreground)
+        .textInputAutocapitalization(.never)
+        .disableAutocorrection(true)
+        .submitLabel(.search)
+
+      if !text.isEmpty {
+        Button {
+          text = ""
+        } label: {
+          Image(systemName: "xmark.circle.fill")
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundColor(AppTheme.mutedText.opacity(0.7))
+        }
+        .buttonStyle(.plain)
+      }
+    }
+    .padding(.horizontal, 12)
+    .padding(.vertical, 10)
+    .background(AppTheme.surfaceElevated)
+    .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
+    .overlay(
+      RoundedRectangle(cornerRadius: AppTheme.controlRadius)
+        .stroke(AppTheme.hairline, lineWidth: 1)
+    )
+  }
+}
+
 extension View {
   func glassmorphic() -> some View {
     self.modifier(GlassmorphicCard())

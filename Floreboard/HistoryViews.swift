@@ -30,15 +30,10 @@ struct HistoryView: View {
 
         ScrollView {
           VStack(spacing: 20) {
-            // Search Bar (Custom Glass)
-            HStack {
-              Image(systemName: "magnifyingglass")
-                .foregroundColor(AppTheme.mutedText)
-              TextField(Tx.t("history.search"), text: $searchText)
-            }
-            .padding()
-            .background(AppTheme.surfaceGlass)
-            .cornerRadius(AppTheme.controlRadius)
+            WorkbenchSearchField(
+              placeholder: Tx.t("history.search"),
+              text: $searchText
+            )
             .padding(.horizontal)
 
             if filteredDesigns.isEmpty {
