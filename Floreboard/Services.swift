@@ -10,6 +10,7 @@ import Foundation
 
 // MARK: - Auth Service
 
+@MainActor
 class AuthService: ObservableObject {
   @Published var isAuthenticated: Bool = false
   @Published var currentTenant: Tenant?
@@ -28,23 +29,19 @@ class AuthService: ObservableObject {
     // Simulate network delay
     try? await Task.sleep(nanoseconds: 500_000_000)  // 0.5s
 
-    DispatchQueue.main.async {
-      let tenant = Tenant(id: UUID().uuidString, name: storeName)
-      self.currentTenant = tenant
-      self.isAuthenticated = true
+    let tenant = Tenant(id: UUID().uuidString, name: storeName)
+    self.currentTenant = tenant
+    self.isAuthenticated = true
 
-      // Persist
-      UserDefaults.standard.set(storeName, forKey: "tenant_name")
-    }
+    // Persist
+    UserDefaults.standard.set(storeName, forKey: "tenant_name")
     return true
   }
 
   func logout() {
-    DispatchQueue.main.async {
-      self.currentTenant = nil
-      self.isAuthenticated = false
-      UserDefaults.standard.removeObject(forKey: "tenant_name")
-    }
+    self.currentTenant = nil
+    self.isAuthenticated = false
+    UserDefaults.standard.removeObject(forKey: "tenant_name")
   }
 }
 

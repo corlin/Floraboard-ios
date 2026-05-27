@@ -218,12 +218,13 @@ class DesignViewModel: ObservableObject {
           }
         }
 
+        let finalizedResult = result
         await MainActor.run {
-          self.generatedResult = result
+          self.generatedResult = finalizedResult
           self.showResult = true
           self.isLoading = false
           // Save to History
-          HistoryService.shared.saveDesign(result)
+          HistoryService.shared.saveDesign(finalizedResult)
         }
 
       } catch {

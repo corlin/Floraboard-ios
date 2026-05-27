@@ -226,7 +226,34 @@ struct FlowerRow: View {
 extension Color {
   // Helper to convert string color to Color
   init(string: String) {
-    switch string.lowercased() {
+    let normalized = string.trimmingCharacters(in: .whitespacesAndNewlines)
+
+    if normalized.hasPrefix("#") {
+      let hex = String(normalized.dropFirst())
+      var value: UInt64 = 0
+
+      if Scanner(string: hex).scanHexInt64(&value) {
+        switch hex.count {
+        case 6:
+          let red = Double((value & 0xFF0000) >> 16) / 255
+          let green = Double((value & 0x00FF00) >> 8) / 255
+          let blue = Double(value & 0x0000FF) / 255
+          self = Color(red: red, green: green, blue: blue)
+          return
+        case 8:
+          let alpha = Double((value & 0xFF000000) >> 24) / 255
+          let red = Double((value & 0x00FF0000) >> 16) / 255
+          let green = Double((value & 0x0000FF00) >> 8) / 255
+          let blue = Double(value & 0x000000FF) / 255
+          self = Color(red: red, green: green, blue: blue, opacity: alpha)
+          return
+        default:
+          break
+        }
+      }
+    }
+
+    switch normalized.lowercased() {
     case "red": self = .red
     case "white": self = .white
     case "pink": self = .pink
