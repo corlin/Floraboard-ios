@@ -211,6 +211,22 @@ struct ApiConfig: Codable, Identifiable {
   )
 }
 
+extension ApiConfig {
+  static func normalizeEndpoint(_ value: String) -> String {
+    let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard trimmed != "/" else { return "" }
+    return trimmed.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+  }
+
+  mutating func normalizeEndpoints() {
+    endpoint = Self.normalizeEndpoint(endpoint)
+    if let imageEndpoint {
+      let normalizedImageEndpoint = Self.normalizeEndpoint(imageEndpoint)
+      self.imageEndpoint = normalizedImageEndpoint.isEmpty ? nil : normalizedImageEndpoint
+    }
+  }
+}
+
 struct UsageRecord: Codable, Identifiable {
   var id: String
   var date: Double

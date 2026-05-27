@@ -61,7 +61,9 @@ class AIService: ObservableObject {
     if let data = UserDefaults.standard.data(forKey: "api_config"),
       let saved = try? JSONDecoder().decode(ApiConfig.self, from: data)
     {
-      return saved
+      var normalized = saved
+      normalized.normalizeEndpoints()
+      return normalized
     }
     return ApiConfig.default
   }
@@ -69,13 +71,16 @@ class AIService: ObservableObject {
   // MARK: - Public Methods
 
   func updateConfig(_ newConfig: ApiConfig) {
+    var normalizedConfig = newConfig
+    normalizedConfig.normalizeEndpoints()
+
     // 1. Save API Key to Keychain
-    if !newConfig.apiKey.isEmpty {
-      _ = KeychainManager.shared.save(newConfig.apiKey, forKey: "api_key")
+    if !normalizedConfig.apiKey.isEmpty {
+      _ = KeychainManager.shared.save(normalizedConfig.apiKey, forKey: "api_key")
     }
 
     // 2. Clear API Key for storage
-    var secureConfig = newConfig
+    var secureConfig = normalizedConfig
     secureConfig.apiKey = ""  // Do not save to UserDefaults
 
     // 3. Save rest to UserDefaults
@@ -86,6 +91,7 @@ class AIService: ObservableObject {
 
   func testConnection(using candidateConfig: ApiConfig) async throws {
     var testConfig = candidateConfig
+    testConfig.normalizeEndpoints()
     if testConfig.apiKey.isEmpty, let storedKey = KeychainManager.shared.load(forKey: "api_key") {
       testConfig.apiKey = storedKey
     }
@@ -538,7 +544,7 @@ class AIService: ObservableObject {
 
     // OpenRouter Special Handling
     if endpoint.contains("openrouter") {
-      return try await generateImageOpenRouter(prompt: prompt)
+      return try await generateImageOpenRouter(prompt: prompt, endpoint: endpoint)
     }
 
     // Standard OpenAI DALL-E Handling
@@ -550,6 +556,7 @@ class AIService: ObservableObject {
     request.httpMethod = "POST"
     request.addValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    applyProviderHeaders(to: &request, endpoint: endpoint)
 
     let body: [String: Any] = [
       "model": config.imageModel,
@@ -658,8 +665,8 @@ class AIService: ObservableObject {
   }
 
   // MARK: - OpenRouter Image Support
-  private func generateImageOpenRouter(prompt: String) async throws -> String {
-    guard let url = URL(string: "\(config.endpoint)/chat/completions") else {
+  private func generateImageOpenRouter(prompt: String, endpoint: String) async throws -> String {
+    guard let url = URL(string: "\(endpoint)/chat/completions") else {
       throw AIError.invalidURL
     }
 
@@ -667,8 +674,7 @@ class AIService: ObservableObject {
     request.httpMethod = "POST"
     request.addValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.addValue("https://floreboard.app", forHTTPHeaderField: "HTTP-Referer")
-    request.addValue("Floreboard", forHTTPHeaderField: "X-Title")
+    applyProviderHeaders(to: &request, endpoint: endpoint)
 
     // OpenRouter format: Chat Completion with "image" modality (optional but recommended for some models)
     // Some models might just take text and output markdown image.

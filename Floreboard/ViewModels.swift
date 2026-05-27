@@ -286,6 +286,7 @@ class SettingsViewModel: ObservableObject {
   }
 
   func save() {
+    config.normalizeEndpoints()
     AIService.shared.updateConfig(config)
     statusMessage = Tx.t("settings.saveSuccess")
     isStatusError = false
