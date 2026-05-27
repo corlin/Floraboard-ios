@@ -70,7 +70,7 @@ struct DesignView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 180)
-                    .background(Color.white.opacity(0.5))
+                    .background(AppTheme.surfaceGlass)
                     .cornerRadius(12)
                     .overlay(
                       RoundedRectangle(cornerRadius: 12)
@@ -253,7 +253,7 @@ struct DesignView: View {
                 // Context Input
                 Text(Tx.t("design.pro.context.title"))
                   .font(AppTheme.sansFont(size: 14, weight: .medium))
-                  .foregroundColor(.secondary)
+                  .foregroundColor(AppTheme.mutedText)
 
                 TextField(
                   Tx.t("design.pro.context.placeholder"),
@@ -262,7 +262,7 @@ struct DesignView: View {
                     set: { viewModel.request.culturalContext = $0 })
                 )
                 .padding()
-                .background(Color.white.opacity(0.5))
+                .background(AppTheme.surfaceGlass)
                 .cornerRadius(8)
               }
               .padding()
@@ -327,7 +327,7 @@ struct DesignView: View {
               viewModel.generateDesign()
             }) {
               if viewModel.isLoading {
-                ProgressView().tint(.white)
+                ProgressView().tint(AppTheme.iconOnAccent)
               } else {
                 Text(Tx.t("design.generate.button"))
               }
@@ -348,18 +348,18 @@ struct DesignView: View {
       .overlay {
         if viewModel.isLoading {
           ZStack {
-            Color.black.opacity(0.3).ignoresSafeArea()
+            AppTheme.scrim.ignoresSafeArea()
 
             VStack(spacing: 24) {
               ProgressView()
                 .scaleEffect(1.5)
                 .tint(AppTheme.primary)
                 .padding()
-                .background(Circle().fill(Color.white.opacity(0.8)))
+                .background(Circle().fill(AppTheme.surfaceStrong))
 
               Text(viewModel.loadingStatus)
                 .font(AppTheme.serifFont(size: 20, weight: .medium))
-                .foregroundColor(.white)
+                .foregroundColor(AppTheme.iconOnAccent)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             }
@@ -368,7 +368,7 @@ struct DesignView: View {
             .cornerRadius(20)
             .overlay(
               RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.white.opacity(0.4), lineWidth: 1)
+                .stroke(AppTheme.hairline.opacity(0.7), lineWidth: 1)
             )
             .shadow(radius: 20)
             .padding(.horizontal, 40)
@@ -433,7 +433,7 @@ struct ResultView: View {
               .fontWeight(.bold)
             Text(result.description)
               .font(.body)
-              .foregroundColor(.secondary)
+              .foregroundColor(AppTheme.mutedText)
           }
           .padding()
 
@@ -455,7 +455,7 @@ struct ResultView: View {
                 Spacer()
                 Text("¥\(Int(result.totalCost))")
                   .fontWeight(.bold)
-                  .foregroundColor(.pink)
+                  .foregroundColor(AppTheme.primary)
               }
             }
             .padding(.vertical, 8)
@@ -466,7 +466,7 @@ struct ResultView: View {
             GroupBox(label: Label(Tx.t("result.imageError.title"), systemImage: "photo.badge.exclamationmark")) {
               Text(imageError)
                 .font(.callout)
-                .foregroundColor(.secondary)
+                .foregroundColor(AppTheme.mutedText)
                 .padding(.vertical, 8)
             }
             .padding(.horizontal)
@@ -478,7 +478,7 @@ struct ResultView: View {
               ForEach(Array(result.steps.enumerated()), id: \.offset) { index, step in
                 HStack(alignment: .top) {
                   Text("\(index + 1).")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(AppTheme.mutedText)
                     .frame(width: 20)
                   Text(step)
                 }

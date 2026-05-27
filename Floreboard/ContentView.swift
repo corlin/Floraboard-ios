@@ -50,6 +50,7 @@ struct ContentView: View {
         LoginView()
       }
     }
+    .tint(AppTheme.primary)
   }
 }
 
@@ -68,7 +69,7 @@ struct LoginView: View {
           .frame(width: 80, height: 80)
           .foregroundStyle(AppTheme.primary)
           .padding()
-          .background(Color.white.opacity(0.5))
+          .background(AppTheme.surfaceGlass)
           .clipShape(Circle())
           .shadow(color: AppTheme.primary.opacity(0.3), radius: 10, x: 0, y: 5)
 
@@ -79,13 +80,13 @@ struct LoginView: View {
         VStack(spacing: 16) {
           TextField(Tx.t("login.storeName"), text: $storeName)
             .padding()
-            .background(Color.white.opacity(0.6))
+            .background(AppTheme.surfaceElevated)
             .cornerRadius(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white, lineWidth: 1))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppTheme.hairline, lineWidth: 1))
 
           Button(action: login) {
             if isLoading {
-              ProgressView().tint(.white)
+              ProgressView().tint(AppTheme.iconOnAccent)
             } else {
               Text(Tx.t("login.enter"))
                 .font(AppTheme.sansFont(size: 18, weight: .semibold))
@@ -161,14 +162,14 @@ struct HomeView: View {
                     "home.subtitle", ["date": Date().formatted(date: .abbreviated, time: .omitted)])
                 )
                 .font(AppTheme.sansFont(size: 14))
-                .foregroundColor(AppTheme.secondary)
+                .foregroundColor(AppTheme.mutedText)
               }
               Spacer()
 
               NavigationLink(destination: DesignView()) {
                 Image(systemName: "wand.and.stars")
                   .font(.system(size: 20))
-                  .foregroundColor(.white)
+                  .foregroundColor(AppTheme.iconOnAccent)
                   .padding(12)
                   .background(Circle().fill(AppTheme.primary))
                   .shadow(color: AppTheme.primary.opacity(0.4), radius: 8, x: 0, y: 4)
@@ -195,7 +196,7 @@ struct HomeView: View {
                 value: "\(lowStockCount)",
                 subValue: loc.t("home.stats.card.lowStock"),
                 icon: "exclamationmark.triangle.fill",
-                color: lowStockCount > 0 ? .red : .green
+                color: lowStockCount > 0 ? AppTheme.danger : AppTheme.success
               )
 
               StatCard(
@@ -204,7 +205,7 @@ struct HomeView: View {
                 subValue: "\(recentDesigns.count) "
                   + loc.t("home.stats.designCount", ["count": ""]),  // Need to handle plurals or just append text? For now just append generic
                 icon: "yensign.circle.fill",
-                color: Color.orange
+                color: AppTheme.warning
               )
             }
             .padding(.horizontal)
@@ -221,7 +222,7 @@ struct HomeView: View {
                   QuickActionCard(
                     title: loc.t("home.quickActions.addInventory"),
                     icon: "plus.circle.fill",
-                    color: .blue
+                    color: AppTheme.info
                   )
                 }
 
@@ -229,7 +230,7 @@ struct HomeView: View {
                   QuickActionCard(
                     title: loc.t("home.quickActions.smartDesign"),
                     icon: "sparkles",
-                    color: .purple
+                    color: AppTheme.creative
                   )
                 }
               }
@@ -245,7 +246,7 @@ struct HomeView: View {
                     .foregroundColor(AppTheme.primary)
                   Text(loc.t("home.quickActions.inspirationText"))
                     .font(AppTheme.sansFont(size: 12))
-                    .foregroundColor(AppTheme.secondary)
+                    .foregroundColor(AppTheme.mutedText)
                     .lineLimit(nil)
                 }
               }
@@ -273,10 +274,10 @@ struct HomeView: View {
                 VStack(spacing: 12) {
                   Image(systemName: "photo.on.rectangle")
                     .font(.largeTitle)
-                    .foregroundColor(.secondary.opacity(0.5))
+                    .foregroundColor(AppTheme.mutedText.opacity(0.45))
                   Text(loc.t("home.recentDesigns.empty"))
                     .font(AppTheme.sansFont(size: 14))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(AppTheme.mutedText)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 30)
@@ -301,7 +302,7 @@ struct HomeView: View {
                               date: .numeric, time: .omitted)
                           )
                           .font(AppTheme.sansFont(size: 12))
-                          .foregroundColor(.secondary)
+                          .foregroundColor(AppTheme.mutedText)
                         }
 
                         Spacer()
@@ -312,7 +313,7 @@ struct HomeView: View {
 
                         Image(systemName: "chevron.right")
                           .font(.caption)
-                          .foregroundColor(.secondary.opacity(0.5))
+                          .foregroundColor(AppTheme.mutedText.opacity(0.5))
                       }
                       .padding(12)
                       .glassmorphic()
@@ -356,21 +357,21 @@ struct StatCard: View {
       VStack(alignment: .leading, spacing: 2) {
         Text(subValue)
           .font(AppTheme.sansFont(size: 10))
-          .foregroundColor(AppTheme.secondary)
+          .foregroundColor(AppTheme.mutedText)
         Text(title)
           .font(AppTheme.sansFont(size: 10))
-          .foregroundColor(AppTheme.foreground.opacity(0.5))
+          .foregroundColor(AppTheme.mutedText)
           .lineLimit(1)
       }
     }
     .padding(12)
-    .background(Color.white.opacity(0.6))
+    .background(AppTheme.surfaceElevated)
     .cornerRadius(16)
     .overlay(
       RoundedRectangle(cornerRadius: 16)
-        .stroke(Color.white.opacity(0.5), lineWidth: 1)
+        .stroke(AppTheme.hairline, lineWidth: 1)
     )
-    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+    .shadow(color: AppTheme.shadow.opacity(0.6), radius: 5, x: 0, y: 2)
   }
 }
 

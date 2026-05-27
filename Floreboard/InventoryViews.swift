@@ -22,11 +22,11 @@ struct InventoryView: View {
             // Search Bar
             HStack {
               Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+                .foregroundColor(AppTheme.mutedText)
               TextField(Tx.t("general.search") + "...", text: $viewModel.searchText)
             }
             .padding()
-            .background(Color.white.opacity(0.5))
+            .background(AppTheme.surfaceGlass)
             .cornerRadius(10)
             .padding(.horizontal)
 
@@ -35,10 +35,10 @@ struct InventoryView: View {
                 VStack(spacing: 12) {
                   Image(systemName: "leaf.circle")  // Replaced flower.circle
                     .font(.system(size: 48))
-                    .foregroundColor(.secondary.opacity(0.5))
+                    .foregroundColor(AppTheme.mutedText.opacity(0.45))
                   Text(Tx.t("inventory.list.empty.title"))
                     .font(AppTheme.sansFont(size: 16))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(AppTheme.mutedText)
                 }
                 .padding(.top, 40)
               } else {
@@ -76,7 +76,7 @@ struct InventoryView: View {
             }) {
               Image(systemName: "plus")
                 .font(.title2.bold())
-                .foregroundColor(.white)
+                .foregroundColor(AppTheme.iconOnAccent)
                 .frame(width: 56, height: 56)
                 .background(AppTheme.primary)
                 .clipShape(Circle())
@@ -111,11 +111,11 @@ struct FlowerRow: View {
 
   var marginColor: Color {
     if marginPercent >= 60 {
-      return .green
+      return AppTheme.success
     } else if marginPercent >= 40 {
-      return .orange
+      return AppTheme.warning
     } else {
-      return .red
+      return AppTheme.danger
     }
   }
 
@@ -126,13 +126,13 @@ struct FlowerRow: View {
         Circle()
           .fill(Color(string: flower.color))
           .frame(width: 48, height: 48)
-          .overlay(Circle().stroke(Color.white, lineWidth: 2))
+          .overlay(Circle().stroke(AppTheme.hairline, lineWidth: 2))
           .shadow(radius: 2)
 
         if flower.quantity < 10 {
           Image(systemName: "exclamationmark.triangle.fill")
-            .foregroundColor(.red)
-            .background(Circle().fill(Color.white))
+            .foregroundColor(AppTheme.danger)
+            .background(Circle().fill(AppTheme.surfaceStrong))
             .offset(x: 16, y: -16)
         }
       }
@@ -157,11 +157,11 @@ struct FlowerRow: View {
         HStack(spacing: 12) {
           Text("\(Tx.t("inventory.row.stock")): \(flower.quantity)")
             .font(AppTheme.sansFont(size: 12))
-            .foregroundColor(flower.quantity < 10 ? .red : .secondary)
+            .foregroundColor(flower.quantity < 10 ? AppTheme.danger : AppTheme.mutedText)
 
           Text("\(Tx.t("inventory.row.used")): \(flower.totalUsed ?? 0)")
             .font(AppTheme.sansFont(size: 12))
-            .foregroundColor(.blue)
+            .foregroundColor(AppTheme.info)
         }
 
         // Tags
@@ -175,9 +175,9 @@ struct FlowerRow: View {
                   .padding(.vertical, 2)
                   .overlay(
                     RoundedRectangle(cornerRadius: 4).stroke(
-                      Color.secondary.opacity(0.3), lineWidth: 1)
+                      AppTheme.hairline, lineWidth: 1)
                   )
-                  .foregroundColor(.secondary)
+                  .foregroundColor(AppTheme.mutedText)
               }
             }
           }
@@ -194,7 +194,7 @@ struct FlowerRow: View {
             .foregroundColor(AppTheme.primary)
           Text("(¥\(Int(flower.unitCost)))")
             .font(AppTheme.sansFont(size: 12))
-            .foregroundColor(.secondary)
+            .foregroundColor(AppTheme.mutedText)
         }
 
         // Margin
@@ -211,7 +211,7 @@ struct FlowerRow: View {
 
           Button(action: onDelete) {
             Image(systemName: "trash.circle.fill")
-              .foregroundColor(.red.opacity(0.6))
+              .foregroundColor(AppTheme.danger.opacity(0.7))
               .font(.title2)
           }
         }
@@ -323,7 +323,7 @@ struct EditFlowerSheet: View {
             }) {
               HStack {
                 Text(Tx.t("inventory.form.cultureOptions.\(culture)"))
-                  .foregroundColor(.primary)
+                  .foregroundColor(AppTheme.foreground)
                 Spacer()
                 if selectedCultures.contains(culture) {
                   Image(systemName: "checkmark").foregroundColor(AppTheme.primary)

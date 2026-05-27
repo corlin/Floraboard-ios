@@ -35,7 +35,7 @@ struct SettingsView: View {
             Text(localizationManager.t("settings.storeName"))
             Spacer()
             Text(auth.currentTenant?.name ?? "Unknown")
-              .foregroundColor(.secondary)
+              .foregroundColor(AppTheme.mutedText)
           }
         }
 
@@ -179,7 +179,7 @@ struct SettingsView: View {
           if let message = viewModel.statusMessage {
             Text(message)
               .font(.footnote)
-              .foregroundColor(viewModel.isStatusError ? .red : .green)
+              .foregroundColor(viewModel.isStatusError ? AppTheme.danger : AppTheme.success)
           }
         }
 

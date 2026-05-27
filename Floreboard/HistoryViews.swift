@@ -33,11 +33,11 @@ struct HistoryView: View {
             // Search Bar (Custom Glass)
             HStack {
               Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+                .foregroundColor(AppTheme.mutedText)
               TextField(Tx.t("history.search"), text: $searchText)
             }
             .padding()
-            .background(Color.white.opacity(0.5))
+            .background(AppTheme.surfaceGlass)
             .cornerRadius(12)
             .padding(.horizontal)
 
@@ -51,7 +51,7 @@ struct HistoryView: View {
                   .foregroundColor(AppTheme.foreground)
                 Text(Tx.t("history.empty.desc"))
                   .font(AppTheme.sansFont(size: 14))
-                  .foregroundColor(AppTheme.secondary)
+                  .foregroundColor(AppTheme.mutedText)
               }
               .frame(maxWidth: .infinity)
               .padding(.top, 60)
@@ -91,7 +91,7 @@ struct HistoryRow: View {
             .frame(width: 60, height: 60)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
-              RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.5), lineWidth: 1))
+              RoundedRectangle(cornerRadius: 12).stroke(AppTheme.hairline, lineWidth: 1))
         } else {
           RoundedRectangle(cornerRadius: 12)
             .fill(AppTheme.primary.opacity(0.1))
@@ -113,7 +113,7 @@ struct HistoryRow: View {
 
         Text(design.meaningText)
           .font(AppTheme.sansFont(size: 14))
-          .foregroundColor(AppTheme.secondary)
+          .foregroundColor(AppTheme.mutedText)
           .lineLimit(2)
 
         HStack {
@@ -123,14 +123,14 @@ struct HistoryRow: View {
 
           Text("•")
             .font(.caption)
-            .foregroundColor(.secondary)
+            .foregroundColor(AppTheme.mutedText)
 
           Text(
             Date(timeIntervalSince1970: design.createdAt).formatted(
               date: .abbreviated, time: .shortened)
           )
           .font(.caption)
-          .foregroundColor(.secondary)
+          .foregroundColor(AppTheme.mutedText)
         }
       }
       Spacer()
@@ -182,7 +182,7 @@ struct DesignDetailView: View {
               .scaledToFit()
               .frame(maxWidth: .infinity)
               .clipShape(RoundedRectangle(cornerRadius: 16))
-              .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
+              .shadow(color: AppTheme.shadow, radius: 8, x: 0, y: 4)
               .padding(.horizontal)
               .padding(.top, 20)
               .onTapGesture {
@@ -202,7 +202,7 @@ struct DesignDetailView: View {
                   .foregroundColor(AppTheme.primary)
                 Text(imageError)
                   .font(AppTheme.sansFont(size: 13))
-                  .foregroundColor(AppTheme.secondary)
+                  .foregroundColor(AppTheme.mutedText)
               }
               .padding()
               .glassmorphic()
@@ -232,7 +232,7 @@ struct DesignDetailView: View {
                   date: .long, time: .omitted), systemImage: "calendar"
               )
               .font(AppTheme.sansFont(size: 14))
-              .foregroundColor(AppTheme.secondary)
+              .foregroundColor(AppTheme.mutedText)
             }
           }
           .padding()
@@ -273,7 +273,7 @@ struct DesignDetailView: View {
             HStack {
               Text(Tx.t("result.cost.title"))
                 .font(AppTheme.sansFont(size: 16, weight: .medium))
-                .foregroundColor(AppTheme.secondary)
+                .foregroundColor(AppTheme.mutedText)
               Spacer()
               Text("¥\(Int(design.totalCost))")
                 .font(AppTheme.sansFont(size: 20, weight: .bold))
@@ -295,7 +295,7 @@ struct DesignDetailView: View {
                 HStack(alignment: .top, spacing: 12) {
                   Text("\(index + 1)")
                     .font(AppTheme.sansFont(size: 14, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(AppTheme.iconOnAccent)
                     .frame(width: 24, height: 24)
                     .background(Circle().fill(AppTheme.primary.opacity(0.8)))
 
@@ -319,7 +319,7 @@ struct DesignDetailView: View {
                 Text(Tx.t("design.action.execute"))
               }
               .font(.headline)
-              .foregroundColor(.white)
+              .foregroundColor(AppTheme.iconOnAccent)
               .frame(maxWidth: .infinity)
               .padding()
               .background(AppTheme.primary)
@@ -330,14 +330,14 @@ struct DesignDetailView: View {
           } else {
             HStack {
               Image(systemName: "checkmark.seal.fill")
-                .foregroundColor(.green)
+                .foregroundColor(AppTheme.success)
               Text(Tx.t("design.action.executed"))
                 .font(AppTheme.serifFont(size: 18, weight: .bold))
-                .foregroundColor(.green)
+                .foregroundColor(AppTheme.success)
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.green.opacity(0.1))
+            .background(AppTheme.success.opacity(0.12))
             .cornerRadius(12)
             .padding(.horizontal)
           }
