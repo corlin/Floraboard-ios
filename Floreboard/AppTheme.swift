@@ -218,6 +218,44 @@ struct WorkbenchSearchField: View {
   }
 }
 
+struct WorkbenchBottomActionBar: View {
+  let title: String
+  let systemImage: String
+  let action: () -> Void
+
+  var body: some View {
+    VStack(spacing: 0) {
+      Spacer()
+
+      Button(action: action) {
+        Label(title, systemImage: systemImage)
+          .font(AppTheme.sansFont(size: 16, weight: .semibold))
+          .foregroundColor(AppTheme.iconOnAccent)
+          .frame(maxWidth: .infinity)
+          .padding(.vertical, 14)
+          .background(AppTheme.primary)
+          .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
+          .shadow(color: AppTheme.primary.opacity(0.22), radius: 8, x: 0, y: 4)
+      }
+      .buttonStyle(.plain)
+      .padding(.horizontal)
+      .padding(.top, 18)
+      .padding(.bottom, 10)
+      .background(
+        LinearGradient(
+          colors: [
+            AppTheme.background.opacity(0.0),
+            AppTheme.background.opacity(0.92)
+          ],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+        .allowsHitTesting(false)
+      )
+    }
+  }
+}
+
 extension View {
   func glassmorphic() -> some View {
     self.modifier(GlassmorphicCard())

@@ -52,35 +52,22 @@ struct InventoryView: View {
               }
             }
             .padding(.horizontal)
-            .padding(.bottom, 80)
+            .padding(.bottom, 96)
           }
           .padding(.top)
         }
       }
       .scrollDismissesKeyboard(.interactively)
       .navigationTitle(Tx.t("inventory.title"))
-      // Floating Action Button
-      .overlay(
-        VStack {
-          Spacer()
-          HStack {
-            Spacer()
-            Button(action: {
-              HapticManager.shared.impact(style: .medium)
-              showingAddSheet = true
-            }) {
-              Image(systemName: "plus")
-                .font(.title2.bold())
-                .foregroundColor(AppTheme.iconOnAccent)
-                .frame(width: 56, height: 56)
-                .background(AppTheme.primary)
-                .clipShape(Circle())
-                .shadow(color: AppTheme.primary.opacity(0.4), radius: 8, x: 0, y: 4)
-            }
-            .padding()
-          }
+      .overlay {
+        WorkbenchBottomActionBar(
+          title: Tx.t("inventory.add"),
+          systemImage: "plus"
+        ) {
+          HapticManager.shared.impact(style: .medium)
+          showingAddSheet = true
         }
-      )
+      }
       // Add Sheet
       .sheet(isPresented: $showingAddSheet) {
         EditFlowerSheet(viewModel: viewModel, flowerToEdit: nil)
