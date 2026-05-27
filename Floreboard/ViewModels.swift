@@ -175,25 +175,7 @@ class DesignViewModel: ObservableObject {
             let imageUrlString = try await AIService.shared.generateImage(prompt: prompt)
             print("Received image string length: \(imageUrlString.count)")
 
-            var image: UIImage? = nil
-
-            // Check for Base64 Data URI
-            if imageUrlString.hasPrefix("data:image") {
-              let base64String = imageUrlString.components(separatedBy: ",").last ?? imageUrlString
-              if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
-                image = UIImage(data: data)
-              }
-            }
-            // Check for Standard URL
-            else if let url = URL(string: imageUrlString), let data = try? Data(contentsOf: url) {
-              image = UIImage(data: data)
-            }
-            // Try decoding raw base64 if other checks fail
-            else if let data = Data(
-              base64Encoded: imageUrlString, options: .ignoreUnknownCharacters)
-            {
-              image = UIImage(data: data)
-            }
+            let image = try await resolveGeneratedImage(from: imageUrlString)
 
             // 3. Save to Persistence
             if let validImage = image {
@@ -234,6 +216,38 @@ class DesignViewModel: ObservableObject {
         }
       }
     }
+  }
+
+  private func resolveGeneratedImage(from imageString: String) async throws -> UIImage? {
+    // Check for Base64 Data URI
+    if imageString.hasPrefix("data:image") {
+      let base64String = imageString.components(separatedBy: ",").last ?? imageString
+      if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
+        return UIImage(data: data)
+      }
+      return nil
+    }
+
+    // Check for Standard URL
+    if let url = URL(string: imageString),
+      let scheme = url.scheme?.lowercased(),
+      scheme == "http" || scheme == "https"
+    {
+      let (data, response) = try await URLSession.shared.data(from: url)
+      if let httpResponse = response as? HTTPURLResponse,
+        !(200...299).contains(httpResponse.statusCode)
+      {
+        throw AIError.apiError(statusCode: httpResponse.statusCode)
+      }
+      return UIImage(data: data)
+    }
+
+    // Try decoding raw base64 if other checks fail
+    if let data = Data(base64Encoded: imageString, options: .ignoreUnknownCharacters) {
+      return UIImage(data: data)
+    }
+
+    return nil
   }
 }
 

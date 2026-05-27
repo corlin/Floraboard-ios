@@ -23,6 +23,23 @@ class AIService: ObservableObject {
       "Macro-level detail on petal veins and dewdrops, crisp leaf edges, visible flower anthers and pistils, natural imperfections adding authenticity"
   }
 
+  private struct AIDesignResponse: Codable {
+    struct FlowerItem: Codable {
+      let flowerName: String
+      let count: Int
+      let reason: String?
+    }
+
+    let flowerList: [FlowerItem]
+    let reasoning: String?
+    let title: String
+    let description: String
+    let meaningText: String
+    let steps: [String]
+    let imagePrompt: String
+    let estimatedCost: Double?
+  }
+
   // MARK: - Configuration
   // MARK: - Configuration
 
@@ -88,32 +105,12 @@ class AIService: ObservableObject {
 
     // 3. Parse Response
 
-    // The AI returns a JSON structure which we need to map to our internal DesignResult
-    // expecting: { flowerList: [], title, description, meaningText, steps, imagePrompt, estimatedCost }
-    struct AIResponse: Codable {
-      struct FlowerItem: Codable {
-        let flowerName: String
-        let count: Int
-        let reason: String?
-      }
-      let flowerList: [FlowerItem]
-      let reasoning: String?  // Added for CoT
-      let title: String
-      let description: String
-      let meaningText: String
-      let steps: [String]
-      let imagePrompt: String
-      let estimatedCost: Double?
-    }
-
-    let aiData = try JSONDecoder().decode(AIResponse.self, from: Data(jsonResponse.utf8))
+    let aiData = try decodeDesignResponse(from: jsonResponse)
 
     // 4. Convert to DesignResult
-    // Map flower names back to inventory items if possible (or just keep name)
-    let designItems = aiData.flowerList.map { item in
-      DesignFlowerItem(
-        flowerName: item.flowerName, count: item.count, reason: item.reason, unitCost: 0)  // Cost calculation could be improved
-    }
+    let designItems = mapDesignItems(aiData.flowerList, inventory: inventory)
+    let calculatedCost = calculateCost(for: designItems)
+    let totalCost = resolvedCost(estimatedCost: aiData.estimatedCost, fallbackCost: calculatedCost)
 
     return DesignResult(
       id: UUID().uuidString,
@@ -126,7 +123,7 @@ class AIService: ObservableObject {
       imageUrl: nil,  // Image generated separately
       imagePrompt: aiData.imagePrompt,
       meaningText: aiData.meaningText,
-      totalCost: aiData.estimatedCost ?? 0,
+      totalCost: totalCost,
       profit: 0,
       profitMargin: 0,
       createdAt: Date().timeIntervalSince1970,
@@ -212,30 +209,11 @@ class AIService: ObservableObject {
       systemHelper: systemPrompt, userMessage: userPrompt, imageBase64: imageData,
       model: config.visionModel)
 
-    // Parse logic similar to above... (Simplified for brevity in this step)
-    // Re-using the same AIResponse struct for now
-    struct AIResponse: Codable {
-      struct FlowerItem: Codable {
-        let flowerName: String
-        let count: Int
-        let reason: String?
-      }
-      let flowerList: [FlowerItem]
-      let reasoning: String?
-      let title: String
-      let description: String
-      let meaningText: String
-      let steps: [String]
-      let imagePrompt: String
-      let estimatedCost: Double?
-    }
+    let aiData = try decodeDesignResponse(from: jsonResponse)
 
-    let aiData = try JSONDecoder().decode(AIResponse.self, from: Data(jsonResponse.utf8))
-
-    let designItems = aiData.flowerList.map { item in
-      DesignFlowerItem(
-        flowerName: item.flowerName, count: item.count, reason: item.reason, unitCost: 0)
-    }
+    let designItems = mapDesignItems(aiData.flowerList, inventory: inventory)
+    let calculatedCost = calculateCost(for: designItems)
+    let totalCost = resolvedCost(estimatedCost: aiData.estimatedCost, fallbackCost: calculatedCost)
 
     return DesignResult(
       id: UUID().uuidString,
@@ -247,7 +225,7 @@ class AIService: ObservableObject {
       imageUrl: nil,
       imagePrompt: aiData.imagePrompt,
       meaningText: aiData.meaningText,
-      totalCost: aiData.estimatedCost ?? 0,
+      totalCost: totalCost,
       profit: 0,
       profitMargin: 0,
       createdAt: Date().timeIntervalSince1970,
@@ -257,6 +235,66 @@ class AIService: ObservableObject {
   }
 
   // MARK: - Private Helpers
+
+  private func decodeDesignResponse(from response: String) throws -> AIDesignResponse {
+    let jsonString = extractJSONObject(from: response)
+    return try JSONDecoder().decode(AIDesignResponse.self, from: Data(jsonString.utf8))
+  }
+
+  private func extractJSONObject(from response: String) -> String {
+    var cleaned = response.trimmingCharacters(in: .whitespacesAndNewlines)
+
+    if cleaned.hasPrefix("```") {
+      cleaned = cleaned.replacingOccurrences(of: "```json", with: "")
+      cleaned = cleaned.replacingOccurrences(of: "```JSON", with: "")
+      cleaned = cleaned.replacingOccurrences(of: "```", with: "")
+      cleaned = cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    if let start = cleaned.firstIndex(of: "{"),
+      let end = cleaned.lastIndex(of: "}"),
+      start <= end
+    {
+      return String(cleaned[start...end])
+    }
+
+    return cleaned
+  }
+
+  private func mapDesignItems(
+    _ items: [AIDesignResponse.FlowerItem], inventory: [FlowerType]
+  ) -> [DesignFlowerItem] {
+    items.map { item in
+      let matchedFlower = findFlower(named: item.flowerName, in: inventory)
+      return DesignFlowerItem(
+        flowerName: item.flowerName,
+        count: item.count,
+        reason: item.reason,
+        unitCost: matchedFlower?.unitCost
+      )
+    }
+  }
+
+  private func findFlower(named name: String, in inventory: [FlowerType]) -> FlowerType? {
+    inventory.first {
+      $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame
+        || $0.name.localizedCaseInsensitiveContains(name)
+        || name.localizedCaseInsensitiveContains($0.name)
+    }
+  }
+
+  private func calculateCost(for items: [DesignFlowerItem]) -> Double {
+    items.reduce(0) { total, item in
+      total + Double(item.count) * (item.unitCost ?? 0)
+    }
+  }
+
+  private func resolvedCost(estimatedCost: Double?, fallbackCost: Double) -> Double {
+    guard let estimatedCost, estimatedCost > 0 else {
+      return fallbackCost
+    }
+    return estimatedCost
+  }
 
   private func constructSystemPrompt(inventoryList: String, request: DesignRequest) -> String {
     let languageName =
