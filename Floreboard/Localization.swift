@@ -290,6 +290,10 @@ struct Locales {
     "general.error": "Error",
     "general.ok": "OK",
     "inventory.list.empty.title": "No flowers found",
+    "inventory.list.empty.desc": "Add your first flower to start building usable inventory.",
+    "inventory.search.empty": "No matching flowers",
+    "inventory.search.empty.desc": "Try another keyword or clear the search.",
+    "inventory.search.clear": "Clear Search",
 
     // Errors
     "error.missingApiKey": "API Key is missing. Please configure it in Settings.",
@@ -559,6 +563,10 @@ struct Locales {
     "general.error": "错误",
     "general.ok": "确定",
     "inventory.list.empty.title": "暂无花材",
+    "inventory.list.empty.desc": "先新增一种花材，开始建立可用库存。",
+    "inventory.search.empty": "没有匹配花材",
+    "inventory.search.empty.desc": "换个关键词，或清空当前搜索。",
+    "inventory.search.clear": "清空搜索",
 
     // Errors
     "error.missingApiKey": "未配置 API Key，请前往设置页面配置。",
