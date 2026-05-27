@@ -16,7 +16,7 @@ struct ContentView: View {
     Group {
       if authService.isAuthenticated {
         TabView(selection: $selection) {
-          HomeView()
+          HomeView(selection: $selection)
             .tabItem {
               Label(localizationManager.t("app.nav.dashboard"), systemImage: "square.grid.2x2")
             }
@@ -119,6 +119,7 @@ struct LoginView: View {
 // MARK: - Home View
 
 struct HomeView: View {
+  @Binding var selection: Int
   @StateObject private var auth = AuthService.shared
   @StateObject private var loc = LocalizationManager.shared
   @StateObject private var inventoryService = InventoryService.shared
@@ -166,7 +167,10 @@ struct HomeView: View {
               }
               Spacer()
 
-              NavigationLink(destination: DesignView()) {
+              Button {
+                HapticManager.shared.impact(style: .light)
+                selection = 3
+              } label: {
                 Image(systemName: "wand.and.stars")
                   .font(.system(size: 20))
                   .foregroundColor(AppTheme.iconOnAccent)
@@ -174,6 +178,7 @@ struct HomeView: View {
                   .background(Circle().fill(AppTheme.primary))
                   .shadow(color: AppTheme.primary.opacity(0.4), radius: 8, x: 0, y: 4)
               }
+              .buttonStyle(.plain)
             }
             .padding(.horizontal)
             .padding(.top, 20)
@@ -218,21 +223,29 @@ struct HomeView: View {
                 .padding(.horizontal)
 
               HStack(spacing: 12) {
-                NavigationLink(destination: InventoryView()) {
+                Button {
+                  HapticManager.shared.impact(style: .light)
+                  selection = 1
+                } label: {
                   QuickActionCard(
                     title: loc.t("home.quickActions.addInventory"),
                     icon: "plus.circle.fill",
                     color: AppTheme.inventory
                   )
                 }
+                .buttonStyle(.plain)
 
-                NavigationLink(destination: DesignView()) {
+                Button {
+                  HapticManager.shared.impact(style: .light)
+                  selection = 3
+                } label: {
                   QuickActionCard(
                     title: loc.t("home.quickActions.smartDesign"),
                     icon: "sparkles",
                     color: AppTheme.aiDesign
                   )
                 }
+                .buttonStyle(.plain)
               }
               .padding(.horizontal)
 
@@ -266,11 +279,15 @@ struct HomeView: View {
                   .font(AppTheme.serifFont(size: 20, weight: .semibold))
                   .foregroundColor(AppTheme.foreground)
                 Spacer()
-                NavigationLink(destination: HistoryView()) {
+                Button {
+                  HapticManager.shared.impact(style: .light)
+                  selection = 2
+                } label: {
                   Text(loc.t("home.recentDesigns.viewAll"))
                     .font(AppTheme.sansFont(size: 14))
                     .foregroundColor(AppTheme.primary)
                 }
+                .buttonStyle(.plain)
               }
               .padding(.horizontal)
 
