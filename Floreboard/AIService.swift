@@ -13,7 +13,7 @@ class AIService: ObservableObject {
   static let shared = AIService()
 
   private enum ManagedAIConfig {
-    static let defaultProxyBaseURL = "https://floreboard-ai-proxy.corlin.workers.dev"
+    static let defaultProxyBaseURL = "https://floreboard-ai-proxy.cybercorlin.workers.dev"
     static let proxyBaseURLInfoKey = "FLOREBOARD_AI_PROXY_BASE_URL"
     static let proxyBaseURLDefaultsKey = "ai_proxy_base_url"
     static let proxyTokenInfoKey = "FLOREBOARD_AI_PROXY_SESSION_TOKEN"
