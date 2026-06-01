@@ -51,6 +51,19 @@ struct SettingsView: View {
           Text(localizationManager.t("settings.aiServiceManagedDesc"))
             .font(.footnote)
             .foregroundColor(AppTheme.mutedText)
+
+          Button {
+            viewModel.testConnection()
+          } label: {
+            HStack {
+              Label(localizationManager.t("settings.testConnection"), systemImage: "bolt.heart.fill")
+              Spacer()
+              if viewModel.isTestingConnection {
+                ProgressView()
+              }
+            }
+          }
+          .disabled(viewModel.isTestingConnection)
         }
 
         Section(header: Text(localizationManager.t("settings.businessRules"))) {

@@ -258,34 +258,12 @@ class DesignViewModel: ObservableObject {
 
 class SettingsViewModel: ObservableObject {
   @Published var config: ApiConfig
-  @Published var selectedProviderID: String = "custom"
   @Published var statusMessage: String?
   @Published var isStatusError = false
   @Published var isTestingConnection = false
 
   init() {
-    // Load initial config from service (which loads from UserDefaults)
-    // We access the private config via a new public getter if needed, but for now we reconstruct or load directly
     self.config = AIService.shared.currentConfig
-
-    // Auto-detect provider
-    if let match = AIProvider.all.first(where: { $0.endpoint == config.endpoint }) {
-      self.selectedProviderID = match.id
-    } else {
-      self.selectedProviderID = "custom"
-    }
-  }
-
-  func updateProvider(_ providerId: String) {
-    self.selectedProviderID = providerId
-    if let provider = AIProvider.all.first(where: { $0.id == providerId }), providerId != "custom" {
-      // Auto-fill defaults
-      self.config.endpoint = provider.endpoint
-      self.config.textModel = provider.models.first ?? ""
-      self.config.visionModel = provider.visionModels.first ?? ""
-      self.config.imageEndpoint = provider.imageEndpoint.isEmpty ? nil : provider.imageEndpoint
-      self.config.imageModel = provider.imageModels.first ?? ""
-    }
   }
 
   func save() {

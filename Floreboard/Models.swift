@@ -240,64 +240,6 @@ struct Tenant: Codable, Identifiable {
   var name: String
 }
 
-struct AIProvider: Identifiable {
-  let id: String
-  let name: String
-  let endpoint: String
-  let models: [String]
-  let visionModels: [String]
-  let imageEndpoint: String
-  let imageModels: [String]
-
-  static let all: [AIProvider] = [
-    AIProvider(
-      id: "aliyun",
-      name: "Aliyun (Qwen/Wanx)",
-      endpoint: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-      models: ["qwen-plus", "qwen-max", "qwen-turbo"],
-      visionModels: ["qwen-vl-max", "qwen-vl-plus"],
-      imageEndpoint: "https://dashscope.aliyuncs.com",
-      imageModels: ["wanx-v1", "wan2.1-t2i-turbo"]
-    ),
-    AIProvider(
-      id: "openrouter",
-      name: "OpenRouter (Claude/Gemini)",
-      endpoint: "https://openrouter.ai/api/v1",
-      models: ["anthropic/claude-3.5-sonnet", "google/gemini-pro", "openai/gpt-4o"],
-      visionModels: ["google/gemini-1.5-pro", "openai/gpt-4o", "anthropic/claude-3.5-sonnet"],
-      imageEndpoint: "https://openrouter.ai/api/v1",
-      imageModels: ["google/gemini-3-pro-image-preview"]
-    ),
-    AIProvider(
-      id: "deepseek",
-      name: "DeepSeek",
-      endpoint: "https://api.deepseek.com",
-      models: ["deepseek-chat", "deepseek-coder"],
-      visionModels: [],
-      imageEndpoint: "",
-      imageModels: []
-    ),
-    AIProvider(
-      id: "openai",
-      name: "OpenAI (Official)",
-      endpoint: "https://api.openai.com/v1",
-      models: ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
-      visionModels: ["gpt-4o", "gpt-4-turbo"],
-      imageEndpoint: "https://api.openai.com/v1",
-      imageModels: ["dall-e-3", "dall-e-2"]
-    ),
-    AIProvider(
-      id: "custom",
-      name: "Custom / Other",
-      endpoint: "",
-      models: [],
-      visionModels: [],
-      imageEndpoint: "",
-      imageModels: []
-    ),
-  ]
-}
-
 // MARK: - Extension for Mock Data
 
 // Mocks removed in favor of Services/InitialInventory.swift
