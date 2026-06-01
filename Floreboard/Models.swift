@@ -201,10 +201,10 @@ struct ApiConfig: Codable, Identifiable {
 
   static let `default` = ApiConfig(
     apiKey: "",
-    endpoint: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    textModel: "qwen-plus",
-    visionModel: "qwen-vl-max",
-    imageModel: "wanx-v1",
+    endpoint: "https://floreboard-ai-proxy.corlin.workers.dev",
+    textModel: "",
+    visionModel: "",
+    imageModel: "",
     budget: 500,
     alertThreshold: 5,
     lowStockThreshold: 10

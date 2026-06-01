@@ -172,7 +172,10 @@ class DesignViewModel: ObservableObject {
 
           do {
             // 1. Generate Image URL (or Base64)
-            let imageUrlString = try await AIService.shared.generateImage(prompt: prompt)
+            let imageUrlString = try await AIService.shared.generateImage(
+              prompt: prompt,
+              requestId: result.syncId ?? result.requestId
+            )
             print("Received image string length: \(imageUrlString.count)")
 
             let image = try await resolveGeneratedImage(from: imageUrlString)

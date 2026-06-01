@@ -12,6 +12,14 @@ import UIKit
 class AIService: ObservableObject {
   static let shared = AIService()
 
+  private enum ManagedAIConfig {
+    static let defaultProxyBaseURL = "https://floreboard-ai-proxy.corlin.workers.dev"
+    static let proxyBaseURLInfoKey = "FLOREBOARD_AI_PROXY_BASE_URL"
+    static let proxyBaseURLDefaultsKey = "ai_proxy_base_url"
+    static let proxyTokenInfoKey = "FLOREBOARD_AI_PROXY_SESSION_TOKEN"
+    static let proxyTokenDefaultsKey = "ai_proxy_session_token"
+  }
+
   // MARK: - Constants from Web
 
   private struct StyleBoosters {
@@ -41,16 +49,9 @@ class AIService: ObservableObject {
   }
 
   // MARK: - Configuration
-  // MARK: - Configuration
 
   var currentConfig: ApiConfig {
-    // Load base config
-    var cfg = loadBaseConfig()
-    // Inject secure key
-    if let key = KeychainManager.shared.load(forKey: "api_key") {
-      cfg.apiKey = key
-    }
-    return cfg
+    loadBaseConfig()
   }
 
   private var config: ApiConfig {
@@ -73,110 +74,35 @@ class AIService: ObservableObject {
   func updateConfig(_ newConfig: ApiConfig) {
     var normalizedConfig = newConfig
     normalizedConfig.normalizeEndpoints()
+    normalizedConfig.apiKey = ""
+    normalizedConfig.textModel = ""
+    normalizedConfig.visionModel = ""
+    normalizedConfig.imageModel = ""
+    normalizedConfig.imageEndpoint = nil
 
-    // 1. Save API Key to Keychain
-    if !normalizedConfig.apiKey.isEmpty {
-      _ = KeychainManager.shared.save(normalizedConfig.apiKey, forKey: "api_key")
-    }
+    KeychainManager.shared.delete(forKey: "api_key")
 
-    // 2. Clear API Key for storage
-    var secureConfig = normalizedConfig
-    secureConfig.apiKey = ""  // Do not save to UserDefaults
-
-    // 3. Save rest to UserDefaults
-    if let data = try? JSONEncoder().encode(secureConfig) {
+    if let data = try? JSONEncoder().encode(normalizedConfig) {
       UserDefaults.standard.set(data, forKey: "api_config")
     }
   }
 
   func testConnection(using candidateConfig: ApiConfig) async throws {
-    var testConfig = candidateConfig
-    testConfig.normalizeEndpoints()
-    if testConfig.apiKey.isEmpty, let storedKey = KeychainManager.shared.load(forKey: "api_key") {
-      testConfig.apiKey = storedKey
-    }
-
-    guard !testConfig.apiKey.isEmpty else {
-      throw AIError.missingApiKey
-    }
-
-    guard let url = URL(string: "\(testConfig.endpoint)/chat/completions") else {
-      throw AIError.invalidURL
-    }
-
-    var request = URLRequest(url: url)
-    request.httpMethod = "POST"
-    request.addValue("Bearer \(testConfig.apiKey)", forHTTPHeaderField: "Authorization")
-    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-    applyProviderHeaders(to: &request, endpoint: testConfig.endpoint)
-
-    let body: [String: Any] = [
-      "model": testConfig.textModel,
-      "messages": [
-        ["role": "system", "content": "You are a connectivity checker."],
-        ["role": "user", "content": "Reply with OK."],
-      ],
-      "temperature": 0,
-      "max_tokens": 8,
-    ]
-
-    request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-    let (data, response) = try await URLSession.shared.data(for: request)
-
-    guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-      if let errText = String(data: data, encoding: .utf8) {
-        print("AI Test Error: \(errText)")
-      }
-      throw AIError.apiError(statusCode: (response as? HTTPURLResponse)?.statusCode ?? 500)
-    }
+    _ = candidateConfig
+    let health = try await makeProxyClient().health()
+    guard health.ok else { throw AIError.apiError(statusCode: 503) }
   }
 
   /// Generates a floral design plan based on user request
   func generateFlowerPlan(request: DesignRequest, inventory: [FlowerType]) async throws
     -> DesignResult
   {
-    guard !config.apiKey.isEmpty else {
-      throw AIError.missingApiKey
-    }
-
-    // 1. Prepare Prompts
-    // 1. Prepare Prompts
-    let inventoryList = InventoryService.shared.getInventoryListString(
-      lowStockThreshold: config.lowStockThreshold)
-    let systemPrompt = constructSystemPrompt(inventoryList: inventoryList, request: request)
-    let userPrompt = constructUserPrompt(request: request)
-
-    // 2. Call API
-    let jsonResponse = try await callChatCompletion(
-      systemHelper: systemPrompt, userMessage: userPrompt, model: config.textModel)
-
-    // 3. Parse Response
-
-    let aiData = try decodeDesignResponse(from: jsonResponse)
-
-    // 4. Convert to DesignResult
-    let designItems = mapDesignItems(aiData.flowerList, inventory: inventory)
-    let calculatedCost = calculateCost(for: designItems)
-    let totalCost = resolvedCost(estimatedCost: aiData.estimatedCost, fallbackCost: calculatedCost)
-
-    return DesignResult(
-      id: UUID().uuidString,
-      requestId: request.id,
-      title: aiData.title,
-      description: aiData.description,
-      flowerList: designItems,
-      reasoning: aiData.reasoning,
-      steps: aiData.steps,
-      imageUrl: nil,  // Image generated separately
-      imagePrompt: aiData.imagePrompt,
-      meaningText: aiData.meaningText,
-      totalCost: totalCost,
-      profit: 0,
-      profitMargin: 0,
-      createdAt: Date().timeIntervalSince1970,
-      requirements: request.requirements,
-      status: .draft
+    let tenantId = await currentTenantId()
+    return try await makeProxyClient().generatePlan(
+      tenantId: tenantId,
+      language: LocalizationManager.shared.currentLanguage,
+      request: request,
+      inventory: inventory
     )
   }
 
@@ -184,102 +110,106 @@ class AIService: ObservableObject {
   func generateDesignFromImage(image: UIImage, request: DesignRequest, inventory: [FlowerType])
     async throws -> DesignResult
   {
-    guard !config.apiKey.isEmpty else {
-      throw AIError.missingApiKey
-    }
-
-    guard let imageData = image.jpegData(compressionQuality: 0.8)?.base64EncodedString() else {
+    guard let imageData = image.jpegData(compressionQuality: 0.82) else {
       throw AIError.imageEncodingFailed
     }
 
-    // Implementation of Visual Muse logic
-    // This requires a Multi-modal model call (GPT-4o or Qwen-VL)
-
-    let inventoryList = InventoryService.shared.getInventoryListString(
-      lowStockThreshold: config.lowStockThreshold)
-    let languageName =
-      LocalizationManager.shared.currentLanguage == .zh ? "Simplified Chinese" : "English"
-    let systemPrompt = """
-      You are a world-class Floral Art Director, Botanical Photographer, and Master Florist.
-
-      **YOUR MISSION Analysis:**
-      1. **Practical Flower BOM**: A list of flowers from inventory to physically recreate the design.
-      2. **Visual Reproduction Prompt**: A structured prompt to generate an image that EXACTLY matches the reference.
-
-      **CRITICAL INSTRUCTION: MULTILINGUAL OUTPUT**
-      The visual analysis and image prompt generation must be done in English to ensure precision.
-      Review the user's language: \(languageName).
-      For the Final JSON Output, the "title", "description", "meaningText", "steps", and "reason" (in flowerList) fields MUST be written in \(languageName).
-      Everything else (including visualAnalysis and imagePrompt) should remain in English.
-
-      > **CRITICAL RULE**: The Visual Reproduction Prompt is NOT constrained by inventory. You may describe ANY materials (driftwood, willow, coral branches, etc.) that appear in the reference image, even if they're not in the flower inventory.
-
-      ---
-
-      ## PHASE 1: MANDATORY VISUAL ANALYSIS (Mental Scratchpad)
-
-      ### A. SCALE DETECTION
-      Identify reference objects and estimate dimensions (Micro <30cm, Small 30-60cm, Medium 60-120cm, Large 1-3m, Monumental >3m).
-
-      ### B. STRUCTURAL DNA
-      Analyze the geometry (Fan, Dome, Asymmetrical, Linear, Architectural).
-
-      ### C. COLOR PALETTE
-      Identify dominant hues, accents, and color harmony (Monochromatic, Analogous, Complementary).
-
-      ---
-
-      ## PHASE 2: INVENTORY MAPPING
-      Map the visual elements to available inventory.
-      - If exact match exists (e.g., Red Rose), use it.
-      - If unavailable, find the best texture/color substitute from inventory.
-      - Only list flowers that physically exist in the 'Inventory' list below.
-
-      Inventory:
-      \(inventoryList)
-
-      ---
-
-      ## PROMPT CONSTRUCTION GUIDE
-      Construct 'imagePrompt' by combining:
-      1. [Scale/Type Declaration] (e.g. "A large architectural floral installation...")
-      2. [Structure Description]
-      3. [Central Focal Flowers]
-      4. [Supporting Elements]
-      5. [Setting/Lighting Context]
-      6. Style Booster: "\(StyleBoosters.enhancedQuality) \(StyleBoosters.textureDetail)"
-      """
-
-    let userPrompt = "Analyze this image and create a floral design."
-
-    // Call Vision API
-    let jsonResponse = try await callVisionCompletion(
-      systemHelper: systemPrompt, userMessage: userPrompt, imageBase64: imageData,
-      model: config.visionModel)
-
-    let aiData = try decodeDesignResponse(from: jsonResponse)
-
-    let designItems = mapDesignItems(aiData.flowerList, inventory: inventory)
-    let calculatedCost = calculateCost(for: designItems)
-    let totalCost = resolvedCost(estimatedCost: aiData.estimatedCost, fallbackCost: calculatedCost)
-
-    return DesignResult(
-      id: UUID().uuidString,
-      requestId: request.id,
-      title: aiData.title,
-      description: aiData.description,
-      flowerList: designItems,
-      steps: aiData.steps,
-      imageUrl: nil,
-      imagePrompt: aiData.imagePrompt,
-      meaningText: aiData.meaningText,
-      totalCost: totalCost,
-      profit: 0,
-      profitMargin: 0,
-      createdAt: Date().timeIntervalSince1970,
-      requirements: request.requirements,
-      status: .draft
+    let client = try makeProxyClient()
+    let tenantId = await currentTenantId()
+    let slot = try await client.createReferenceImageUpload(
+      tenantId: tenantId,
+      contentType: "image/jpeg",
+      byteCount: imageData.count
     )
+    try await client.uploadReferenceImage(slot: slot, data: imageData, contentType: "image/jpeg")
+    let initialJob = try await client.submitVisualDesign(
+      tenantId: tenantId,
+      language: LocalizationManager.shared.currentLanguage,
+      request: request,
+      inventory: inventory,
+      imageUploadId: slot.uploadId
+    )
+
+    let job = try await waitForCompletedJob(client: client, initialJob: initialJob)
+    if let result = job.result {
+      return result.toDesignResult(localRequestId: request.id, inventory: inventory)
+    }
+    if let error = job.error {
+      throw AIProxyError.rejected(error)
+    }
+    throw AIError.apiError(statusCode: 202)
+  }
+
+  private func makeProxyClient() throws -> AIProxyClient {
+    guard let baseURL = URL(string: configuredProxyBaseURL()) else {
+      throw AIError.invalidURL
+    }
+
+    return AIProxyClient(
+      baseURL: baseURL,
+      sessionToken: configuredProxyToken()
+    )
+  }
+
+  private func configuredProxyBaseURL() -> String {
+    if let value = Bundle.main.object(forInfoDictionaryKey: ManagedAIConfig.proxyBaseURLInfoKey)
+      as? String,
+      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    {
+      return value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    if let value = UserDefaults.standard.string(forKey: ManagedAIConfig.proxyBaseURLDefaultsKey),
+      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    {
+      return value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    return ManagedAIConfig.defaultProxyBaseURL
+  }
+
+  private func configuredProxyToken() -> String? {
+    if let value = Bundle.main.object(forInfoDictionaryKey: ManagedAIConfig.proxyTokenInfoKey)
+      as? String,
+      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    {
+      return value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    if let value = UserDefaults.standard.string(forKey: ManagedAIConfig.proxyTokenDefaultsKey),
+      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    {
+      return value.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    return nil
+  }
+
+  private func currentTenantId() async -> String {
+    await MainActor.run {
+      AuthService.shared.currentTenant?.id ?? "local-store"
+    }
+  }
+
+  private func waitForCompletedJob(
+    client: AIProxyClient,
+    initialJob: AIProxyJobStatus,
+    maxAttempts: Int = 8
+  ) async throws -> AIProxyJobStatus {
+    var job = initialJob
+
+    for _ in 0..<maxAttempts {
+      switch job.status {
+      case .succeeded, .failed:
+        return job
+      case .queued, .running:
+        let delay = UInt64(job.pollAfterSeconds ?? 2) * 1_000_000_000
+        try await Task.sleep(nanoseconds: delay)
+        job = try await client.jobStatus(jobId: job.jobId)
+      }
+    }
+
+    throw AIError.apiError(statusCode: 202)
   }
 
   // MARK: - Private Helpers
@@ -530,62 +460,31 @@ class AIService: ObservableObject {
     return content
   }
 
-  /// Generates an image from a prompt and returns the URL string
-  /// Generates an image from a prompt and returns the URL string
-  func generateImage(prompt: String) async throws -> String {
-    guard !config.apiKey.isEmpty else { throw AIError.missingApiKey }
+  /// Generates an image through the managed backend and returns the URL string.
+  func generateImage(prompt: String, requestId: String) async throws -> String {
+    let client = try makeProxyClient()
+    let tenantId = await currentTenantId()
+    let initialJob = try await client.requestImageGeneration(
+      tenantId: tenantId,
+      requestId: requestId,
+      prompt: prompt
+    )
 
-    let endpoint = config.imageEndpoint ?? config.endpoint
-
-    // Aliyun Wanx Special Handling
-    if config.imageModel.lowercased().contains("wanx") {
-      return try await generateImageAliyun(prompt: prompt)
-    }
-
-    // OpenRouter Special Handling
-    if endpoint.contains("openrouter") {
-      return try await generateImageOpenRouter(prompt: prompt, endpoint: endpoint)
-    }
-
-    // Standard OpenAI DALL-E Handling
-    guard let url = URL(string: "\(endpoint)/images/generations") else {
-      throw AIError.invalidURL
-    }
-
-    var request = URLRequest(url: url)
-    request.httpMethod = "POST"
-    request.addValue("Bearer \(config.apiKey)", forHTTPHeaderField: "Authorization")
-    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-    applyProviderHeaders(to: &request, endpoint: endpoint)
-
-    let body: [String: Any] = [
-      "model": config.imageModel,
-      "prompt": prompt,
-      "n": 1,
-      "size": "1024x1024",
-    ]
-
-    request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-    let (data, response) = try await URLSession.shared.data(for: request)
-
-    guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-      if let errText = String(data: data, encoding: .utf8) {
-        print("Image Gen Error: \(errText)")
+    let job = try await waitForCompletedJob(client: client, initialJob: initialJob)
+    switch job.status {
+    case .succeeded:
+      if let imageUrl = job.imageUrl {
+        return imageUrl.absoluteString
       }
-      throw AIError.apiError(statusCode: (response as? HTTPURLResponse)?.statusCode ?? 500)
-    }
-
-    struct ImageResponse: Codable {
-      struct DataItem: Codable {
-        let url: String?
-        let b64_json: String?
+      throw AIError.imageEncodingFailed
+    case .failed:
+      if let error = job.error {
+        throw AIProxyError.rejected(error)
       }
-      let data: [DataItem]
+      throw AIError.apiError(statusCode: 500)
+    case .queued, .running:
+      throw AIError.apiError(statusCode: 202)
     }
-
-    let decoded = try JSONDecoder().decode(ImageResponse.self, from: data)
-    return decoded.data.first?.url ?? ""
   }
 
   // MARK: - Aliyun Wanx Support

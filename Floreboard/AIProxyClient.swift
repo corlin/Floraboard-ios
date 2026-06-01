@@ -63,14 +63,37 @@ struct AIProxyClient {
 
   func requestImageGeneration(
     tenantId: String,
-    requestId: String
+    requestId: String,
+    prompt: String
   ) async throws -> AIProxyJobStatus {
-    let payload = AIProxyImageGenerationRequest(tenantId: tenantId, requestId: requestId)
+    let payload = AIProxyImageGenerationRequest(
+      tenantId: tenantId,
+      requestId: requestId,
+      prompt: prompt
+    )
     return try await post("v1/images/generate", body: payload)
   }
 
   func jobStatus(jobId: String) async throws -> AIProxyJobStatus {
     try await get("v1/jobs/\(jobId)")
+  }
+
+  func health() async throws -> AIProxyHealthResponse {
+    try await get("health")
+  }
+
+  func uploadReferenceImage(slot: AIProxyUploadSlot, data: Data, contentType: String) async throws {
+    var request = URLRequest(url: slot.uploadUrl)
+    request.httpMethod = "PUT"
+    request.addValue(contentType, forHTTPHeaderField: "Content-Type")
+    request.addValue("\(data.count)", forHTTPHeaderField: "Content-Length")
+
+    let (_, response) = try await urlSession.upload(for: request, from: data)
+    guard let httpResponse = response as? HTTPURLResponse,
+      (200..<300).contains(httpResponse.statusCode)
+    else {
+      throw AIProxyError.invalidResponse
+    }
   }
 
   private func get<Response: Decodable>(_ path: String) async throws -> Response {
@@ -137,6 +160,7 @@ struct AIProxyVisualDesignRequest: Codable {
 struct AIProxyImageGenerationRequest: Codable {
   var tenantId: String
   var requestId: String
+  var prompt: String
 }
 
 struct AIProxyUploadSlotRequest: Codable {
@@ -244,6 +268,12 @@ struct AIProxyJobStatus: Codable {
   var result: AIProxyDesignResponse?
   var imageUrl: URL?
   var error: AIProxyErrorResponse?
+}
+
+struct AIProxyHealthResponse: Codable {
+  var ok: Bool
+  var service: String
+  var environment: String
 }
 
 struct AIProxyErrorResponse: Codable, Error {
