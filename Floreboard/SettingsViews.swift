@@ -39,110 +39,18 @@ struct SettingsView: View {
           }
         }
 
-        Section(header: Text(localizationManager.t("settings.apiProvider"))) {
-          Picker(
-            localizationManager.t("settings.provider"), selection: $viewModel.selectedProviderID
-          ) {
-            ForEach(AIProvider.all) { provider in
-              Text(provider.name).tag(provider.id)
-            }
+        Section(header: Text(localizationManager.t("settings.aiService"))) {
+          HStack {
+            Text(localizationManager.t("settings.aiServiceMode"))
+            Spacer()
+            Label(localizationManager.t("settings.aiServiceManaged"), systemImage: "checkmark.seal.fill")
+              .font(AppTheme.sansFont(size: 13, weight: .semibold))
+              .foregroundColor(AppTheme.success)
           }
 
-          .onChange(of: viewModel.selectedProviderID) { _, newValue in
-            viewModel.updateProvider(newValue)
-          }
-
-          SecureField(localizationManager.t("settings.apiKey"), text: $viewModel.config.apiKey)
-            .textContentType(.password)
-            .focused($isEditingText)
-
-          if viewModel.selectedProviderID == "custom" {
-            TextField(localizationManager.t("settings.endpoint"), text: $viewModel.config.endpoint)
-              .autocapitalization(.none)
-              .disableAutocorrection(true)
-              .keyboardType(.URL)
-              .textInputAutocapitalization(.never)
-              .focused($isEditingText)
-          }
-        }
-
-        Section(header: Text(localizationManager.t("settings.textModel"))) {
-          if let provider = AIProvider.all.first(where: { $0.id == viewModel.selectedProviderID }),
-            !provider.models.isEmpty
-          {
-            Picker(
-              localizationManager.t("settings.api.model"), selection: $viewModel.config.textModel
-            ) {
-              ForEach(provider.models, id: \.self) { model in
-                Text(model).tag(model)
-              }
-            }
-            // Allow manual override if needed (optional UX, sticking to picker for now for simplicity of port)
-          } else {
-            TextField(
-              localizationManager.t("settings.modelName"), text: $viewModel.config.textModel)
-              .textInputAutocapitalization(.never)
-              .disableAutocorrection(true)
-              .focused($isEditingText)
-          }
-        }
-
-        Section(header: Text(localizationManager.t("settings.visionModel"))) {
-          if let provider = AIProvider.all.first(where: { $0.id == viewModel.selectedProviderID }),
-            !provider.visionModels.isEmpty
-          {
-            Picker(
-              localizationManager.t("settings.api.model"), selection: $viewModel.config.visionModel
-            ) {
-              ForEach(provider.visionModels, id: \.self) { model in
-                Text(model).tag(model)
-              }
-            }
-          } else {
-            TextField(
-              localizationManager.t("settings.modelName"), text: $viewModel.config.visionModel)
-              .textInputAutocapitalization(.never)
-              .disableAutocorrection(true)
-              .focused($isEditingText)
-          }
-        }
-
-        Section(header: Text(localizationManager.t("settings.imageModel"))) {
-          if let provider = AIProvider.all.first(where: { $0.id == viewModel.selectedProviderID }),
-            !provider.imageModels.isEmpty
-          {
-            Picker(
-              localizationManager.t("settings.api.model"),
-              selection: Binding(
-                get: { viewModel.config.imageModel },
-                set: { viewModel.config.imageModel = $0 })
-            ) {
-              ForEach(provider.imageModels, id: \.self) { model in
-                Text(model).tag(model)
-              }
-            }
-          } else {
-            TextField(
-              localizationManager.t("settings.modelName"),
-              text: Binding(
-                get: { viewModel.config.imageModel },
-                set: { viewModel.config.imageModel = $0 }))
-              .textInputAutocapitalization(.never)
-              .disableAutocorrection(true)
-              .focused($isEditingText)
-          }
-
-          if viewModel.selectedProviderID == "custom" {
-            TextField(
-              localizationManager.t("settings.imageEndpoint"),
-              text: Binding(
-                get: { viewModel.config.imageEndpoint ?? "" },
-                set: { viewModel.config.imageEndpoint = $0 }))
-              .keyboardType(.URL)
-              .textInputAutocapitalization(.never)
-              .disableAutocorrection(true)
-              .focused($isEditingText)
-          }
+          Text(localizationManager.t("settings.aiServiceManagedDesc"))
+            .font(.footnote)
+            .foregroundColor(AppTheme.mutedText)
         }
 
         Section(header: Text(localizationManager.t("settings.businessRules"))) {
@@ -164,17 +72,6 @@ struct SettingsView: View {
           Button(localizationManager.t("settings.saveConfig")) {
             viewModel.save()
           }
-
-          Button(action: viewModel.testConnection) {
-            HStack {
-              Text(localizationManager.t("settings.testConnection"))
-              Spacer()
-              if viewModel.isTestingConnection {
-                ProgressView()
-              }
-            }
-          }
-          .disabled(viewModel.isTestingConnection)
 
           if let message = viewModel.statusMessage {
             Text(message)
