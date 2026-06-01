@@ -49,6 +49,103 @@ or provider-specific headers.
 - Apply rate limits per tenant, user, and device.
 - Keep raw provider payloads out of normal client responses.
 
+## Cloudflare Deployment Constraints
+
+The first backend target is Cloudflare Workers, so the proxy must be designed around edge runtime
+limits instead of a traditional always-on server.
+
+### Runtime Limits That Shape the Design
+
+- Workers have a 128 MB memory limit per isolate. Do not buffer uploaded images, generated images,
+  or provider responses in memory unless the payload is explicitly small and bounded.
+- Worker request body limits depend on the Cloudflare account plan. As of the current Cloudflare
+  Workers limits documentation, Free and Pro allow 100 MB request bodies, Business allows 200 MB,
+  and Enterprise defaults to 500 MB. The app should still compress images aggressively and avoid
+  sending large base64 payloads through JSON.
+- CPU time is separate from wall-clock time. Waiting on provider `fetch()` calls does not count as
+  CPU time, but JSON parsing, image decoding, prompt assembly over large payloads, and schema repair
+  do. Keep Workers mostly as validators, orchestrators, and stream routers.
+- HTTP Workers have no hard wall-clock duration while the client stays connected, but mobile clients
+  should not be forced to wait through long image-generation polling. Use async jobs for slow paths.
+- Queue consumers and Workflow steps have their own execution limits. They are better suited for
+  long-running retries, image polling, provider fallback, and post-response persistence.
+
+### Recommended Cloudflare Shape
+
+Use a small set of Workers instead of one monolithic proxy:
+
+1. `api-worker`: Authenticates the app, validates request size, enforces tenant limits, and creates
+   design jobs.
+2. `ai-worker`: Executes text and vision model calls through Cloudflare AI Gateway or direct provider
+   SDK calls with server-side secrets.
+3. `image-worker`: Issues R2 signed upload/download URLs and handles generated image callbacks or
+   polling.
+4. `queue-consumer` or `workflow`: Runs slow image generation, retries, fallback routing, and
+   persistence outside the user request path.
+
+Use Cloudflare bindings instead of calling Cloudflare REST APIs from inside Workers:
+
+- R2 binding for reference uploads and generated images.
+- D1 binding for request metadata, tenant usage counters, and design job status.
+- Queue binding for slow generation jobs.
+- Service bindings for Worker-to-Worker calls.
+- Secrets for provider keys and Cloudflare AI Gateway tokens.
+
+### Image Handling on Cloudflare
+
+Do not send full-resolution reference images as base64 inside `/v1/designs/visual` JSON. Base64 adds
+size overhead and encourages buffering. Prefer this flow:
+
+1. App asks `POST /v1/uploads/reference-image` for an upload slot.
+2. Worker creates an R2 object key and returns a short-lived signed upload URL.
+3. App uploads compressed JPEG/HEIC directly to R2.
+4. App calls `/v1/designs/visual` with `imageUploadId`.
+5. Backend retrieves or streams the R2 object only when needed for the selected provider.
+
+Generated images should also be stored in R2 and returned to the app as short-lived signed URLs. The
+app may still cache the final image locally after download.
+
+### AI Gateway Use
+
+Cloudflare AI Gateway is useful for provider routing, metrics, retry policy, rate limiting, caching,
+and log control. The backend should call AI Gateway, not the iOS app. Disable payload logging for
+requests that may contain store inventory, customer context, or reference-image descriptions unless
+support diagnostics explicitly require payload capture.
+
+Recommended behavior:
+
+- Keep provider keys in Cloudflare Secrets Store or Worker secrets.
+- Use AI Gateway for cost and latency observability.
+- Add gateway/provider timeout headers so slow providers fail predictably.
+- Keep Floreboard's own product-level quota in D1 or a dedicated limiter; do not rely only on
+  provider rate limits.
+
+### Synchronous vs Asynchronous Endpoints
+
+Use synchronous endpoints only for bounded text planning:
+
+- `/v1/designs/plan` can be synchronous if it only performs one or two model calls and returns
+  normalized JSON.
+- `/v1/designs/visual` should usually create a job when a reference image is involved.
+- `/v1/images/generate` should be asynchronous by default because image providers often require
+  polling or take long enough that mobile clients may background the app.
+
+Suggested async contract:
+
+```json
+{
+  "jobId": "job-id",
+  "status": "queued",
+  "pollAfterSeconds": 2
+}
+```
+
+Then:
+
+- `GET /v1/jobs/{jobId}` returns `queued`, `running`, `succeeded`, or `failed`.
+- `succeeded` includes the normalized `DesignResult` and any signed image URL.
+- The app can poll conservatively while foregrounded and refresh status when reopened.
+
 ## Minimal API Contract
 
 ### `POST /v1/designs/plan`
@@ -115,7 +212,8 @@ Response:
 ### `POST /v1/designs/visual`
 
 Generates a design from a reference image plus the same structured fields as `/v1/designs/plan`.
-The client sends a compressed base64 image or uploads it first and passes an `imageUploadId`.
+The client should upload the compressed reference image to R2 first and pass an `imageUploadId`.
+Inline base64 should be kept as a debug-only fallback for small images.
 
 ### `POST /v1/images/generate`
 
@@ -152,8 +250,10 @@ Each error response should include `requestId`, `code`, and localized-safe `mess
 2. Add a managed backend base URL to app configuration, controlled by build configuration or remote config.
 3. Introduce an `AIProxyClient` that calls Floreboard endpoints and returns normalized response models.
 4. Move prompt construction, provider headers, model IDs, and provider response parsing out of iOS.
-5. Keep the current direct-provider path only as an internal debug fallback, hidden from production UI.
-6. Add backend quota, request logs, and provider fallback before wider testing.
+5. Add R2 upload flow for reference images before enabling visual mode through the proxy.
+6. Move image generation to async jobs backed by Queues or Workflows.
+7. Keep the current direct-provider path only as an internal debug fallback, hidden from production UI.
+8. Add backend quota, request logs, and provider fallback before wider testing.
 
 ## Security Notes
 
@@ -162,3 +262,12 @@ Each error response should include `requestId`, `code`, and localized-safe `mess
 - Sign image upload URLs and set short expiration.
 - Redact inventory and image metadata from logs unless explicitly needed for support.
 - Treat prompt templates as backend code, versioned and deployable without App Store releases.
+
+## Cloudflare References
+
+- Workers limits: https://developers.cloudflare.com/workers/platform/limits/
+- Workers best practices: https://developers.cloudflare.com/workers/best-practices/workers-best-practices/
+- R2 upload methods: https://developers.cloudflare.com/r2/objects/upload-objects/
+- Queues configuration: https://developers.cloudflare.com/queues/configuration/configure-queues/
+- Workflows limits: https://developers.cloudflare.com/workflows/reference/limits/
+- AI Gateway changelog and capabilities: https://developers.cloudflare.com/changelog/product/ai-gateway/
