@@ -5,10 +5,10 @@ This is the native iOS client for **Floraboard**, built completely with **SwiftU
 ## ✨ Key Features
 
 *   **Native Performance**: 100% SwiftUI interface with smooth animations and transitions.
-*   **AI-Powered Design**: Integrated `AIService` for generating floral arrangements and "Image to Flower" analysis directly on device.
+*   **AI-Powered Design**: Generates floral arrangements and "Image to Flower" analysis through a managed Floreboard AI backend.
 *   **Inventory Management**: dedicated `InventoryViews` for managing stock with haptic feedback.
 *   **History & Portfolio**: Browse past designs in `HistoryViews` with zoomable image support (`ZoomableImageView`).
-*   **Secure Storage**: Uses `KeychainManager` for secure API key and credential storage.
+*   **Managed AI Access**: End users do not configure LLM provider API keys in the app.
 *   **Theme Aware**: centralized `AppTheme` managing colors and typography to match the brand identity.
 *   **Localization**: Built-in support for multiple languages via `Localization.swift`.
 
@@ -20,7 +20,7 @@ The app follows a modern **MVVM (Model-View-ViewModel)** architecture:
 *   **Views**: `ContentView`, `DesignViews`, `InventoryViews`, `SettingsViews` - SwiftUI declarative UI.
 *   **ViewModels**: `ViewModels.swift` - manages state and business logic, separating UI from data.
 *   **Services**:
-    *   `AIService.swift`: Handles communication with LLM/GenAI providers (Aliyun/OpenAI).
+    *   `AIService.swift`: Handles AI generation calls. The target architecture is a managed Floreboard AI proxy; see `docs/ai-proxy-architecture.md`.
     *   `Services.swift`: Core business logic services.
     *   `ImagePersistence.swift`: Handles local caching and storage of design images.
 
@@ -43,8 +43,9 @@ The app follows a modern **MVVM (Model-View-ViewModel)** architecture:
     *   Select a simulator (e.g., iPhone 15 Pro) or a connected real device.
     *   Press `Cmd + R` to build and run.
 
-4.  **API Keys**:
-    User API keys (for AI services) are stored securely in the Keychain. You can configure them inside the app's **Settings** tab.
+4.  **AI Service**:
+    AI provider keys should live on the Floreboard backend, not in the iOS app or user settings.
+    See `docs/ai-proxy-architecture.md` for the service-side proxy contract.
 
 ## 🔧 Development Scripts
 
@@ -73,7 +74,7 @@ Floreboard/
 ├── ViewModels/
 │   └── ViewModels.swift   # Logic controllers
 ├── Services/
-│   ├── AIService.swift    # AI Integration
+│   ├── AIService.swift    # AI integration / managed proxy client boundary
 │   ├── Services.swift     # General backend services
 │   └── KeychainManager.swift # Security
 └── Resources/
