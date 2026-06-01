@@ -248,7 +248,7 @@ Each error response should include `requestId`, `code`, and localized-safe `mess
 
 1. Keep Settings free of provider/API-key controls.
 2. Add a managed backend base URL to app configuration, controlled by build configuration or remote config.
-3. Introduce an `AIProxyClient` that calls Floreboard endpoints and returns normalized response models.
+3. Introduce an `AIProxyClient` that calls Floreboard endpoints and returns normalized response models. This client boundary now exists in `Floreboard/AIProxyClient.swift`.
 4. Move prompt construction, provider headers, model IDs, and provider response parsing out of iOS.
 5. Add R2 upload flow for reference images before enabling visual mode through the proxy.
 6. Move image generation to async jobs backed by Queues or Workflows.
