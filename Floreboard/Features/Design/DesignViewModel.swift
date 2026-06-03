@@ -156,7 +156,7 @@ class DesignViewModel: ObservableObject {
             }
           } catch {
             AppLogger.ai.error("Image generation failed: \(error)")
-            result.imageError = error.localizedDescription
+            result.imageError = AppError(from: error).localizedDescription
           }
         } else if let selectedImg = selectedImage {
           // Visual Muse: Save input image as the design image
@@ -176,7 +176,7 @@ class DesignViewModel: ObservableObject {
 
       } catch {
         await MainActor.run {
-          self.errorMessage = error.localizedDescription
+          self.errorMessage = AppError(from: error).localizedDescription
           self.isLoading = false
         }
       }

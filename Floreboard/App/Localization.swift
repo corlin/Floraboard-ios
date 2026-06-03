@@ -30,6 +30,9 @@ enum Language: String, CaseIterable, Identifiable {
   }
 }
 
+private let bundleLock = NSLock()
+private var _currentBundle: Bundle = .main
+
 @MainActor
 class LocalizationManager: ObservableObject {
   static let shared = LocalizationManager()
@@ -49,7 +52,6 @@ class LocalizationManager: ObservableObject {
     {
       self.currentLanguage = lang
     } else {
-      // Default to device language if matches, else en
       let deviceLang = Locale.current.language.languageCode?.identifier ?? "en"
       self.currentLanguage = deviceLang.contains("zh") ? .zh : .en
     }
@@ -64,14 +66,14 @@ class LocalizationManager: ObservableObject {
     } else {
       localizedBundle = .main
     }
+    
+    bundleLock.lock()
+    _currentBundle = localizedBundle
+    bundleLock.unlock()
   }
 
   func t(_ key: String, _ args: [String: String] = [:]) -> String {
-    var value = localizedBundle.localizedString(forKey: key, value: key, table: nil)
-    for (k, v) in args {
-      value = value.replacingOccurrences(of: "{{\(k)}}", with: v)
-    }
-    return value
+    Tx.t(key, args)
   }
 }
 
@@ -79,7 +81,15 @@ class LocalizationManager: ObservableObject {
 // Usage: Tx.t("key")
 struct Tx {
   static func t(_ key: String, _ args: [String: String] = [:]) -> String {
-    LocalizationManager.shared.t(key, args)
+    bundleLock.lock()
+    let bundle = _currentBundle
+    bundleLock.unlock()
+
+    var value = bundle.localizedString(forKey: key, value: key, table: nil)
+    for (k, v) in args {
+      value = value.replacingOccurrences(of: "{{\(k)}}", with: v)
+    }
+    return value
   }
 }
 

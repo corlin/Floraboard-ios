@@ -125,20 +125,51 @@ struct AIProxyClient {
     return request
   }
 
-  private func perform<Response: Decodable>(_ request: URLRequest) async throws -> Response {
-    let (data, response) = try await urlSession.data(for: request)
-    guard let httpResponse = response as? HTTPURLResponse else {
-      throw AIProxyError.invalidResponse
-    }
+  private func perform<Response: Decodable>(_ request: URLRequest, maxRetries: Int = 3) async throws -> Response {
+    var attempt = 0
+    var lastError: Error?
 
-    guard (200..<300).contains(httpResponse.statusCode) else {
-      if let error = try? JSONDecoder().decode(AIProxyErrorResponse.self, from: data) {
-        throw AIProxyError.rejected(error)
+    while attempt <= maxRetries {
+      do {
+        let (data, response) = try await urlSession.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+          throw AIProxyError.invalidResponse
+        }
+
+        guard (200..<300).contains(httpResponse.statusCode) else {
+          if httpResponse.statusCode >= 500 {
+            throw AIProxyError.httpStatus(httpResponse.statusCode)
+          }
+          if let error = try? JSONDecoder().decode(AIProxyErrorResponse.self, from: data) {
+            throw AIProxyError.rejected(error)
+          }
+          throw AIProxyError.httpStatus(httpResponse.statusCode)
+        }
+
+        return try JSONDecoder().decode(Response.self, from: data)
+      } catch let error as AIProxyError {
+        if case .httpStatus(let code) = error, code >= 500 {
+          lastError = error
+        } else {
+          throw error
+        }
+      } catch {
+        let nsError = error as NSError
+        if nsError.domain == NSURLErrorDomain {
+          lastError = error
+        } else {
+          throw error
+        }
       }
-      throw AIProxyError.httpStatus(httpResponse.statusCode)
+
+      attempt += 1
+      if attempt <= maxRetries {
+        let delay = UInt64(pow(2.0, Double(attempt - 1))) * 1_000_000_000
+        try await Task.sleep(nanoseconds: delay)
+      }
     }
 
-    return try JSONDecoder().decode(Response.self, from: data)
+    throw lastError ?? AIProxyError.invalidResponse
   }
 }
 

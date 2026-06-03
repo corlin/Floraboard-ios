@@ -48,7 +48,7 @@ class SettingsViewModel: ObservableObject {
         }
       } catch {
         await MainActor.run {
-          self.statusMessage = error.localizedDescription
+          self.statusMessage = AppError(from: error).localizedDescription
           self.isStatusError = true
           self.isTestingConnection = false
         }

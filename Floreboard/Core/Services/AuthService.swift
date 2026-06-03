@@ -191,10 +191,10 @@ enum AuthError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .invalidResponse: return "Invalid server response"
-        case .httpError(let code): return "Login failed (HTTP \(code))"
+        case .invalidResponse: return Tx.t("error.api.invalidResponse")
+        case .httpError(let code): return Tx.t("error.apiError", ["code": "\(code)"])
         case .serverError(let msg): return msg
-        case .sessionExpired: return "Session expired. Please log in again."
+        case .sessionExpired: return Tx.t("error.authentication")
         }
     }
 }
