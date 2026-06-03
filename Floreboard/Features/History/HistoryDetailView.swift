@@ -2,6 +2,9 @@ import SwiftUI
 
 struct DesignDetailView: View {
   let design: DesignResult
+  @EnvironmentObject var historyService: HistoryService
+  @EnvironmentObject var inventoryService: InventoryService
+  @Environment(\.imagePersistence) var imagePersistence
   @State private var designImage: UIImage? = nil
   @State private var isShowingFullScreen = false
   @State private var displayedStatus: DesignStatus?
@@ -213,7 +216,7 @@ struct DesignDetailView: View {
   }
 
   private func executeDesign() {
-    let currentShortages = InventoryService.shared.stockShortages(for: design.flowerList)
+    let currentShortages = inventoryService.stockShortages(for: design.flowerList)
     guard currentShortages.isEmpty else {
       shortages = currentShortages
       showStockWarning = true
@@ -224,14 +227,14 @@ struct DesignDetailView: View {
   }
 
   private func commitExecution() {
-    HistoryService.shared.executeDesign(design)
+    historyService.executeDesign(design)
     displayedStatus = .completed
   }
 
   private func loadDetailImageAsync() async {
     if let path = design.imageUrl, !path.hasPrefix("http") {
-      let loaded = await Task.detached {
-        ImagePersistence.shared.loadImage(named: path)
+      let loaded = await Task.detached { [imagePersistence] in
+        imagePersistence.loadImage(named: path)
       }.value
       self.designImage = loaded
     }

@@ -7,8 +7,13 @@ struct AlertItem: Identifiable {
 }
 
 struct DesignMainView: View {
+  @Environment(\.aiService) var aiService
+  @Environment(\.imagePersistence) var imagePersistence
+  @Environment(\.hapticManager) var hapticManager
+  @EnvironmentObject var inventoryService: InventoryService
+  @EnvironmentObject var historyService: HistoryService
+  @EnvironmentObject var loc: LocalizationManager
   @StateObject private var viewModel = DesignViewModel()
-  @ObservedObject private var loc = LocalizationManager.shared
   @State private var pickerItem: PhotosPickerItem? = nil
 
   var body: some View {
@@ -32,7 +37,7 @@ struct DesignMainView: View {
               }
               .pickerStyle(SegmentedPickerStyle())
               .onChange(of: viewModel.isProfessionalMode) { _, _ in
-                HapticManager.shared.impact(style: .medium)
+                hapticManager.impact(style: .medium)
               }
             }
             .padding()
@@ -67,11 +72,20 @@ struct DesignMainView: View {
           isEnabled: !viewModel.isLoading
         ) {
           hideKeyboard()
-          HapticManager.shared.notification(type: .success)
+          hapticManager.notification(type: .success)
           viewModel.generateDesign()
         }
       }
       .keyboardDismissToolbar()
+      .onAppear {
+        viewModel.setup(
+          inventoryService: inventoryService,
+          aiService: aiService,
+          imagePersistence: imagePersistence,
+          historyService: historyService,
+          localizationManager: loc
+        )
+      }
       // Loading Overlay
       .overlay {
         if viewModel.isLoading {

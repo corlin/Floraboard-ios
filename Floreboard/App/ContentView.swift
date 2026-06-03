@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct ContentView: View {
-  @StateObject private var authService = AuthService.shared
-  @StateObject private var localizationManager = LocalizationManager.shared
+  @EnvironmentObject var authService: AuthService
+  @EnvironmentObject var localizationManager: LocalizationManager
+  @Environment(\.hapticManager) var hapticManager
   @State private var selection = 0
 
   var body: some View {
@@ -22,7 +23,7 @@ struct ContentView: View {
             .tag(1)
 
           HistoryView(onStartDesign: {
-            HapticManager.shared.impact(style: .light)
+            hapticManager.impact(style: .light)
             selection = 3
           })
             .tabItem {

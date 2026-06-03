@@ -11,19 +11,28 @@ class SettingsViewModel: ObservableObject {
   @Published var isStatusError = false
   @Published var isTestingConnection = false
 
+  private var aiService: AIService?
+
   init() {
-    self.config = AIService.shared.currentConfig
+    // Initial config is empty, will be set in setup
+    self.config = ApiConfig.default
+  }
+
+  func setup(with service: AIService) {
+    guard self.aiService == nil else { return }
+    self.aiService = service
+    self.config = service.currentConfig
   }
 
   func save() {
     config.normalizeEndpoints()
-    AIService.shared.updateConfig(config)
+    aiService?.updateConfig(config)
     statusMessage = Tx.t("settings.saveSuccess")
     isStatusError = false
   }
 
   func testConnection() {
-    guard !isTestingConnection else { return }
+    guard !isTestingConnection, let service = aiService else { return }
 
     isTestingConnection = true
     statusMessage = nil
@@ -31,7 +40,7 @@ class SettingsViewModel: ObservableObject {
 
     Task {
       do {
-        try await AIService.shared.testConnection(using: config)
+        try await service.testConnection(using: config)
         await MainActor.run {
           self.statusMessage = Tx.t("settings.test.success")
           self.isStatusError = false

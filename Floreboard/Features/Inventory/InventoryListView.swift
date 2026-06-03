@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct InventoryView: View {
+  @EnvironmentObject var inventoryService: InventoryService
   @StateObject private var viewModel = InventoryViewModel()
   @State private var showingAddSheet = false
   @State private var editingFlower: FlowerType? = nil
@@ -107,6 +108,9 @@ struct InventoryView: View {
       // Edit Sheet
       .sheet(item: $editingFlower) { flower in
         EditFlowerSheet(viewModel: viewModel, flowerToEdit: flower)
+      }
+      .onAppear {
+        viewModel.setup(with: inventoryService)
       }
     }
   }

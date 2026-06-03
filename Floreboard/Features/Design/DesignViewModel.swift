@@ -20,6 +20,29 @@ class DesignViewModel: ObservableObject {
   @Published var loadingStep: Int = 0
   @Published var loadingStatus: String = ""
 
+  private var inventoryService: InventoryService?
+  private var aiService: AIService?
+  private var imagePersistence: ImagePersistence?
+  private var historyService: HistoryService?
+  private var localizationManager: LocalizationManager?
+
+  init() {}
+
+  func setup(
+    inventoryService: InventoryService,
+    aiService: AIService,
+    imagePersistence: ImagePersistence,
+    historyService: HistoryService,
+    localizationManager: LocalizationManager
+  ) {
+    guard self.inventoryService == nil else { return }
+    self.inventoryService = inventoryService
+    self.aiService = aiService
+    self.imagePersistence = imagePersistence
+    self.historyService = historyService
+    self.localizationManager = localizationManager
+  }
+
   enum CultureFilter: String, CaseIterable, Identifiable {
     case all = "All"
     case japanese = "Japanese"
@@ -57,11 +80,11 @@ class DesignViewModel: ObservableObject {
   }
 
   func generateDesign() {
-    guard !isLoading else { return }
+    guard !isLoading, let aiService = aiService, let inventoryService = inventoryService, let localizationManager = localizationManager, let historyService = historyService, let imagePersistence = imagePersistence else { return }
 
     isLoading = true
     loadingStep = 0
-    loadingStatus = Tx.t("design.loading.analyze")  // "Analyzing Request..."
+    loadingStatus = localizationManager.t("design.loading.analyze")  // "Analyzing Request..."
     errorMessage = nil
 
     Task {
@@ -70,27 +93,27 @@ class DesignViewModel: ObservableObject {
         try await Task.sleep(nanoseconds: 800_000_000)
         await MainActor.run {
           self.loadingStep = 1
-          self.loadingStatus = Tx.t("design.loading.technique")
+          self.loadingStatus = localizationManager.t("design.loading.technique")
         }  // "Selecting Technique..."
 
         try await Task.sleep(nanoseconds: 800_000_000)
         await MainActor.run {
           self.loadingStep = 2
-          self.loadingStatus = Tx.t("design.loading.match")
+          self.loadingStatus = localizationManager.t("design.loading.match")
         }  // "Matching Inventory..."
 
         try await Task.sleep(nanoseconds: 800_000_000)
         await MainActor.run {
           self.loadingStep = 3
-          self.loadingStatus = Tx.t("design.loading.generate")
+          self.loadingStatus = localizationManager.t("design.loading.generate")
         }  // "Generating Design..."
 
-        let inventory = InventoryService.shared.flowers
+        let inventory = inventoryService.flowers
         var result: DesignResult
 
         if let image = selectedImage {
           // Visual Muse Mode
-          result = try await AIService.shared.generateDesignFromImage(
+          result = try await aiService.generateDesignFromImage(
             image: image, request: request, inventory: inventory)
         } else {
           // Standard Mode
@@ -99,19 +122,19 @@ class DesignViewModel: ObservableObject {
           if isProfessionalMode {
             currentRequest.designMode = "professional"
           }
-          result = try await AIService.shared.generateFlowerPlan(
+          result = try await aiService.generateFlowerPlan(
             request: currentRequest, inventory: inventory)
         }
 
         // Image Generation Step
         if let prompt = result.imagePrompt, !prompt.isEmpty {
           await MainActor.run {
-            self.loadingStatus = Tx.t("design.loading.dreaming")  // "Dreaming up visual..."
+            self.loadingStatus = localizationManager.t("design.loading.dreaming")  // "Dreaming up visual..."
           }
 
           do {
             // 1. Generate Image URL (or Base64)
-            let imageUrlString = try await AIService.shared.generateImage(
+            let imageUrlString = try await aiService.generateImage(
               prompt: prompt,
               requestId: result.syncId ?? result.requestId
             )
@@ -121,15 +144,15 @@ class DesignViewModel: ObservableObject {
 
             // 3. Save to Persistence
             if let validImage = image {
-              if let filename = ImagePersistence.shared.saveImage(validImage, name: result.id) {
+              if let filename = imagePersistence.saveImage(validImage, name: result.id) {
                 result.imageUrl = filename
               } else {
                 AppLogger.image.error("Failed to save image to disk")
-                result.imageError = Tx.t("error.saveImage")
+                result.imageError = localizationManager.t("error.saveImage")
               }
             } else {
               AppLogger.image.error("Failed to decode image from string: \(imageUrlString.prefix(100))...")
-              result.imageError = Tx.t("error.invalidImageData")
+              result.imageError = localizationManager.t("error.invalidImageData")
             }
           } catch {
             AppLogger.ai.error("Image generation failed: \(error)")
@@ -137,7 +160,7 @@ class DesignViewModel: ObservableObject {
           }
         } else if let selectedImg = selectedImage {
           // Visual Muse: Save input image as the design image
-          if let filename = ImagePersistence.shared.saveImage(selectedImg, name: result.id) {
+          if let filename = imagePersistence.saveImage(selectedImg, name: result.id) {
             result.imageUrl = filename
           }
         }
@@ -148,7 +171,7 @@ class DesignViewModel: ObservableObject {
           self.showResult = true
           self.isLoading = false
           // Save to History
-          HistoryService.shared.saveDesign(finalizedResult)
+          historyService.saveDesign(finalizedResult)
         }
 
       } catch {

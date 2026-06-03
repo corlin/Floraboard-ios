@@ -1,9 +1,10 @@
 import SwiftUI
 
 struct SettingsView: View {
+  @Environment(\.aiService) var aiService
+  @EnvironmentObject var auth: AuthService
+  @EnvironmentObject var localizationManager: LocalizationManager
   @StateObject private var viewModel = SettingsViewModel()
-  @StateObject private var auth = AuthService.shared
-  @StateObject private var localizationManager = LocalizationManager.shared  // Added for localization
   @FocusState private var isEditingText: Bool
   @State private var isShowingLogoutConfirmation = false
 
@@ -124,6 +125,9 @@ struct SettingsView: View {
         Text(localizationManager.t("settings.logoutConfirmMessage"))
       }
       .navigationTitle(localizationManager.t("settings.title"))
+      .onAppear {
+        viewModel.setup(with: aiService)
+      }
     }
   }
 }

@@ -10,11 +10,16 @@ class InventoryViewModel: ObservableObject {
   @Published var searchText: String = ""
   @Published var selectedCategory: FlowerCategory? = nil
 
+  private var inventoryService: InventoryService?
   private var cancellables = Set<AnyCancellable>()
 
-  init() {
+  init() {}
+
+  func setup(with service: InventoryService) {
+    guard self.inventoryService == nil else { return }
+    self.inventoryService = service
     // Bind to service
-    InventoryService.shared.$flowers
+    service.$flowers
       .assign(to: \.flowers, on: self)
       .store(in: &cancellables)
   }
@@ -37,21 +42,21 @@ class InventoryViewModel: ObservableObject {
       unitCost: cost, retailPrice: price, meaning: meaning)
     var flower = newFlower
     flower.cultureTags = cultureTags
-    InventoryService.shared.addFlower(flower)
+    inventoryService?.addFlower(flower)
   }
 
   func updateFlower(_ flower: FlowerType) {
-    InventoryService.shared.updateFlower(flower)
+    inventoryService?.updateFlower(flower)
   }
 
   func delete(at offsets: IndexSet) {
     offsets.forEach { index in
       let flower = filteredFlowers[index]
-      InventoryService.shared.deleteFlower(flower.id)
+      inventoryService?.deleteFlower(flower.id)
     }
   }
 
   func delete(_ flower: FlowerType) {
-    InventoryService.shared.deleteFlower(flower.id)
+    inventoryService?.deleteFlower(flower.id)
   }
 }

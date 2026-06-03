@@ -2,10 +2,11 @@ import SwiftUI
 
 struct HomeView: View {
   @Binding var selection: Int
-  @StateObject private var auth = AuthService.shared
-  @StateObject private var loc = LocalizationManager.shared
-  @StateObject private var inventoryService = InventoryService.shared
-  @StateObject private var historyService = HistoryService.shared
+  @EnvironmentObject var auth: AuthService
+  @EnvironmentObject var loc: LocalizationManager
+  @EnvironmentObject var inventoryService: InventoryService
+  @EnvironmentObject var historyService: HistoryService
+  @Environment(\.hapticManager) var hapticManager
 
   // Computed Stats
   var totalStock: Int {
@@ -50,7 +51,7 @@ struct HomeView: View {
               Spacer()
 
               Button {
-                HapticManager.shared.impact(style: .light)
+                hapticManager.impact(style: .light)
                 selection = 3
               } label: {
                 Image(systemName: "wand.and.stars")
@@ -106,7 +107,7 @@ struct HomeView: View {
 
               HStack(spacing: 12) {
                 Button {
-                  HapticManager.shared.impact(style: .light)
+                  hapticManager.impact(style: .light)
                   selection = 1
                 } label: {
                   QuickActionCard(
@@ -118,7 +119,7 @@ struct HomeView: View {
                 .buttonStyle(.plain)
 
                 Button {
-                  HapticManager.shared.impact(style: .light)
+                  hapticManager.impact(style: .light)
                   selection = 3
                 } label: {
                   QuickActionCard(
@@ -162,7 +163,7 @@ struct HomeView: View {
                   .foregroundColor(AppTheme.foreground)
                 Spacer()
                 Button {
-                  HapticManager.shared.impact(style: .light)
+                  hapticManager.impact(style: .light)
                   selection = 2
                 } label: {
                   Text(loc.t("home.recentDesigns.viewAll"))
@@ -311,6 +312,7 @@ struct QuickActionCard: View {
 
 struct CompactThumbnail: View {
   let path: String?
+  @Environment(\.imagePersistence) var imagePersistence
   @State private var image: UIImage?
 
   var body: some View {
@@ -330,8 +332,8 @@ struct CompactThumbnail: View {
     }
     .task {
       if let p = path, !p.hasPrefix("http") {
-        let loaded = await Task.detached {
-          ImagePersistence.shared.loadImage(named: p)
+        let loaded = await Task.detached { [imagePersistence] in
+          imagePersistence.loadImage(named: p)
         }.value
         self.image = loaded
       }

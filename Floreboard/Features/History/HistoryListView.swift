@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct HistoryView: View {
-  @StateObject private var historyService = HistoryService.shared
+  @EnvironmentObject var historyService: HistoryService
+  @Environment(\.hapticManager) var hapticManager
   @State private var searchText = ""
   var onStartDesign: (() -> Void)? = nil
 
@@ -59,7 +60,7 @@ struct HistoryView: View {
                   .padding(.top, 4)
                 } else if !searchText.isEmpty {
                   Button {
-                    HapticManager.shared.impact(style: .light)
+                    hapticManager.impact(style: .light)
                     searchText = ""
                   } label: {
                     Label(Tx.t("history.search.clear"), systemImage: "xmark.circle")

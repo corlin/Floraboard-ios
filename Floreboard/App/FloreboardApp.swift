@@ -31,6 +31,8 @@ struct FloreboardApp: App {
         .modelContainer(container)
         .environmentObject(AuthService.shared)
         .environmentObject(InventoryService.shared)
+        .environmentObject(HistoryService.shared)
+        .environmentObject(LocalizationManager.shared)
     }
   }
 }

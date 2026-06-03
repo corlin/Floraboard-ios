@@ -2,6 +2,8 @@ import SwiftUI
 
 struct HistoryRow: View {
   let design: DesignResult
+  @EnvironmentObject var historyService: HistoryService
+  @Environment(\.imagePersistence) var imagePersistence
   @State private var thumbnail: UIImage?
 
   var body: some View {
@@ -66,7 +68,7 @@ struct HistoryRow: View {
     .glassmorphic()
     .contextMenu {
       Button(role: .destructive) {
-        HistoryService.shared.deleteDesign(id: design.id)
+        historyService.deleteDesign(id: design.id)
       } label: {
         Label(Tx.t("general.delete"), systemImage: "trash")
       }
@@ -75,8 +77,8 @@ struct HistoryRow: View {
 
   func loadImageAsync() async {
     if let path = design.imageUrl, !path.hasPrefix("http") {
-      let loaded = await Task.detached {
-        ImagePersistence.shared.loadImage(named: path)
+      let loaded = await Task.detached { [imagePersistence] in
+        imagePersistence.loadImage(named: path)
       }.value
       self.thumbnail = loaded
     }
