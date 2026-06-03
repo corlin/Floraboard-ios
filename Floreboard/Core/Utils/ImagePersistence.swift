@@ -7,12 +7,18 @@
 
 import Foundation
 import UIKit
+import OSLog
 
 class ImagePersistence {
   static let shared = ImagePersistence()
 
   private let fileManager = FileManager.default
-  private let cache = NSCache<NSString, UIImage>()
+  private let cache: NSCache<NSString, UIImage> = {
+    let cache = NSCache<NSString, UIImage>()
+    cache.countLimit = 50
+    cache.totalCostLimit = 100 * 1024 * 1024 // 100MB
+    return cache
+  }()
 
   private var documentsDirectory: URL {
     fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -31,7 +37,7 @@ class ImagePersistence {
       try data.write(to: fileURL)
       return fileName
     } catch {
-      print("Error saving image: \(error)")
+      AppLogger.image.error("Error saving image: \(error)")
       return nil
     }
   }
@@ -54,7 +60,7 @@ class ImagePersistence {
       }
       return nil
     } catch {
-      print("Error loading image: \(error)")
+      AppLogger.image.error("Error loading image: \(error)")
       return nil
     }
   }

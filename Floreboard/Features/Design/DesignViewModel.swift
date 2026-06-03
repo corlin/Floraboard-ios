@@ -1,68 +1,7 @@
-//
-//  ViewModels.swift
-//  Floreboard
-//
-//  Created by AI Assistant.
-//
-
 import Combine
 import Foundation
+import OSLog
 import SwiftUI
-
-// MARK: - Inventory View Model
-
-class InventoryViewModel: ObservableObject {
-  @Published var flowers: [FlowerType] = []
-  @Published var searchText: String = ""
-  @Published var selectedCategory: FlowerCategory? = nil
-
-  private var cancellables = Set<AnyCancellable>()
-
-  init() {
-    // Bind to service
-    InventoryService.shared.$flowers
-      .assign(to: \.flowers, on: self)
-      .store(in: &cancellables)
-  }
-
-  var filteredFlowers: [FlowerType] {
-    flowers.filter { flower in
-      let matchesSearch =
-        searchText.isEmpty || flower.name.localizedCaseInsensitiveContains(searchText)
-      let matchesCategory = selectedCategory == nil || flower.category == selectedCategory
-      return matchesSearch && matchesCategory
-    }
-  }
-
-  func addFlower(
-    name: String, color: String, quantity: Int, cost: Double, price: Double,
-    category: FlowerCategory, cultureTags: [String] = [], meaning: String = ""
-  ) {
-    let newFlower = FlowerType(
-      name: name, color: color, quantity: quantity, initialStock: quantity, category: category,
-      unitCost: cost, retailPrice: price, meaning: meaning)
-    var flower = newFlower
-    flower.cultureTags = cultureTags
-    InventoryService.shared.addFlower(flower)
-  }
-
-  func updateFlower(_ flower: FlowerType) {
-    InventoryService.shared.updateFlower(flower)
-  }
-
-  func delete(at offsets: IndexSet) {
-    offsets.forEach { index in
-      let flower = filteredFlowers[index]
-      InventoryService.shared.deleteFlower(flower.id)
-    }
-  }
-
-  func delete(_ flower: FlowerType) {
-    InventoryService.shared.deleteFlower(flower.id)
-  }
-}
-
-// MARK: - Design View Model
 
 class DesignViewModel: ObservableObject {
   // Input State
@@ -176,7 +115,7 @@ class DesignViewModel: ObservableObject {
               prompt: prompt,
               requestId: result.syncId ?? result.requestId
             )
-            print("Received image string length: \(imageUrlString.count)")
+            AppLogger.ai.debug("Received image string length: \(imageUrlString.count)")
 
             let image = try await resolveGeneratedImage(from: imageUrlString)
 
@@ -185,15 +124,15 @@ class DesignViewModel: ObservableObject {
               if let filename = ImagePersistence.shared.saveImage(validImage, name: result.id) {
                 result.imageUrl = filename
               } else {
-                print("Failed to save image to disk")
+                AppLogger.image.error("Failed to save image to disk")
                 result.imageError = Tx.t("error.saveImage")
               }
             } else {
-              print("Failed to decode image from string: \(imageUrlString.prefix(100))...")
+              AppLogger.image.error("Failed to decode image from string: \(imageUrlString.prefix(100))...")
               result.imageError = Tx.t("error.invalidImageData")
             }
           } catch {
-            print("Image generation failed: \(error)")
+            AppLogger.ai.error("Image generation failed: \(error)")
             result.imageError = error.localizedDescription
           }
         } else if let selectedImg = selectedImage {
@@ -251,50 +190,5 @@ class DesignViewModel: ObservableObject {
     }
 
     return nil
-  }
-}
-
-// MARK: - Settings View Model
-
-class SettingsViewModel: ObservableObject {
-  @Published var config: ApiConfig
-  @Published var statusMessage: String?
-  @Published var isStatusError = false
-  @Published var isTestingConnection = false
-
-  init() {
-    self.config = AIService.shared.currentConfig
-  }
-
-  func save() {
-    config.normalizeEndpoints()
-    AIService.shared.updateConfig(config)
-    statusMessage = Tx.t("settings.saveSuccess")
-    isStatusError = false
-  }
-
-  func testConnection() {
-    guard !isTestingConnection else { return }
-
-    isTestingConnection = true
-    statusMessage = nil
-    isStatusError = false
-
-    Task {
-      do {
-        try await AIService.shared.testConnection(using: config)
-        await MainActor.run {
-          self.statusMessage = Tx.t("settings.test.success")
-          self.isStatusError = false
-          self.isTestingConnection = false
-        }
-      } catch {
-        await MainActor.run {
-          self.statusMessage = error.localizedDescription
-          self.isStatusError = true
-          self.isTestingConnection = false
-        }
-      }
-    }
   }
 }

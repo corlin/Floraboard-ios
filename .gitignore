@@ -26,3 +26,21 @@ xcshareddata/
 *.moved-aside
 *.xcuserstate
 *.users
+
+# Swift Package Manager
+.build/
+Packages/
+*.resolved
+
+# macOS
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+
+# SwiftLint
+.swiftlint/
+
+# Misc
+*.playground/
+.gemini/

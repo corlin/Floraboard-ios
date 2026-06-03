@@ -9,6 +9,7 @@ import Combine
 import Foundation
 import UIKit
 
+@MainActor
 class AIService: ObservableObject {
   static let shared = AIService()
 
@@ -137,6 +138,14 @@ class AIService: ObservableObject {
   }
 
   private func configuredProxyToken() -> String? {
+    // 1. Prefer JWT access token from AuthService
+    if let jwt = AuthService.shared.accessToken,
+      !jwt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    {
+      return jwt
+    }
+
+    // 2. Fallback: Info.plist
     if let value = Bundle.main.object(forInfoDictionaryKey: ManagedAIConfig.proxyTokenInfoKey)
       as? String,
       !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
@@ -144,7 +153,8 @@ class AIService: ObservableObject {
       return value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    if let value = UserDefaults.standard.string(forKey: ManagedAIConfig.proxyTokenDefaultsKey),
+    // 3. Fallback: Keychain (legacy)
+    if let value = KeychainManager.shared.load(forKey: ManagedAIConfig.proxyTokenDefaultsKey),
       !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     {
       return value.trimmingCharacters(in: .whitespacesAndNewlines)

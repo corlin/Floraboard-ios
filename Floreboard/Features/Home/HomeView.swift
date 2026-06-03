@@ -1,125 +1,4 @@
-//
-//  ContentView.swift
-//  Floreboard
-//
-//  Created by AI Assistant.
-//
-
 import SwiftUI
-
-struct ContentView: View {
-  @StateObject private var authService = AuthService.shared
-  @StateObject private var localizationManager = LocalizationManager.shared
-  @State private var selection = 0
-
-  var body: some View {
-    Group {
-      if authService.isAuthenticated {
-        TabView(selection: $selection) {
-          HomeView(selection: $selection)
-            .tabItem {
-              Label(localizationManager.t("app.nav.dashboard"), systemImage: "square.grid.2x2")
-            }
-            .tag(0)
-
-          InventoryView()
-            .tabItem {
-              Label(localizationManager.t("app.nav.inventory"), systemImage: "leaf.fill")
-            }
-            .tag(1)
-
-          HistoryView(onStartDesign: {
-            HapticManager.shared.impact(style: .light)
-            selection = 3
-          })
-            .tabItem {
-              Label(localizationManager.t("app.nav.history"), systemImage: "clock.arrow.circlepath")
-            }
-            .tag(2)
-
-          DesignView()
-            .tabItem {
-              Label(localizationManager.t("app.nav.design"), systemImage: "wand.and.stars")
-            }
-            .tag(3)
-
-          SettingsView()
-            .tabItem {
-              Label(localizationManager.t("app.nav.settings"), systemImage: "gear")
-            }
-            .tag(4)
-        }
-      } else {
-        LoginView()
-      }
-    }
-    .tint(AppTheme.primary)
-  }
-}
-
-struct LoginView: View {
-  @State private var storeName = ""
-  @State private var isLoading = false
-
-  var body: some View {
-    ZStack {
-      AppTheme.premiumGradient.ignoresSafeArea()
-
-      VStack(spacing: 30) {
-        Image(systemName: "leaf.fill")  // Replaced flower.fill
-          .resizable()
-          .scaledToFit()
-          .frame(width: 80, height: 80)
-          .foregroundStyle(AppTheme.primary)
-          .padding()
-          .background(AppTheme.surfaceGlass)
-          .clipShape(Circle())
-          .shadow(color: AppTheme.primary.opacity(0.3), radius: 10, x: 0, y: 5)
-
-        Text("Floreboard")
-          .font(AppTheme.serifFont(size: 40, weight: .bold))
-          .foregroundColor(AppTheme.foreground)
-
-        VStack(spacing: 16) {
-          TextField(Tx.t("login.storeName"), text: $storeName)
-            .padding()
-            .background(AppTheme.surfaceElevated)
-            .cornerRadius(AppTheme.controlRadius)
-            .overlay(RoundedRectangle(cornerRadius: AppTheme.controlRadius).stroke(AppTheme.hairline, lineWidth: 1))
-
-          Button(action: login) {
-            if isLoading {
-              ProgressView().tint(AppTheme.iconOnAccent)
-            } else {
-              Text(Tx.t("login.enter"))
-                .font(AppTheme.sansFont(size: 18, weight: .semibold))
-                .frame(maxWidth: .infinity)
-                .padding()
-            }
-          }
-          .buttonStyle(PrimaryButtonStyle())
-          .disabled(storeName.isEmpty || isLoading)
-        }
-        .padding(30)
-        .glassmorphic()
-        .padding(.horizontal)
-      }
-    }
-    .onTapGesture {
-      hideKeyboard()
-    }
-  }
-
-  func login() {
-    isLoading = true
-    Task {
-      _ = await AuthService.shared.login(storeName: storeName)
-      isLoading = false
-    }
-  }
-}
-
-// MARK: - Home View
 
 struct HomeView: View {
   @Binding var selection: Int
@@ -146,7 +25,7 @@ struct HomeView: View {
   }
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       ZStack {
         AppTheme.premiumGradient.ignoresSafeArea()
 
@@ -209,7 +88,7 @@ struct HomeView: View {
 
               StatCard(
                 title: loc.t("home.stats.revenue"),
-                value: "¥\(Int(totalRevenue))",
+                value: CurrencyFormat.compact(totalRevenue),
                 subValue: "\(recentDesigns.count) "
                   + loc.t("home.stats.designCount", ["count": ""]),  // Need to handle plurals or just append text? For now just append generic
                 icon: "yensign.circle.fill",
@@ -331,7 +210,7 @@ struct HomeView: View {
 
                         Spacer()
 
-                        Text("¥\(Int(design.totalCost))")
+                        Text(CurrencyFormat.compact(design.totalCost))
                           .font(AppTheme.sansFont(size: 14, weight: .bold))
                           .foregroundColor(AppTheme.primary)
 
@@ -352,7 +231,7 @@ struct HomeView: View {
           .padding(.bottom, 40)
         }
       }
-      .navigationBarHidden(true)
+      .toolbar(.hidden, for: .navigationBar)
     }
   }
 }
@@ -449,9 +328,12 @@ struct CompactThumbnail: View {
           .overlay(Image(systemName: "leaf").font(.caption))  // Replaced flower
       }
     }
-    .onAppear {
+    .task {
       if let p = path, !p.hasPrefix("http") {
-        image = ImagePersistence.shared.loadImage(named: p)
+        let loaded = await Task.detached {
+          ImagePersistence.shared.loadImage(named: p)
+        }.value
+        self.image = loaded
       }
     }
   }

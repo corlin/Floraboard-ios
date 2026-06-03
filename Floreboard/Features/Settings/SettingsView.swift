@@ -1,10 +1,3 @@
-//
-//  SettingsViews.swift
-//  Floreboard
-//
-//  Created by AI Assistant.
-//
-
 import SwiftUI
 
 struct SettingsView: View {
@@ -15,7 +8,7 @@ struct SettingsView: View {
   @State private var isShowingLogoutConfirmation = false
 
   var body: some View {
-    NavigationView {
+    NavigationStack {
       Form {
         // Added Language Picker Section
         Section(header: Text(localizationManager.t("settings.language"))) {

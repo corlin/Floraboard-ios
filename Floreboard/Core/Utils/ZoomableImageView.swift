@@ -94,7 +94,7 @@ struct ZoomableImageView: UIViewRepresentable {
 // Wrapper for Full Screen
 struct FullScreenImageView: View {
   let image: UIImage
-  @Environment(\.presentationMode) var presentationMode
+  @Environment(\.dismiss) private var dismiss
 
   var body: some View {
     ZStack {
@@ -108,7 +108,7 @@ struct FullScreenImageView: View {
         HStack {
           Spacer()
           Button(action: {
-            presentationMode.wrappedValue.dismiss()
+            dismiss()
           }) {
             Image(systemName: "xmark.circle.fill")
               .font(.system(size: 30))

@@ -1,0 +1,83 @@
+# SwiftLint Configuration for Floraboard iOS
+# https://github.com/realm/SwiftLint
+
+included:
+  - Floreboard
+
+excluded:
+  - Floreboard/Assets.xcassets
+  - DerivedData
+  - build
+
+# Rule Configuration
+disabled_rules:
+  - trailing_whitespace       # Too noisy during active development
+  - todo                      # Allow TODO/FIXME comments
+
+opt_in_rules:
+  - closure_spacing
+  - contains_over_filter_count
+  - empty_count
+  - empty_string
+  - fatal_error_message
+  - first_where
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - last_where
+  - modifier_order
+  - overridden_super_call
+  - private_action
+  - private_outlet
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - unowned_variable_capture
+  - vertical_whitespace_closing_braces
+
+# Length Rules
+line_length:
+  warning: 130
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
+
+file_length:
+  warning: 500
+  error: 800
+
+function_body_length:
+  warning: 60
+  error: 100
+
+type_body_length:
+  warning: 400
+  error: 600
+
+# Naming
+type_name:
+  min_length: 3
+  max_length: 50
+
+identifier_name:
+  min_length:
+    warning: 2
+    error: 1
+  max_length:
+    warning: 50
+    error: 60
+  excluded:
+    - id
+    - i
+    - x
+    - y
+    - p
+    - s
+    - c
+    - ok
+
+# Nesting
+nesting:
+  type_level: 3
+  function_level: 3
+
+# Reporter
+reporter: "xcode"

@@ -1,192 +1,4 @@
-//
-//  HistoryViews.swift
-//  Floreboard
-//
-//  Created by AI Assistant.
-//
-
 import SwiftUI
-
-struct HistoryView: View {
-  @StateObject private var historyService = HistoryService.shared
-  @State private var searchText = ""
-  var onStartDesign: (() -> Void)? = nil
-
-  var filteredDesigns: [DesignResult] {
-    if searchText.isEmpty {
-      return historyService.savedDesigns
-    } else {
-      return historyService.savedDesigns.filter { design in
-        design.title.localizedCaseInsensitiveContains(searchText)
-          || design.description.localizedCaseInsensitiveContains(searchText)
-          || design.meaningText.localizedCaseInsensitiveContains(searchText)
-      }
-    }
-  }
-
-  var body: some View {
-    NavigationView {
-      ZStack {
-        AppTheme.premiumGradient.ignoresSafeArea()
-
-        ScrollView {
-          VStack(spacing: 20) {
-            WorkbenchSearchField(
-              placeholder: Tx.t("history.search"),
-              text: $searchText
-            )
-            .padding(.horizontal)
-
-            if filteredDesigns.isEmpty {
-              VStack(alignment: .center, spacing: 16) {
-                Image(systemName: historyService.savedDesigns.isEmpty ? "sparkles" : "magnifyingglass")
-                  .font(.system(size: 60))
-                  .foregroundColor(AppTheme.primary.opacity(0.3))
-
-                Text(historyService.savedDesigns.isEmpty ? Tx.t("history.empty") : Tx.t("history.search.empty"))
-                  .font(AppTheme.serifFont(size: 20, weight: .bold))
-                  .foregroundColor(AppTheme.foreground)
-
-                Text(
-                  historyService.savedDesigns.isEmpty
-                    ? Tx.t("history.empty.desc")
-                    : Tx.t("history.search.empty.desc")
-                )
-                  .font(AppTheme.sansFont(size: 14))
-                  .foregroundColor(AppTheme.mutedText)
-                  .multilineTextAlignment(.center)
-
-                if historyService.savedDesigns.isEmpty, let onStartDesign {
-                  Button {
-                    onStartDesign()
-                  } label: {
-                    Label(Tx.t("history.empty.action"), systemImage: "sparkles")
-                  }
-                  .buttonStyle(PrimaryButtonStyle())
-                  .padding(.top, 4)
-                } else if !searchText.isEmpty {
-                  Button {
-                    HapticManager.shared.impact(style: .light)
-                    searchText = ""
-                  } label: {
-                    Label(Tx.t("history.search.clear"), systemImage: "xmark.circle")
-                      .font(AppTheme.sansFont(size: 14, weight: .semibold))
-                  }
-                  .buttonStyle(.plain)
-                  .foregroundColor(AppTheme.primary)
-                  .padding(.top, 4)
-                }
-              }
-              .frame(maxWidth: .infinity)
-              .padding(24)
-              .padding(.top, 36)
-              .glassmorphic()
-              .padding(.horizontal)
-            } else {
-              LazyVStack(spacing: 16) {
-                ForEach(filteredDesigns) { design in
-                  NavigationLink(destination: DesignDetailView(design: design)) {
-                    HistoryRow(design: design)
-                  }
-                  .buttonStyle(PlainButtonStyle())  // Important for custom rows in ScrollView
-                }
-              }
-              .padding(.horizontal)
-              .padding(.bottom, 20)
-            }
-          }
-          .padding(.top)
-        }
-      }
-      .navigationTitle(Tx.t("history.title"))
-    }
-  }
-}
-
-struct HistoryRow: View {
-  let design: DesignResult
-  @State private var thumbnail: UIImage?
-
-  var body: some View {
-    HStack(spacing: 16) {
-      // Icon / Thumbnail
-      ZStack {
-        if let image = thumbnail {
-          Image(uiImage: image)
-            .resizable()
-            .scaledToFill()
-            .frame(width: 60, height: 60)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
-            .overlay(
-              RoundedRectangle(cornerRadius: AppTheme.controlRadius).stroke(AppTheme.hairline, lineWidth: 1))
-        } else {
-          RoundedRectangle(cornerRadius: AppTheme.controlRadius)
-            .fill(AppTheme.primary.opacity(0.1))
-            .frame(width: 60, height: 60)
-          Image(systemName: "leaf")  // Replaced flower
-            .font(.title2)
-            .foregroundColor(AppTheme.primary)
-        }
-      }
-      .onAppear {
-        loadImage()
-      }
-
-      VStack(alignment: .leading, spacing: 6) {
-        Text(design.title)
-          .font(AppTheme.serifFont(size: 18, weight: .bold))
-          .foregroundColor(AppTheme.foreground)
-          .lineLimit(1)
-
-        Text(design.meaningText)
-          .font(AppTheme.sansFont(size: 14))
-          .foregroundColor(AppTheme.mutedText)
-          .lineLimit(2)
-
-        HStack {
-          Label("\(Int(design.totalCost))", systemImage: "yensign.circle.fill")  // Replaced yen.circle.fill
-            .font(.caption.bold())
-            .foregroundColor(AppTheme.primary)
-
-          Text("•")
-            .font(.caption)
-            .foregroundColor(AppTheme.mutedText)
-
-          Text(
-            Date(timeIntervalSince1970: design.createdAt).formatted(
-              date: .abbreviated, time: .shortened)
-          )
-          .font(.caption)
-          .foregroundColor(AppTheme.mutedText)
-        }
-      }
-      Spacer()
-      Image(systemName: "chevron.right")
-        .foregroundColor(AppTheme.foreground.opacity(0.3))
-        .font(.caption)
-    }
-    .padding()
-    .glassmorphic()
-    .contextMenu {
-      Button(role: .destructive) {
-        HistoryService.shared.deleteDesign(id: design.id)
-      } label: {
-        Label(Tx.t("general.delete"), systemImage: "trash")
-      }
-    }
-  }
-
-  func loadImage() {
-    if let path = design.imageUrl {
-      // If it looks like a web URL (http), we skip for now (or use AsyncImage), but our current logic saves local filenames
-      if !path.hasPrefix("http") {
-        if let img = ImagePersistence.shared.loadImage(named: path) {
-          self.thumbnail = img
-        }
-      }
-    }
-  }
-}
 
 struct DesignDetailView: View {
   let design: DesignResult
@@ -302,7 +114,7 @@ struct DesignDetailView: View {
                 .font(AppTheme.sansFont(size: 16, weight: .medium))
                 .foregroundColor(AppTheme.mutedText)
               Spacer()
-              Text("¥\(Int(design.totalCost))")
+              Text(CurrencyFormat.compact(design.totalCost))
                 .font(AppTheme.sansFont(size: 20, weight: .bold))
                 .foregroundColor(AppTheme.primary)
             }
@@ -373,8 +185,8 @@ struct DesignDetailView: View {
       }
     }
     .navigationBarTitleDisplayMode(.inline)
-    .onAppear {
-      loadDetailImage()
+    .task {
+      await loadDetailImageAsync()
     }
     .alert(Tx.t("inventory.shortage.title"), isPresented: $showStockWarning) {
       Button(Tx.t("general.cancel"), role: .cancel) {}
@@ -416,13 +228,12 @@ struct DesignDetailView: View {
     displayedStatus = .completed
   }
 
-  private func loadDetailImage() {
-    if let path = design.imageUrl {
-      if !path.hasPrefix("http") {
-        if let img = ImagePersistence.shared.loadImage(named: path) {
-          self.designImage = img
-        }
-      }
+  private func loadDetailImageAsync() async {
+    if let path = design.imageUrl, !path.hasPrefix("http") {
+      let loaded = await Task.detached {
+        ImagePersistence.shared.loadImage(named: path)
+      }.value
+      self.designImage = loaded
     }
   }
 }
