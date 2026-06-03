@@ -172,7 +172,7 @@ class AIService: ObservableObject {
   private func waitForCompletedJob(
     client: AIProxyClient,
     initialJob: AIProxyJobStatus,
-    maxAttempts: Int = 8
+    maxAttempts: Int = 45
   ) async throws -> AIProxyJobStatus {
     var job = initialJob
 
