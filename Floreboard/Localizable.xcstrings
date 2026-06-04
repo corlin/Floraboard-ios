@@ -4,9 +4,6 @@
     "" : {
 
     },
-    "(%@)" : {
-
-    },
     "%@ (%@)" : {
       "localizations" : {
         "en" : {
@@ -17,22 +14,32 @@
         }
       }
     },
+    "%@ (Stock: %lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (Stock: %2$lld)"
+          }
+        }
+      }
+    },
+    "%@, %@ %lld, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@ %3$lld, %4$@"
+          }
+        }
+      }
+    },
     "%@: %lld" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@: %2$lld"
-          }
-        }
-      }
-    },
-    "%@: %lld%%" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@: %2$lld%%"
           }
         }
       }
@@ -50,9 +57,6 @@
     "%lld" : {
 
     },
-    "%lld." : {
-
-    },
     "•" : {
 
     },
@@ -60,6 +64,9 @@
 
     },
     "500" : {
+
+    },
+    "AI: %@" : {
 
     },
     "app.nav.dashboard" : {
@@ -432,6 +439,91 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "预算范围 (元)"
+          }
+        }
+      }
+    },
+    "design.execution.deduct" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount to Deduct"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "扣减数量"
+          }
+        }
+      }
+    },
+    "design.execution.desc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review and match AI generated flowers to your actual inventory."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请核对 AI 建议花材并关联到您的实际库存。"
+          }
+        }
+      }
+    },
+    "design.execution.header" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deduction Confirmation"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "花材扣减确认"
+          }
+        }
+      }
+    },
+    "design.execution.match" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match Inventory"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "匹配库存"
+          }
+        }
+      }
+    },
+    "design.execution.skip" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip / Don't Deduct"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过 (不扣减)"
           }
         }
       }

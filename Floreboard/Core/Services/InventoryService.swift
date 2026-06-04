@@ -140,32 +140,52 @@ class InventoryService: ObservableObject {
     }.joined(separator: "\n")
   }
 
-  func deductInventory(for items: [DesignFlowerItem]) -> [FlowerType] {
-    var changedFlowers: [FlowerType] = []
+  struct DeductionItem {
+    let flowerId: String
+    let amount: Int
+  }
 
-    // Create a mutable copy of flowers to work on safely
+  func deductInventoryExact(items: [DeductionItem]) {
+    var changed = false
     var currentFlowers = self.flowers
 
     for item in items {
-      // Fuzzy match: exact name first, then contains
+      if let index = currentFlowers.firstIndex(where: { $0.id == item.flowerId }) {
+        var flower = currentFlowers[index]
+        flower.quantity = max(0, flower.quantity - item.amount)
+        flower.totalUsed = (flower.totalUsed ?? 0) + item.amount
+        flower.updatedAt = Date().timeIntervalSince1970
+        currentFlowers[index] = flower
+        changed = true
+      }
+    }
+
+    if changed {
+      self.flowers = currentFlowers
+      saveInventory()
+    }
+  }
+
+  // Legacy method for fallback/compatibility if needed
+  func deductInventory(for items: [DesignFlowerItem]) -> [FlowerType] {
+    var changedFlowers: [FlowerType] = []
+    var currentFlowers = self.flowers
+
+    for item in items {
       if let index = currentFlowers.firstIndex(where: {
         $0.name.localizedCaseInsensitiveCompare(item.flowerName) == .orderedSame
           || $0.name.localizedCaseInsensitiveContains(item.flowerName)
           || item.flowerName.localizedCaseInsensitiveContains($0.name)
       }) {
         var flower = currentFlowers[index]
-        let deductAmount = item.count
-
-        flower.quantity = max(0, flower.quantity - deductAmount)
-        flower.totalUsed = (flower.totalUsed ?? 0) + deductAmount
+        flower.quantity = max(0, flower.quantity - item.count)
+        flower.totalUsed = (flower.totalUsed ?? 0) + item.count
         flower.updatedAt = Date().timeIntervalSince1970
-
         currentFlowers[index] = flower
         changedFlowers.append(flower)
       }
     }
 
-    // Commit changes
     if !changedFlowers.isEmpty {
       self.flowers = currentFlowers
       saveInventory()

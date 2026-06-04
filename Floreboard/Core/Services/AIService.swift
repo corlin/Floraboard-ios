@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import OSLog
 import UIKit
 
 @MainActor
@@ -85,28 +86,36 @@ class AIService: ObservableObject {
 
     let client = try makeProxyClient()
     let tenantId = await currentTenantId()
-    let slot = try await client.createReferenceImageUpload(
-      tenantId: tenantId,
-      contentType: "image/jpeg",
-      byteCount: imageData.count
-    )
-    try await client.uploadReferenceImage(slot: slot, data: imageData, contentType: "image/jpeg")
-    let initialJob = try await client.submitVisualDesign(
-      tenantId: tenantId,
-      language: LocalizationManager.shared.currentLanguage,
-      request: request,
-      inventory: inventory,
-      imageUploadId: slot.uploadId
-    )
+    
+    do {
+      let slot = try await client.createReferenceImageUpload(
+        tenantId: tenantId,
+        contentType: "image/jpeg",
+        byteCount: imageData.count
+      )
+      try await client.uploadReferenceImage(slot: slot, data: imageData, contentType: "image/jpeg")
+      let initialJob = try await client.submitVisualDesign(
+        tenantId: tenantId,
+        language: LocalizationManager.shared.currentLanguage,
+        request: request,
+        inventory: inventory,
+        imageUploadId: slot.uploadId
+      )
 
-    let job = try await waitForCompletedJob(client: client, initialJob: initialJob)
-    if let result = job.result {
-      return result.toDesignResult(localRequestId: request.id, inventory: inventory)
+      let job = try await waitForCompletedJob(client: client, initialJob: initialJob)
+      if let result = job.result {
+        return result.toDesignResult(localRequestId: request.id, inventory: inventory)
+      }
+      if let error = job.error {
+        throw AIProxyError.rejected(error)
+      }
+      throw AIError.apiError(statusCode: 202)
+    } catch {
+      AppLogger.ai.warning("Visual design failed or disabled, falling back to text generation. Error: \(error.localizedDescription)")
+      var fallbackRequest = request
+      fallbackRequest.requirements = (fallbackRequest.requirements ?? "") + " [Visual Muse Fallback]"
+      return try await generateFlowerPlan(request: fallbackRequest, inventory: inventory)
     }
-    if let error = job.error {
-      throw AIProxyError.rejected(error)
-    }
-    throw AIError.apiError(statusCode: 202)
   }
 
   private func makeProxyClient() throws -> AIProxyClient {

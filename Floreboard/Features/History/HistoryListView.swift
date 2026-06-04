@@ -4,6 +4,7 @@ struct HistoryView: View {
   @EnvironmentObject var historyService: HistoryService
   @Environment(\.hapticManager) var hapticManager
   @State private var searchText = ""
+  @State private var animateItems = false
   var onStartDesign: (() -> Void)? = nil
 
   var filteredDesigns: [DesignResult] {
@@ -33,9 +34,25 @@ struct HistoryView: View {
 
             if filteredDesigns.isEmpty {
               VStack(alignment: .center, spacing: 16) {
-                Image(systemName: historyService.savedDesigns.isEmpty ? "sparkles" : "magnifyingglass")
-                  .font(.system(size: 60))
-                  .foregroundColor(AppTheme.primary.opacity(0.3))
+                if historyService.savedDesigns.isEmpty {
+                  Image("HistoryEmpty")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 160, height: 160)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+                    .shadow(color: AppTheme.shadow, radius: 10, x: 0, y: 5)
+                    .padding(.bottom, 10)
+                } else {
+                  Image(systemName: "magnifyingglass")
+                    .font(.system(size: 60))
+                    .foregroundStyle(
+                      LinearGradient(
+                        colors: [AppTheme.creative.opacity(0.7), AppTheme.primary.opacity(0.5)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                      )
+                    )
+                }
 
                 Text(historyService.savedDesigns.isEmpty ? Tx.t("history.empty") : Tx.t("history.search.empty"))
                   .font(AppTheme.serifFont(size: 20, weight: .bold))
@@ -78,11 +95,14 @@ struct HistoryView: View {
               .padding(.horizontal)
             } else {
               LazyVStack(spacing: 16) {
-                ForEach(filteredDesigns) { design in
+                ForEach(Array(filteredDesigns.enumerated()), id: \.element.id) { index, design in
                   NavigationLink(destination: DesignDetailView(design: design)) {
                     HistoryRow(design: design)
                   }
                   .buttonStyle(PlainButtonStyle())  // Important for custom rows in ScrollView
+                  .opacity(animateItems ? 1 : 0)
+                  .offset(y: animateItems ? 0 : 20)
+                  .animation(.spring(response: 0.4, dampingFraction: 0.8).delay(Double(min(index, 15)) * 0.05), value: animateItems)
                 }
               }
               .padding(.horizontal)
@@ -93,6 +113,9 @@ struct HistoryView: View {
         }
       }
       .navigationTitle(Tx.t("history.title"))
+      .onAppear {
+        animateItems = true
+      }
     }
   }
 }

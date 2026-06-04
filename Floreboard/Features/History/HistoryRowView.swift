@@ -77,10 +77,7 @@ struct HistoryRow: View {
 
   func loadImageAsync() async {
     if let path = design.imageUrl, !path.hasPrefix("http") {
-      let loaded = await Task.detached { [imagePersistence] in
-        imagePersistence.loadImage(named: path)
-      }.value
-      self.thumbnail = loaded
+      self.thumbnail = imagePersistence.loadImage(named: path)
     }
   }
 }

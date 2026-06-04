@@ -101,10 +101,30 @@ struct AppTheme {
 
   static let iconOnAccent = Color.white
   static let scrim = Color.black.opacity(0.36)
+
+  // MARK: - Elevation System
   static let shadow = Color.black.opacity(0.10)
-  static let cardRadius: CGFloat = 8
-  static let controlRadius: CGFloat = 8
-  static let imageRadius: CGFloat = 10
+  static let elevation1 = (color: Color.black.opacity(0.06), radius: CGFloat(2), y: CGFloat(1))   // Subtle: chips, search
+  static let elevation2 = (color: Color.black.opacity(0.10), radius: CGFloat(8), y: CGFloat(4))   // Standard: cards
+  static let elevation3 = (color: Color.black.opacity(0.16), radius: CGFloat(20), y: CGFloat(8))  // Prominent: modals, action bars
+
+  // MARK: - Radius System
+  static let containerRadius: CGFloat = 20  // Sheets, full-screen modals
+  static let cardRadius: CGFloat = 16       // Info cards, list items
+  static let controlRadius: CGFloat = 12    // Buttons, inputs, search fields
+  static let chipRadius: CGFloat = 8        // Tags, badges, small chips
+  static let imageRadius: CGFloat = 14      // Image containers
+
+  // MARK: - Spacing System (4pt grid)
+  struct Spacing {
+      static let xxs: CGFloat = 4
+      static let xs: CGFloat = 8
+      static let sm: CGFloat = 12
+      static let md: CGFloat = 16
+      static let lg: CGFloat = 24
+      static let xl: CGFloat = 32
+      static let xxl: CGFloat = 48
+  }
 
   // MARK: - Product Semantic Colors
 
@@ -139,6 +159,25 @@ struct AppTheme {
     return .system(size: size, weight: weight, design: .default)
   }
 
+  // MARK: - Typography Tokens
+  static let displayLarge = serifFont(size: 32, weight: .bold)
+  static let displayMedium = serifFont(size: 28, weight: .bold)
+  static let headlineLarge = serifFont(size: 22, weight: .semibold)
+  static let headlineMedium = serifFont(size: 20, weight: .semibold)
+  static let headlineSmall = serifFont(size: 18, weight: .semibold)
+  static let titleLarge = sansFont(size: 18, weight: .semibold)
+  static let titleMedium = sansFont(size: 16, weight: .semibold)
+  static let titleSmall = sansFont(size: 14, weight: .semibold)
+  static let bodyLarge = sansFont(size: 16, weight: .regular)
+  static let bodyMedium = sansFont(size: 15, weight: .regular)
+  static let bodySmall = sansFont(size: 14, weight: .regular)
+  static let labelLarge = sansFont(size: 14, weight: .medium)
+  static let labelMedium = sansFont(size: 13, weight: .medium)
+  static let labelSmall = sansFont(size: 12, weight: .medium)
+  static let caption = sansFont(size: 12, weight: .regular)
+  static let captionSmall = sansFont(size: 11, weight: .regular)
+  static let overline = sansFont(size: 10, weight: .semibold)
+
   private static func dynamic(light: UIColor, dark: UIColor) -> Color {
     Color(
       UIColor { traits in
@@ -154,11 +193,11 @@ struct GlassmorphicCard: ViewModifier {
   func body(content: Content) -> some View {
     content
       .background(AppTheme.card)
-      .cornerRadius(AppTheme.cardRadius)
-      .shadow(color: AppTheme.shadow, radius: 8, x: 0, y: 3)
+      .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius, style: .continuous))
+      .shadow(color: AppTheme.elevation2.color, radius: AppTheme.elevation2.radius, x: 0, y: AppTheme.elevation2.y)
       .overlay(
-        RoundedRectangle(cornerRadius: AppTheme.cardRadius)
-          .stroke(AppTheme.hairline, lineWidth: 1)
+        RoundedRectangle(cornerRadius: AppTheme.cardRadius, style: .continuous)
+          .stroke(AppTheme.hairline, lineWidth: 0.5)
       )
   }
 }
@@ -166,15 +205,16 @@ struct GlassmorphicCard: ViewModifier {
 struct PrimaryButtonStyle: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
-      .font(AppTheme.sansFont(size: 16, weight: .semibold))
+      .font(AppTheme.titleMedium)
       .padding(.vertical, 14)
       .padding(.horizontal, 24)
       .background(AppTheme.primary)
       .foregroundColor(AppTheme.iconOnAccent)
-      .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
-      .shadow(color: AppTheme.primary.opacity(0.25), radius: 6, x: 0, y: 3)
-      .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
-      .animation(.spring(response: 0.3), value: configuration.isPressed)
+      .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius, style: .continuous))
+      .shadow(color: AppTheme.primary.opacity(0.25), radius: 8, x: 0, y: 4)
+      .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+      .opacity(configuration.isPressed ? 0.9 : 1.0)
+      .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
   }
 }
 
@@ -210,10 +250,10 @@ struct WorkbenchSearchField: View {
     .padding(.horizontal, 12)
     .padding(.vertical, 10)
     .background(AppTheme.surfaceElevated)
-    .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
+    .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius, style: .continuous))
     .overlay(
-      RoundedRectangle(cornerRadius: AppTheme.controlRadius)
-        .stroke(AppTheme.hairline, lineWidth: 1)
+      RoundedRectangle(cornerRadius: AppTheme.controlRadius, style: .continuous)
+        .stroke(AppTheme.hairline, lineWidth: 0.5)
     )
   }
 }
@@ -265,12 +305,12 @@ struct WorkbenchPrimaryActionBar: View {
       .frame(maxWidth: .infinity)
       .padding(.vertical, 14)
       .background((isEnabled && !isLoading) ? AppTheme.primary : AppTheme.mutedText.opacity(0.45))
-      .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
+      .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius, style: .continuous))
       .shadow(
-        color: (isEnabled && !isLoading) ? AppTheme.primary.opacity(0.22) : Color.clear,
-        radius: 8,
+        color: (isEnabled && !isLoading) ? AppTheme.elevation3.color : Color.clear,
+        radius: AppTheme.elevation3.radius,
         x: 0,
-        y: 4
+        y: AppTheme.elevation3.y
       )
     }
     .buttonStyle(.plain)

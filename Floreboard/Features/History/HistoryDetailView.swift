@@ -10,6 +10,7 @@ struct DesignDetailView: View {
   @State private var displayedStatus: DesignStatus?
   @State private var showStockWarning = false
   @State private var shortages: [InventoryService.StockShortage] = []
+  @State private var showExecutionSheet = false
 
   var body: some View {
     ZStack {
@@ -155,7 +156,7 @@ struct DesignDetailView: View {
 
           // Action Buttons
           if currentStatus == .draft {
-            Button(action: executeDesign) {
+            Button(action: { showExecutionSheet = true }) {
               HStack {
                 Image(systemName: "checkmark.circle.fill")
                 Text(Tx.t("design.action.execute"))
@@ -169,6 +170,11 @@ struct DesignDetailView: View {
               .shadow(color: AppTheme.primary.opacity(0.4), radius: 8, x: 0, y: 4)
             }
             .padding(.horizontal)
+            .sheet(isPresented: $showExecutionSheet) {
+              DesignExecutionSheet(design: design) { mappedItems in
+                commitExecution(mappedItems: mappedItems)
+              }
+            }
           } else {
             HStack {
               Image(systemName: "checkmark.seal.fill")
@@ -191,24 +197,6 @@ struct DesignDetailView: View {
     .task {
       await loadDetailImageAsync()
     }
-    .alert(Tx.t("inventory.shortage.title"), isPresented: $showStockWarning) {
-      Button(Tx.t("general.cancel"), role: .cancel) {}
-      Button(Tx.t("inventory.shortage.continue"), role: .destructive) {
-        commitExecution()
-      }
-    } message: {
-      Text(shortageMessage)
-    }
-  }
-
-  private var shortageMessage: String {
-    let rows = shortages.map {
-      Tx.t(
-        "inventory.shortage.item",
-        ["name": $0.flowerName, "requested": "\($0.requested)", "available": "\($0.available)"]
-      )
-    }
-    return rows.joined(separator: "\n")
   }
 
   private var currentStatus: DesignStatus {
@@ -216,27 +204,19 @@ struct DesignDetailView: View {
   }
 
   private func executeDesign() {
-    let currentShortages = inventoryService.stockShortages(for: design.flowerList)
-    guard currentShortages.isEmpty else {
-      shortages = currentShortages
-      showStockWarning = true
-      return
-    }
-
-    commitExecution()
+    // Replaced by showExecutionSheet flow.
+    showExecutionSheet = true
   }
 
-  private func commitExecution() {
-    historyService.executeDesign(design)
+  private func commitExecution(mappedItems: [InventoryService.DeductionItem]?) {
+    historyService.executeDesign(design, mappedItems: mappedItems)
     displayedStatus = .completed
+    HapticManager.shared.notification(type: .success)
   }
 
   private func loadDetailImageAsync() async {
     if let path = design.imageUrl, !path.hasPrefix("http") {
-      let loaded = await Task.detached { [imagePersistence] in
-        imagePersistence.loadImage(named: path)
-      }.value
-      self.designImage = loaded
+      self.designImage = imagePersistence.loadImage(named: path)
     }
   }
 }

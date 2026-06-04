@@ -91,29 +91,28 @@ struct DesignMainView: View {
         if viewModel.isLoading {
           ZStack {
             AppTheme.scrim.ignoresSafeArea()
+            Rectangle()
+              .fill(.ultraThinMaterial)
+              .ignoresSafeArea()
 
-            VStack(spacing: 24) {
-              ProgressView()
-                .scaleEffect(1.5)
-                .tint(AppTheme.primary)
-                .padding()
-                .background(Circle().fill(AppTheme.surfaceStrong))
+            VStack(spacing: 28) {
+              AnimatedSparkle()
 
               Text(viewModel.loadingStatus)
-                .font(AppTheme.serifFont(size: 20, weight: .medium))
-                .foregroundColor(AppTheme.iconOnAccent)
+                .font(AppTheme.serifFont(size: 20, weight: .bold))
+                .foregroundColor(AppTheme.foreground)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                .animation(.easeInOut, value: viewModel.loadingStatus)
             }
             .padding(40)
+            .frame(maxWidth: 320)
             .background(AppTheme.card)
-            .cornerRadius(AppTheme.cardRadius)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.containerRadius, style: .continuous))
+            .shadow(color: AppTheme.elevation3.color, radius: AppTheme.elevation3.radius, x: 0, y: AppTheme.elevation3.y)
             .overlay(
-              RoundedRectangle(cornerRadius: AppTheme.cardRadius)
-                .stroke(AppTheme.hairline.opacity(0.7), lineWidth: 1)
+              RoundedRectangle(cornerRadius: AppTheme.containerRadius, style: .continuous)
+                .stroke(AppTheme.hairline, lineWidth: 0.5)
             )
-            .shadow(color: AppTheme.shadow, radius: 10, x: 0, y: 4)
-            .padding(.horizontal, 40)
           }
           .transition(.opacity.animation(.easeInOut))
         }
@@ -134,5 +133,32 @@ struct DesignMainView: View {
           dismissButton: .default(Text(Tx.t("general.ok"))))
       }
     }
+  }
+}
+
+struct AnimatedSparkle: View {
+  @State private var isAnimating = false
+  
+  var body: some View {
+    Image(systemName: "sparkles")
+      .font(.system(size: 40))
+      .foregroundStyle(
+        LinearGradient(
+          colors: [AppTheme.primary, AppTheme.creative],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        )
+      )
+      .scaleEffect(isAnimating ? 1.1 : 0.9)
+      .opacity(isAnimating ? 1.0 : 0.7)
+      .frame(width: 80, height: 80)
+      .background(AppTheme.surfaceElevated)
+      .clipShape(Circle())
+      .shadow(color: AppTheme.elevation2.color, radius: AppTheme.elevation2.radius, x: 0, y: AppTheme.elevation2.y)
+      .onAppear {
+        withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+          isAnimating = true
+        }
+      }
   }
 }

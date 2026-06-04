@@ -10,15 +10,14 @@ struct LoginView: View {
       AppTheme.premiumGradient.ignoresSafeArea()
 
       VStack(spacing: 30) {
-        Image(systemName: "leaf.fill")  // Replaced flower.fill
+        Image("LoginIllustration")
           .resizable()
           .scaledToFit()
-          .frame(width: 80, height: 80)
-          .foregroundStyle(AppTheme.primary)
-          .padding()
-          .background(AppTheme.surfaceGlass)
+          .frame(width: 140, height: 140)
           .clipShape(Circle())
-          .shadow(color: AppTheme.primary.opacity(0.3), radius: 10, x: 0, y: 5)
+          .overlay(Circle().stroke(AppTheme.hairline, lineWidth: 1))
+          .shadow(color: AppTheme.shadow, radius: 12, x: 0, y: 6)
+          .padding(.bottom, -10)
 
         Text("Floreboard")
           .font(AppTheme.serifFont(size: 40, weight: .bold))

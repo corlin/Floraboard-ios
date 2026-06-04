@@ -37,9 +37,15 @@ struct EditFlowerSheet: View {
               Text(cat.displayName).tag(cat)
             }
           }
+          
+          let availableColors = colors.contains(color) ? colors : (colors + [color])
           Picker(Tx.t("inventory.form.color"), selection: $color) {
-            ForEach(colors, id: \.self) { c in
-              Text(colorName(c)).tag(c)
+            ForEach(availableColors, id: \.self) { c in
+              if c.hasPrefix("#") {
+                Text(c).tag(c)
+              } else {
+                Text(colorName(c)).tag(c)
+              }
             }
           }
         }
@@ -83,6 +89,25 @@ struct EditFlowerSheet: View {
             TextField("0.0", value: $price, format: .number)
               .keyboardType(.decimalPad)
               .multilineTextAlignment(.trailing)
+          }
+        }
+
+        if isEditing {
+          Section {
+            Button(role: .destructive) {
+              HapticManager.shared.notification(type: .warning)
+              if let flower = flowerToEdit {
+                viewModel.delete(flower)
+              }
+              dismiss()
+            } label: {
+              HStack {
+                Spacer()
+                Text(Tx.t("general.delete"))
+                  .font(AppTheme.sansFont(size: 16, weight: .bold))
+                Spacer()
+              }
+            }
           }
         }
       }

@@ -5,6 +5,7 @@ struct InventoryView: View {
   @StateObject private var viewModel = InventoryViewModel()
   @State private var showingAddSheet = false
   @State private var editingFlower: FlowerType? = nil
+  @State private var animateItems = false
 
   var body: some View {
     NavigationStack {
@@ -22,9 +23,25 @@ struct InventoryView: View {
             LazyVStack(spacing: 16) {
               if viewModel.filteredFlowers.isEmpty {
                 VStack(spacing: 14) {
-                  Image(systemName: viewModel.flowers.isEmpty ? "leaf.circle" : "magnifyingglass")
-                    .font(.system(size: 48))
-                    .foregroundColor(AppTheme.primary.opacity(0.32))
+                  if viewModel.flowers.isEmpty {
+                    Image("InventoryEmpty")
+                      .resizable()
+                      .scaledToFit()
+                      .frame(width: 160, height: 160)
+                      .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+                      .shadow(color: AppTheme.shadow, radius: 10, x: 0, y: 5)
+                      .padding(.bottom, 10)
+                  } else {
+                    Image(systemName: "magnifyingglass")
+                      .font(.system(size: 56))
+                      .foregroundStyle(
+                        LinearGradient(
+                          colors: [AppTheme.primary.opacity(0.6), AppTheme.secondary.opacity(0.4)],
+                          startPoint: .topLeading,
+                          endPoint: .bottomTrailing
+                        )
+                      )
+                  }
 
                   Text(
                     viewModel.flowers.isEmpty
@@ -70,7 +87,7 @@ struct InventoryView: View {
                 .padding(.top, 24)
                 .glassmorphic()
               } else {
-                ForEach(viewModel.filteredFlowers) { flower in
+                ForEach(Array(viewModel.filteredFlowers.enumerated()), id: \.element.id) { index, flower in
                   FlowerRow(
                     flower: flower,
                     onEdit: {
@@ -80,7 +97,15 @@ struct InventoryView: View {
                     onDelete: {
                       HapticManager.shared.notification(type: .warning)
                       viewModel.delete(flower)
-                    })
+                    }
+                  )
+                  .onTapGesture {
+                      HapticManager.shared.impact(style: .light)
+                      editingFlower = flower
+                    }
+                    .opacity(animateItems ? 1 : 0)
+                    .offset(y: animateItems ? 0 : 20)
+                    .animation(.spring(response: 0.4, dampingFraction: 0.8).delay(Double(min(index, 15)) * 0.05), value: animateItems)
                 }
               }
             }
@@ -111,6 +136,7 @@ struct InventoryView: View {
       }
       .onAppear {
         viewModel.setup(with: inventoryService)
+        animateItems = true
       }
     }
   }

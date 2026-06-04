@@ -32,39 +32,51 @@ struct HomeView: View {
 
         ScrollView {
           VStack(alignment: .leading, spacing: 24) {
-            // Welcome Header
-            HStack {
-              VStack(alignment: .leading, spacing: 4) {
-                Text(loc.t("home.greeting", ["name": auth.currentTenant?.name ?? "Florist"]))
-                  .font(AppTheme.sansFont(size: 16, weight: .medium))
-                  .foregroundColor(AppTheme.foreground.opacity(0.7))
-                Text(auth.currentTenant?.name ?? "Floreboard")
-                  .font(AppTheme.serifFont(size: 32, weight: .bold))
-                  .foregroundColor(AppTheme.foreground)
-                Text(
-                  loc.t(
-                    "home.subtitle", ["date": Date().formatted(date: .abbreviated, time: .omitted)])
-                )
-                .font(AppTheme.sansFont(size: 14))
+            // Hero Welcome
+            VStack(alignment: .leading, spacing: 8) {
+              Text(loc.t("home.greeting", ["name": auth.currentTenant?.name ?? "Florist"]))
+                .font(AppTheme.sansFont(size: 14, weight: .medium))
                 .foregroundColor(AppTheme.mutedText)
-              }
-              Spacer()
 
-              Button {
-                hapticManager.impact(style: .light)
-                selection = 3
-              } label: {
-                Image(systemName: "wand.and.stars")
-                  .font(.system(size: 20))
-                  .foregroundColor(AppTheme.iconOnAccent)
-                  .padding(12)
-                  .background(Circle().fill(AppTheme.primary))
-                  .shadow(color: AppTheme.primary.opacity(0.4), radius: 8, x: 0, y: 4)
+              HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 6) {
+                  Text(auth.currentTenant?.name ?? "Floreboard")
+                    .font(AppTheme.serifFont(size: 30, weight: .bold))
+                    .foregroundColor(AppTheme.foreground)
+                  Text(
+                    loc.t(
+                      "home.subtitle", ["date": Date().formatted(date: .abbreviated, time: .omitted)])
+                  )
+                  .font(AppTheme.sansFont(size: 13))
+                  .foregroundColor(AppTheme.mutedText)
+                }
+
+                Spacer()
+
+                Button {
+                  hapticManager.impact(style: .light)
+                  selection = 2
+                } label: {
+                  Image(systemName: "wand.and.stars")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(AppTheme.iconOnAccent)
+                    .frame(width: 44, height: 44)
+                    .background(
+                      LinearGradient(
+                        colors: [AppTheme.primary, AppTheme.primary.opacity(0.8)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                      )
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .shadow(color: AppTheme.primary.opacity(0.35), radius: 10, x: 0, y: 5)
+                }
+                .buttonStyle(.plain)
               }
-              .buttonStyle(.plain)
             }
-            .padding(.horizontal)
-            .padding(.top, 20)
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 4)
 
             // Quick Stats Grid
             LazyVGrid(
@@ -120,7 +132,7 @@ struct HomeView: View {
 
                 Button {
                   hapticManager.impact(style: .light)
-                  selection = 3
+                  selection = 2
                 } label: {
                   QuickActionCard(
                     title: loc.t("home.quickActions.smartDesign"),
@@ -132,26 +144,21 @@ struct HomeView: View {
               }
               .padding(.horizontal)
 
-              // Inspiration Box
-              HStack(alignment: .top, spacing: 12) {
+              // Inspiration — subtle inline hint
+              HStack(spacing: 10) {
                 Image(systemName: "lightbulb.max.fill")
-                  .font(.system(size: 16, weight: .semibold))
+                  .font(.system(size: 13, weight: .semibold))
                   .foregroundColor(AppTheme.accent)
-                  .frame(width: 30, height: 30)
-                  .background(AppTheme.accent.opacity(0.12))
-                  .clipShape(Circle())
-                VStack(alignment: .leading, spacing: 4) {
-                  Text(loc.t("home.quickActions.inspirationTitle"))
-                    .font(AppTheme.sansFont(size: 14, weight: .bold))
-                    .foregroundColor(AppTheme.primary)
-                  Text(loc.t("home.quickActions.inspirationText"))
-                    .font(AppTheme.sansFont(size: 12))
-                    .foregroundColor(AppTheme.mutedText)
-                    .lineLimit(nil)
-                }
+
+                Text(loc.t("home.quickActions.inspirationText"))
+                  .font(AppTheme.sansFont(size: 13))
+                  .foregroundColor(AppTheme.mutedText)
+                  .lineLimit(2)
               }
-              .padding()
-              .glassmorphic()
+              .padding(.horizontal, 14)
+              .padding(.vertical, 10)
+              .background(AppTheme.accent.opacity(0.06))
+              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
               .padding(.horizontal)
             }
 
@@ -164,7 +171,7 @@ struct HomeView: View {
                 Spacer()
                 Button {
                   hapticManager.impact(style: .light)
-                  selection = 2
+                  selection = 3
                 } label: {
                   Text(loc.t("home.recentDesigns.viewAll"))
                     .font(AppTheme.sansFont(size: 14))
@@ -175,16 +182,23 @@ struct HomeView: View {
               .padding(.horizontal)
 
               if recentDesigns.isEmpty {
-                VStack(spacing: 12) {
-                  Image(systemName: "photo.on.rectangle")
-                    .font(.largeTitle)
-                    .foregroundColor(AppTheme.mutedText.opacity(0.45))
+                VStack(spacing: 14) {
+                  Image(systemName: "sparkles")
+                    .font(.system(size: 36))
+                    .foregroundStyle(
+                      LinearGradient(
+                        colors: [AppTheme.primary, AppTheme.creative],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                      )
+                    )
                   Text(loc.t("home.recentDesigns.empty"))
                     .font(AppTheme.sansFont(size: 14))
                     .foregroundColor(AppTheme.mutedText)
+                    .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 30)
+                .padding(.vertical, 36)
                 .glassmorphic()
                 .padding(.horizontal)
               } else {
@@ -245,38 +259,28 @@ struct StatCard: View {
   let color: Color
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      HStack {
-        Image(systemName: icon)
-          .foregroundColor(color)
-          .font(.system(size: 18))
-        Spacer()
-      }
+    VStack(alignment: .leading, spacing: 10) {
+      Image(systemName: icon)
+        .foregroundColor(color)
+        .font(.system(size: 16, weight: .semibold))
+        .frame(width: 32, height: 32)
+        .background(color.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
       Text(value)
-        .font(AppTheme.sansFont(size: 22, weight: .bold))
+        .font(AppTheme.sansFont(size: 24, weight: .bold))
         .foregroundColor(AppTheme.foreground)
-        .minimumScaleFactor(0.8)
+        .minimumScaleFactor(0.7)
 
-      VStack(alignment: .leading, spacing: 2) {
-        Text(subValue)
-          .font(AppTheme.sansFont(size: 10))
-          .foregroundColor(AppTheme.mutedText)
-        Text(title)
-          .font(AppTheme.sansFont(size: 10))
-          .foregroundColor(AppTheme.mutedText)
-          .lineLimit(2)
-          .fixedSize(horizontal: false, vertical: true)
-      }
+      Text(title)
+        .font(AppTheme.sansFont(size: 12, weight: .medium))
+        .foregroundColor(AppTheme.mutedText)
+        .lineLimit(2)
+        .fixedSize(horizontal: false, vertical: true)
     }
-    .padding(12)
-    .background(AppTheme.surfaceElevated)
-    .cornerRadius(AppTheme.cardRadius)
-    .overlay(
-      RoundedRectangle(cornerRadius: AppTheme.cardRadius)
-        .stroke(AppTheme.hairline, lineWidth: 1)
-    )
-    .shadow(color: AppTheme.shadow.opacity(0.6), radius: 5, x: 0, y: 2)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(14)
+    .glassmorphic()
   }
 }
 
@@ -286,24 +290,27 @@ struct QuickActionCard: View {
   let color: Color
 
   var body: some View {
-    HStack {
+    HStack(spacing: 12) {
       Image(systemName: icon)
-        .font(.title3)
+        .font(.system(size: 18, weight: .semibold))
         .foregroundColor(color)
-        .frame(width: 20, height: 20)
-        .padding(10)
-        .background(color.opacity(0.1))
-        .clipShape(Circle())
+        .frame(width: 36, height: 36)
+        .background(color.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
       Text(title)
-        .font(AppTheme.sansFont(size: 14, weight: .medium))
+        .font(AppTheme.sansFont(size: 15, weight: .semibold))
         .foregroundColor(AppTheme.foreground)
         .lineLimit(2)
         .fixedSize(horizontal: false, vertical: true)
 
       Spacer()
+
+      Image(systemName: "chevron.right")
+        .font(.system(size: 12, weight: .bold))
+        .foregroundColor(AppTheme.mutedText.opacity(0.4))
     }
-    .padding()
+    .padding(14)
     .frame(maxWidth: .infinity, minHeight: 64)
     .glassmorphic()
     .contentShape(Rectangle())
@@ -321,21 +328,22 @@ struct CompactThumbnail: View {
         Image(uiImage: img)
           .resizable()
           .scaledToFill()
-          .frame(width: 40, height: 40)
-          .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
+          .frame(width: 44, height: 44)
+          .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
       } else {
-        RoundedRectangle(cornerRadius: AppTheme.controlRadius)
-          .fill(AppTheme.primary.opacity(0.1))
-          .frame(width: 40, height: 40)
-          .overlay(Image(systemName: "leaf").font(.caption))  // Replaced flower
+        RoundedRectangle(cornerRadius: 10, style: .continuous)
+          .fill(AppTheme.primary.opacity(0.08))
+          .frame(width: 44, height: 44)
+          .overlay(
+            Image(systemName: "leaf")
+              .font(.system(size: 14))
+              .foregroundColor(AppTheme.primary.opacity(0.4))
+          )
       }
     }
     .task {
       if let p = path, !p.hasPrefix("http") {
-        let loaded = await Task.detached { [imagePersistence] in
-          imagePersistence.loadImage(named: p)
-        }.value
-        self.image = loaded
+        self.image = imagePersistence.loadImage(named: p)
       }
     }
   }

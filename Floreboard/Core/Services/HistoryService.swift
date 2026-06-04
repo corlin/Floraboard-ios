@@ -27,7 +27,7 @@ class HistoryService: ObservableObject {
   }
 
   func saveDesign(_ design: DesignResult) {
-    guard let context = modelContext else { return }
+    guard modelContext != nil else { return }
 
     // Check if exists, update if so, else insert at front
     if let index = savedDesigns.firstIndex(where: { $0.id == design.id }) {
@@ -38,11 +38,15 @@ class HistoryService: ObservableObject {
     persist(design)
   }
 
-  func executeDesign(_ design: DesignResult) {
+  func executeDesign(_ design: DesignResult, mappedItems: [InventoryService.DeductionItem]? = nil) {
     guard design.status != .completed else { return }
 
-    // 1. Deduct Inventory
-    let _ = InventoryService.shared.deductInventory(for: design.flowerList)
+    // 1. Deduct Inventory Exact if provided, otherwise fallback
+    if let mapped = mappedItems {
+      InventoryService.shared.deductInventoryExact(items: mapped)
+    } else {
+      let _ = InventoryService.shared.deductInventory(for: design.flowerList)
+    }
 
     // 2. Update Design Status
     var updatedDesign = design
@@ -72,7 +76,7 @@ class HistoryService: ObservableObject {
   private func loadDesigns() {
     guard let context = modelContext else { return }
 
-    var descriptor = FetchDescriptor<DesignRecord>(
+    let descriptor = FetchDescriptor<DesignRecord>(
       sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
     )
     do {

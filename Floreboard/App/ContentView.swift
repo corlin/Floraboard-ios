@@ -22,18 +22,18 @@ struct ContentView: View {
             }
             .tag(1)
 
-          HistoryView(onStartDesign: {
-            hapticManager.impact(style: .light)
-            selection = 3
-          })
-            .tabItem {
-              Label(localizationManager.t("app.nav.history"), systemImage: "clock.arrow.circlepath")
-            }
-            .tag(2)
-
           DesignMainView()
             .tabItem {
               Label(localizationManager.t("app.nav.design"), systemImage: "wand.and.stars")
+            }
+            .tag(2)
+
+          HistoryView(onStartDesign: {
+            hapticManager.impact(style: .light)
+            selection = 2
+          })
+            .tabItem {
+              Label(localizationManager.t("app.nav.history"), systemImage: "clock.arrow.circlepath")
             }
             .tag(3)
 

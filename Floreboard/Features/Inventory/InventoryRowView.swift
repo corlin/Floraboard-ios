@@ -5,123 +5,92 @@ struct FlowerRow: View {
   var onEdit: () -> Void
   var onDelete: () -> Void
 
-  // Computed Margin
-  var marginPercent: Int {
-    guard flower.retailPrice > 0 else { return 0 }
-    return Int(((flower.retailPrice - flower.unitCost) / flower.retailPrice) * 100)
-  }
-
-  var marginColor: Color {
-    if marginPercent >= 60 {
-      return AppTheme.success
-    } else if marginPercent >= 40 {
-      return AppTheme.stockRisk
-    } else {
-      return AppTheme.danger
-    }
+  private var stockLevel: StockLevel {
+    if flower.quantity == 0 { return .out }
+    if flower.quantity < 10 { return .low }
+    return .normal
   }
 
   var body: some View {
-    HStack(spacing: 16) {
-      // Color Circle with Low Stock Indicator
+    HStack(spacing: 14) {
+      // Flower color indicator
       ZStack {
         Circle()
           .fill(Color(string: flower.color))
-          .frame(width: 48, height: 48)
-          .overlay(Circle().stroke(AppTheme.hairline, lineWidth: 2))
-          .shadow(radius: 2)
+          .frame(width: 44, height: 44)
+          .overlay(
+            Circle()
+              .stroke(AppTheme.hairline.opacity(0.5), lineWidth: 1)
+          )
 
-        if flower.quantity < 10 {
-          Image(systemName: "exclamationmark.triangle.fill")
-            .foregroundColor(AppTheme.danger)
-            .background(Circle().fill(AppTheme.surfaceStrong))
-            .offset(x: 16, y: -16)
+        // Low stock badge
+        if stockLevel != .normal {
+          Circle()
+            .fill(stockLevel == .out ? AppTheme.danger : AppTheme.warning)
+            .frame(width: 12, height: 12)
+            .overlay(
+              Circle().stroke(AppTheme.card, lineWidth: 2)
+            )
+            .offset(x: 15, y: -15)
         }
       }
 
-      VStack(alignment: .leading, spacing: 6) {
-        HStack {
-          Text(flower.name)
-            .font(AppTheme.serifFont(size: 18, weight: .semibold))
-            .foregroundColor(AppTheme.foreground)
+      // Name + category
+      VStack(alignment: .leading, spacing: 4) {
+        Text(flower.name)
+          .font(AppTheme.sansFont(size: 16, weight: .semibold))
+          .foregroundColor(AppTheme.foreground)
+          .lineLimit(1)
 
-          // Category Badge
+        HStack(spacing: 6) {
           Text(flower.category.displayName)
-            .font(.caption2)
+            .font(AppTheme.sansFont(size: 12, weight: .medium))
+            .foregroundColor(AppTheme.primary.opacity(0.8))
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
-            .background(AppTheme.primary.opacity(0.1))
-            .foregroundColor(AppTheme.primary)
-            .cornerRadius(4)
-        }
+            .background(AppTheme.primary.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
 
-        // Stats Row
-        HStack(spacing: 12) {
-          Text("\(Tx.t("inventory.row.stock")): \(flower.quantity)")
-            .font(AppTheme.sansFont(size: 12))
-            .foregroundColor(flower.quantity < 10 ? AppTheme.danger : AppTheme.mutedText)
-
-          Text("\(Tx.t("inventory.row.used")): \(flower.totalUsed ?? 0)")
-            .font(AppTheme.sansFont(size: 12))
-            .foregroundColor(AppTheme.operationalInfo)
-        }
-
-        // Tags
-        if let tags = flower.cultureTags, !tags.isEmpty {
-          ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-              ForEach(tags, id: \.self) { tag in
-                Text(Tx.t("inventory.form.cultureOptions.\(tag.lowercased())"))
-                  .font(.caption2)
-                  .padding(.horizontal, 4)
-                  .padding(.vertical, 2)
-                  .overlay(
-                    RoundedRectangle(cornerRadius: 4).stroke(
-                      AppTheme.hairline, lineWidth: 1)
-                  )
-                  .foregroundColor(AppTheme.mutedText)
-              }
-            }
+          if let meaning = flower.meaning, !meaning.isEmpty {
+            Text(meaning)
+              .font(AppTheme.sansFont(size: 12))
+              .foregroundColor(AppTheme.mutedText)
+              .lineLimit(1)
           }
         }
       }
 
       Spacer()
 
+      // Stock + price (primary data)
       VStack(alignment: .trailing, spacing: 4) {
-        // Price & Cost
-        HStack(spacing: 4) {
-          Text(CurrencyFormat.compact(flower.retailPrice))
-            .font(AppTheme.sansFont(size: 16, weight: .bold))
-            .foregroundColor(AppTheme.primary)
-          Text("(\(CurrencyFormat.compact(flower.unitCost)))")
-            .font(AppTheme.sansFont(size: 12))
-            .foregroundColor(AppTheme.mutedText)
-        }
+        Text("\(flower.quantity)")
+          .font(AppTheme.sansFont(size: 20, weight: .bold))
+          .foregroundColor(stockLevel.color)
+          .contentTransition(.numericText())
 
-        // Margin
-        Text("\(Tx.t("inventory.row.margin")): \(marginPercent)%")
-          .font(.caption.bold())
-          .foregroundColor(marginColor)
-
-        HStack {
-          Button(action: onEdit) {
-            Image(systemName: "pencil.circle.fill")
-              .foregroundColor(AppTheme.foreground.opacity(0.6))
-              .font(.title2)
-          }
-
-          Button(action: onDelete) {
-            Image(systemName: "trash.circle.fill")
-              .foregroundColor(AppTheme.danger.opacity(0.7))
-              .font(.title2)
-          }
-        }
-        .padding(.top, 4)
+        Text(CurrencyFormat.compact(flower.retailPrice))
+          .font(AppTheme.sansFont(size: 13, weight: .medium))
+          .foregroundColor(AppTheme.mutedText)
       }
     }
-    .padding()
+    .padding(.horizontal, 16)
+    .padding(.vertical, 14)
     .glassmorphic()
+    .accessibilityElement(children: .combine)
+    .accessibilityLabel("\(flower.name), \(Tx.t("inventory.row.stock")) \(flower.quantity), \(CurrencyFormat.compact(flower.retailPrice))")
+  }
+}
+
+private enum StockLevel {
+  case normal, low, out
+
+  var color: Color {
+    switch self {
+    case .normal: return AppTheme.foreground
+    case .low: return AppTheme.warning
+    case .out: return AppTheme.danger
+    }
   }
 }
 
