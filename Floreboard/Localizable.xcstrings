@@ -4,6 +4,9 @@
     "" : {
 
     },
+    "·" : {
+
+    },
     "%@ (%@)" : {
       "localizations" : {
         "en" : {
@@ -20,6 +23,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ (Stock: %2$lld)"
+          }
+        }
+      }
+    },
+    "%@ %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$lld"
           }
         }
       }
@@ -2966,7 +2979,7 @@
       }
     },
     "inventory.row.used" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2977,7 +2990,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已用"
+            "value" : "已消耗"
           }
         }
       }

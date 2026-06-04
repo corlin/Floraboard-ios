@@ -62,16 +62,31 @@ struct FlowerRow: View {
 
       Spacer()
 
-      // Stock + price (primary data)
+      // Stock + price & usage
       VStack(alignment: .trailing, spacing: 4) {
         Text("\(flower.quantity)")
           .font(AppTheme.sansFont(size: 20, weight: .bold))
           .foregroundColor(stockLevel.color)
           .contentTransition(.numericText())
 
-        Text(CurrencyFormat.compact(flower.retailPrice))
-          .font(AppTheme.sansFont(size: 13, weight: .medium))
-          .foregroundColor(AppTheme.mutedText)
+        HStack(spacing: 6) {
+          Text(CurrencyFormat.compact(flower.retailPrice))
+            .font(AppTheme.sansFont(size: 12, weight: .medium))
+            .foregroundColor(AppTheme.mutedText)
+          
+          if let used = flower.totalUsed, used > 0 {
+            Text("·")
+              .foregroundColor(AppTheme.mutedText)
+            
+            HStack(spacing: 2) {
+              Image(systemName: "arrow.down.right")
+                .font(.system(size: 9, weight: .bold))
+              Text("\(Tx.t("inventory.row.used")) \(used)")
+                .font(AppTheme.sansFont(size: 12, weight: .semibold))
+            }
+            .foregroundColor(AppTheme.warning)
+          }
+        }
       }
     }
     .padding(.horizontal, 16)

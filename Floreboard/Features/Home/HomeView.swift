@@ -18,11 +18,11 @@ struct HomeView: View {
   }
 
   var totalRevenue: Double {
-    historyService.savedDesigns.reduce(0) { $0 + $1.totalCost }  // Using totalCost as proxy for revenue, or profit logic if available
+    historyService.savedDesigns.reduce(0) { $0 + $1.totalCost }
   }
 
   var recentDesigns: [DesignResult] {
-    Array(historyService.savedDesigns.prefix(5))
+    Array(historyService.savedDesigns.prefix(8))
   }
 
   var body: some View {
@@ -30,101 +30,118 @@ struct HomeView: View {
       ZStack {
         AppTheme.premiumGradient.ignoresSafeArea()
 
-        ScrollView {
-          VStack(alignment: .leading, spacing: 24) {
+        // Background decorative elements (optional, subtle)
+        Circle()
+            .fill(AppTheme.primary.opacity(0.05))
+            .frame(width: 300, height: 300)
+            .blur(radius: 60)
+            .offset(x: 150, y: -200)
+
+        Circle()
+            .fill(AppTheme.accent.opacity(0.04))
+            .frame(width: 250, height: 250)
+            .blur(radius: 50)
+            .offset(x: -100, y: 150)
+
+        ScrollView(showsIndicators: false) {
+          VStack(alignment: .leading, spacing: 32) {
             // Hero Welcome
             VStack(alignment: .leading, spacing: 8) {
-              Text(loc.t("home.greeting", ["name": auth.currentTenant?.name ?? "Florist"]))
-                .font(AppTheme.sansFont(size: 14, weight: .medium))
-                .foregroundColor(AppTheme.mutedText)
-
-              HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                  Text(auth.currentTenant?.name ?? "Floreboard")
-                    .font(AppTheme.serifFont(size: 30, weight: .bold))
-                    .foregroundColor(AppTheme.foreground)
-                  Text(
-                    loc.t(
-                      "home.subtitle", ["date": Date().formatted(date: .abbreviated, time: .omitted)])
-                  )
-                  .font(AppTheme.sansFont(size: 13))
-                  .foregroundColor(AppTheme.mutedText)
-                }
-
+              HStack {
+                Image(systemName: "leaf.fill")
+                  .foregroundColor(AppTheme.primary)
+                Text("Petal & Bloom")
+                  .font(AppTheme.sansFont(size: 15, weight: .semibold))
+                  .foregroundColor(AppTheme.primary)
                 Spacer()
-
                 Button {
-                  hapticManager.impact(style: .light)
-                  selection = 2
+                  // notification action
                 } label: {
-                  Image(systemName: "wand.and.stars")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(AppTheme.iconOnAccent)
-                    .frame(width: 44, height: 44)
-                    .background(
-                      LinearGradient(
-                        colors: [AppTheme.primary, AppTheme.primary.opacity(0.8)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                      )
+                  Image(systemName: "bell")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(AppTheme.primary)
+                    .overlay(
+                        Circle()
+                            .fill(AppTheme.danger)
+                            .frame(width: 8, height: 8)
+                            .offset(x: 6, y: -6)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .shadow(color: AppTheme.primary.opacity(0.35), radius: 10, x: 0, y: 5)
                 }
                 .buttonStyle(.plain)
               }
+              .padding(.bottom, 16)
+
+              HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 6) {
+                  Text(loc.t("home.greeting", ["name": auth.currentTenant?.name ?? "Sarah"]))
+                    .font(AppTheme.serifFont(size: 32, weight: .bold))
+                    .foregroundColor(AppTheme.foreground)
+                }
+                Spacer()
+                Text(Date().formatted(date: .abbreviated, time: .omitted))
+                  .font(AppTheme.sansFont(size: 14, weight: .medium))
+                  .foregroundColor(AppTheme.mutedText)
+              }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 24)
             .padding(.top, 16)
-            .padding(.bottom, 4)
 
-            // Quick Stats Grid
-            LazyVGrid(
-              columns: [GridItem(.adaptive(minimum: 108), spacing: 12)],
-              spacing: 12
-            ) {
-              StatCard(
-                title: loc.t("home.stats.inventoryOverview"),
-                value: "\(inventoryService.flowers.count)",
-                subValue: "\(totalStock) " + loc.t("home.stats.itemCount"),
-                icon: "leaf.fill",
-                color: AppTheme.inventory
-              )
-
-              StatCard(
-                title: loc.t("home.stats.stockAlert"),
-                value: "\(lowStockCount)",
-                subValue: loc.t("home.stats.card.lowStock"),
-                icon: "exclamationmark.triangle.fill",
-                color: lowStockCount > 0 ? AppTheme.danger : AppTheme.success
-              )
-
-              StatCard(
-                title: loc.t("home.stats.revenue"),
-                value: CurrencyFormat.compact(totalRevenue),
-                subValue: "\(recentDesigns.count) "
-                  + loc.t("home.stats.designCount", ["count": ""]),  // Need to handle plurals or just append text? For now just append generic
-                icon: "yensign.circle.fill",
-                color: AppTheme.revenue
-              )
-            }
-            .padding(.horizontal)
-
-            // Quick Actions & Inspiration
+            // Quick Stats Row (Overview)
             VStack(alignment: .leading, spacing: 16) {
-              Text(loc.t("home.quickActions.title"))
-                .font(AppTheme.serifFont(size: 20, weight: .semibold))
+              Text("Overview")
+                .font(AppTheme.serifFont(size: 22, weight: .semibold))
                 .foregroundColor(AppTheme.foreground)
-                .padding(.horizontal)
+                .padding(.horizontal, 24)
 
-              HStack(spacing: 12) {
+              ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                  Spacer().frame(width: 8)
+                  StatCard(
+                    title: loc.t("home.stats.inventoryOverview"),
+                    value: "\(inventoryService.flowers.count)",
+                    subValue: "Total: \(totalStock)",
+                    icon: "cart",
+                    color: AppTheme.inventory,
+                    trend: "+5.2% 􀄥"
+                  )
+
+                  StatCard(
+                    title: loc.t("home.stats.stockAlert"),
+                    value: "\(lowStockCount)",
+                    subValue: loc.t("home.stats.card.lowStock"),
+                    icon: "clock",
+                    color: lowStockCount > 0 ? AppTheme.danger : AppTheme.success,
+                    trend: nil
+                  )
+
+                  StatCard(
+                    title: loc.t("home.stats.revenue"),
+                    value: CurrencyFormat.compact(totalRevenue),
+                    subValue: "Daily Revenue",
+                    icon: "dollarsign.circle",
+                    color: AppTheme.revenue,
+                    trend: "+12% 􀄥"
+                  )
+                  Spacer().frame(width: 8)
+                }
+              }
+            }
+
+            // Quick Actions (Modernized)
+            VStack(alignment: .leading, spacing: 16) {
+              Text("Actions")
+                .font(AppTheme.serifFont(size: 22, weight: .semibold))
+                .foregroundColor(AppTheme.foreground)
+                .padding(.horizontal, 24)
+
+              HStack(spacing: 16) {
                 Button {
                   hapticManager.impact(style: .light)
                   selection = 1
                 } label: {
                   QuickActionCard(
                     title: loc.t("home.quickActions.addInventory"),
-                    icon: "plus.circle.fill",
+                    icon: "plus",
                     color: AppTheme.inventory
                   )
                 }
@@ -136,114 +153,72 @@ struct HomeView: View {
                 } label: {
                   QuickActionCard(
                     title: loc.t("home.quickActions.smartDesign"),
-                    icon: "sparkles",
+                    icon: "wand.and.stars",
                     color: AppTheme.aiDesign
                   )
                 }
                 .buttonStyle(.plain)
               }
-              .padding(.horizontal)
-
-              // Inspiration — subtle inline hint
-              HStack(spacing: 10) {
-                Image(systemName: "lightbulb.max.fill")
-                  .font(.system(size: 13, weight: .semibold))
-                  .foregroundColor(AppTheme.accent)
-
-                Text(loc.t("home.quickActions.inspirationText"))
-                  .font(AppTheme.sansFont(size: 13))
-                  .foregroundColor(AppTheme.mutedText)
-                  .lineLimit(2)
-              }
-              .padding(.horizontal, 14)
-              .padding(.vertical, 10)
-              .background(AppTheme.accent.opacity(0.06))
-              .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-              .padding(.horizontal)
+              .padding(.horizontal, 24)
             }
 
-            // Recent Activity
+            // Recent Activity Gallery
             VStack(alignment: .leading, spacing: 16) {
               HStack {
-                Text(loc.t("home.recentDesigns.title"))
-                  .font(AppTheme.serifFont(size: 20, weight: .semibold))
-                  .foregroundColor(AppTheme.foreground)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Recent Floral Designs")
+                      .font(AppTheme.serifFont(size: 22, weight: .semibold))
+                      .foregroundColor(AppTheme.foreground)
+                    Text("A beautiful horizontal gallery")
+                        .font(AppTheme.sansFont(size: 14))
+                        .foregroundColor(AppTheme.mutedText)
+                }
                 Spacer()
                 Button {
                   hapticManager.impact(style: .light)
                   selection = 3
                 } label: {
-                  Text(loc.t("home.recentDesigns.viewAll"))
-                    .font(AppTheme.sansFont(size: 14))
+                  Image(systemName: "arrow.right")
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(AppTheme.primary)
+                    .frame(width: 36, height: 36)
+                    .background(AppTheme.primary.opacity(0.1))
+                    .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
               }
-              .padding(.horizontal)
+              .padding(.horizontal, 24)
 
               if recentDesigns.isEmpty {
-                VStack(spacing: 14) {
+                VStack(spacing: 16) {
                   Image(systemName: "sparkles")
-                    .font(.system(size: 36))
-                    .foregroundStyle(
-                      LinearGradient(
-                        colors: [AppTheme.primary, AppTheme.creative],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                      )
-                    )
+                    .font(.system(size: 40))
+                    .foregroundColor(AppTheme.accent)
                   Text(loc.t("home.recentDesigns.empty"))
-                    .font(AppTheme.sansFont(size: 14))
+                    .font(AppTheme.sansFont(size: 15))
                     .foregroundColor(AppTheme.mutedText)
-                    .multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 36)
+                .padding(.vertical, 48)
                 .glassmorphic()
-                .padding(.horizontal)
+                .padding(.horizontal, 24)
               } else {
-                VStack(spacing: 12) {
-                  ForEach(recentDesigns) { design in
-                    NavigationLink(destination: DesignDetailView(design: design)) {
-                      // Compact Row
-                      HStack(spacing: 12) {
-                        // Thumbnail
-                        CompactThumbnail(path: design.imageUrl)
-
-                        VStack(alignment: .leading, spacing: 4) {
-                          Text(design.title)
-                            .font(AppTheme.sansFont(size: 16, weight: .medium))
-                            .foregroundColor(AppTheme.foreground)
-                            .lineLimit(1)
-                          Text(
-                            Date(timeIntervalSince1970: design.createdAt).formatted(
-                              date: .numeric, time: .omitted)
-                          )
-                          .font(AppTheme.sansFont(size: 12))
-                          .foregroundColor(AppTheme.mutedText)
-                        }
-
-                        Spacer()
-
-                        Text(CurrencyFormat.compact(design.totalCost))
-                          .font(AppTheme.sansFont(size: 14, weight: .bold))
-                          .foregroundColor(AppTheme.primary)
-
-                        Image(systemName: "chevron.right")
-                          .font(.caption)
-                          .foregroundColor(AppTheme.mutedText.opacity(0.5))
+                ScrollView(.horizontal, showsIndicators: false) {
+                  HStack(spacing: 20) {
+                    Spacer().frame(width: 4)
+                    ForEach(recentDesigns) { design in
+                      NavigationLink(destination: DesignDetailView(design: design)) {
+                        DesignGalleryCard(design: design)
                       }
-                      .padding(12)
-                      .glassmorphic()
+                      .buttonStyle(PlainButtonStyle())
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    Spacer().frame(width: 4)
                   }
                 }
-                .padding(.horizontal)
               }
             }
           }
-          .padding(.bottom, 40)
+          .padding(.bottom, 60)
         }
       }
       .toolbar(.hidden, for: .navigationBar)
@@ -251,35 +226,51 @@ struct HomeView: View {
   }
 }
 
+// MARK: - Components
+
 struct StatCard: View {
   let title: String
   let value: String
   let subValue: String
   let icon: String
   let color: Color
+  let trend: String?
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 10) {
-      Image(systemName: icon)
-        .foregroundColor(color)
-        .font(.system(size: 16, weight: .semibold))
-        .frame(width: 32, height: 32)
-        .background(color.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+    VStack(alignment: .leading, spacing: 12) {
+      HStack {
+        Text(title)
+          .font(AppTheme.sansFont(size: 14, weight: .medium))
+          .foregroundColor(AppTheme.foreground.opacity(0.8))
+        Spacer()
+        Image(systemName: icon)
+          .foregroundColor(color)
+          .font(.system(size: 14, weight: .semibold))
+          .frame(width: 28, height: 28)
+          .background(color.opacity(0.15))
+          .clipShape(Circle())
+      }
 
-      Text(value)
-        .font(AppTheme.sansFont(size: 24, weight: .bold))
-        .foregroundColor(AppTheme.foreground)
-        .minimumScaleFactor(0.7)
+      VStack(alignment: .leading, spacing: 4) {
+        Text(value)
+          .font(AppTheme.sansFont(size: 28, weight: .bold))
+          .foregroundColor(AppTheme.foreground)
 
-      Text(title)
-        .font(AppTheme.sansFont(size: 12, weight: .medium))
-        .foregroundColor(AppTheme.mutedText)
-        .lineLimit(2)
-        .fixedSize(horizontal: false, vertical: true)
+        HStack {
+            if let trend = trend {
+                Text(trend)
+                    .font(AppTheme.sansFont(size: 12, weight: .semibold))
+                    .foregroundColor(color)
+            } else {
+                Text(subValue)
+                    .font(AppTheme.sansFont(size: 12, weight: .medium))
+                    .foregroundColor(color)
+            }
+        }
+      }
     }
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .padding(14)
+    .frame(width: 150)
+    .padding(16)
     .glassmorphic()
   }
 }
@@ -290,34 +281,90 @@ struct QuickActionCard: View {
   let color: Color
 
   var body: some View {
-    HStack(spacing: 12) {
+    HStack(spacing: 16) {
       Image(systemName: icon)
-        .font(.system(size: 18, weight: .semibold))
+        .font(.system(size: 20, weight: .semibold))
         .foregroundColor(color)
-        .frame(width: 36, height: 36)
-        .background(color.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .frame(width: 44, height: 44)
+        .background(color.opacity(0.15))
+        .clipShape(Circle())
 
       Text(title)
-        .font(AppTheme.sansFont(size: 15, weight: .semibold))
+        .font(AppTheme.sansFont(size: 16, weight: .semibold))
         .foregroundColor(AppTheme.foreground)
         .lineLimit(2)
-        .fixedSize(horizontal: false, vertical: true)
 
       Spacer()
-
-      Image(systemName: "chevron.right")
-        .font(.system(size: 12, weight: .bold))
-        .foregroundColor(AppTheme.mutedText.opacity(0.4))
     }
-    .padding(14)
-    .frame(maxWidth: .infinity, minHeight: 64)
+    .padding(16)
+    .frame(maxWidth: .infinity)
     .glassmorphic()
-    .contentShape(Rectangle())
   }
 }
 
-struct CompactThumbnail: View {
+struct DesignGalleryCard: View {
+  let design: DesignResult
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      // Thumbnail
+      GalleryThumbnail(path: design.imageUrl)
+
+      // Content
+      VStack(alignment: .leading, spacing: 6) {
+        HStack {
+            Text(design.title)
+              .font(AppTheme.sansFont(size: 16, weight: .bold))
+              .foregroundColor(AppTheme.foreground)
+              .lineLimit(1)
+            Spacer()
+            Text(CurrencyFormat.compact(design.totalCost))
+              .font(AppTheme.sansFont(size: 15, weight: .bold))
+              .foregroundColor(AppTheme.foreground)
+        }
+
+        Text("Designer - Floral AI")
+            .font(AppTheme.sansFont(size: 12))
+            .foregroundColor(AppTheme.mutedText)
+
+        Divider()
+            .padding(.vertical, 4)
+
+        HStack {
+            VStack(alignment: .center, spacing: 2) {
+                Text("42")
+                    .font(AppTheme.sansFont(size: 13, weight: .bold))
+                Text("Orders")
+                    .font(AppTheme.sansFont(size: 11))
+                    .foregroundColor(AppTheme.mutedText)
+            }
+            Spacer()
+            VStack(alignment: .center, spacing: 2) {
+                Text("5 􀋙")
+                    .font(AppTheme.sansFont(size: 13, weight: .bold))
+                    .foregroundColor(AppTheme.warning)
+                Text("Stars")
+                    .font(AppTheme.sansFont(size: 11))
+                    .foregroundColor(AppTheme.mutedText)
+            }
+            Spacer()
+            VStack(alignment: .center, spacing: 2) {
+                Text("1.2k")
+                    .font(AppTheme.sansFont(size: 13, weight: .bold))
+                Text("Likes")
+                    .font(AppTheme.sansFont(size: 11))
+                    .foregroundColor(AppTheme.mutedText)
+            }
+        }
+      }
+      .padding(16)
+    }
+    .frame(width: 240)
+    .glassmorphic()
+  }
+}
+
+struct GalleryThumbnail: View {
   let path: String?
   @Environment(\.imagePersistence) var imagePersistence
   @State private var image: UIImage?
@@ -328,18 +375,25 @@ struct CompactThumbnail: View {
         Image(uiImage: img)
           .resizable()
           .scaledToFill()
-          .frame(width: 44, height: 44)
-          .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+          .frame(height: 180)
+          .clipped()
       } else {
-        RoundedRectangle(cornerRadius: 10, style: .continuous)
+        Rectangle()
           .fill(AppTheme.primary.opacity(0.08))
-          .frame(width: 44, height: 44)
+          .frame(height: 180)
           .overlay(
-            Image(systemName: "leaf")
-              .font(.system(size: 14))
-              .foregroundColor(AppTheme.primary.opacity(0.4))
+            Image(systemName: "photo.on.rectangle")
+              .font(.system(size: 30))
+              .foregroundColor(AppTheme.primary.opacity(0.3))
           )
       }
+    }
+    .overlay(alignment: .topTrailing) {
+        Image(systemName: "heart")
+            .font(.system(size: 18, weight: .semibold))
+            .foregroundColor(.white)
+            .padding(12)
+            .shadow(color: .black.opacity(0.3), radius: 3)
     }
     .task {
       if let p = path, !p.hasPrefix("http") {
