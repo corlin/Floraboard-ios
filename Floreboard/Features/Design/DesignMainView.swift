@@ -25,36 +25,39 @@ struct DesignMainView: View {
         ScrollView {
           VStack(spacing: 24) {
 
-            // Section: Mode Selection (Glass Card)
-            VStack(alignment: .leading, spacing: 10) {
-              Text(Tx.t("design.tabs.quick"))  // Using Quick/Pro label as title for now or "Design Mode"
-                .font(AppTheme.serifFont(size: 20, weight: .bold))
-                .foregroundColor(AppTheme.foreground)
+            // Section: Visual Muse
+            VisualMuseView(viewModel: viewModel, pickerItem: $pickerItem)
 
-              Picker(Tx.t("design.tabs.quick"), selection: $viewModel.isProfessionalMode) {
-                Text(Tx.t("design.tabs.quick")).tag(false)
-                Text(Tx.t("design.tabs.pro")).tag(true)
+            // Section: Design Form (Unified Card)
+            VStack(alignment: .leading, spacing: 24) {
+              
+              // Mode Toggle
+              VStack(alignment: .leading, spacing: 12) {
+                Label(Tx.t("design.tabs.quick"), systemImage: "wand.and.stars")
+                  .font(AppTheme.serifFont(size: 20, weight: .bold))
+                  .foregroundColor(AppTheme.foreground)
+
+                Picker(Tx.t("design.tabs.quick"), selection: $viewModel.isProfessionalMode) {
+                  Text(Tx.t("design.tabs.quick")).tag(false)
+                  Text(Tx.t("design.tabs.pro")).tag(true)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .onChange(of: viewModel.isProfessionalMode) { _, _ in
+                  hapticManager.impact(style: .medium)
+                }
               }
-              .pickerStyle(SegmentedPickerStyle())
-              .onChange(of: viewModel.isProfessionalMode) { _, _ in
-                hapticManager.impact(style: .medium)
+
+              Divider()
+
+              // Preferences
+              if !viewModel.isProfessionalMode {
+                QuickFormView(viewModel: viewModel)
+              } else {
+                ProfessionalFormView(viewModel: viewModel)
               }
             }
             .padding()
             .glassmorphic()
-
-            // Section: Visual Muse
-            VisualMuseView(viewModel: viewModel, pickerItem: $pickerItem)
-
-            // Section: Preferences (Quick Mode Only)
-            if !viewModel.isProfessionalMode {
-              QuickFormView(viewModel: viewModel)
-            }
-
-            // Section: Professional Details
-            if viewModel.isProfessionalMode {
-              ProfessionalFormView(viewModel: viewModel)
-            }
 
           }
           .padding()

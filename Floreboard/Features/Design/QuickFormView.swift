@@ -4,38 +4,62 @@ struct QuickFormView: View {
   @ObservedObject var viewModel: DesignViewModel
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 16) {
-      Text(Tx.t("design.step.scene"))
-        .font(AppTheme.serifFont(size: 22, weight: .bold))
-        .foregroundColor(AppTheme.foreground)
+    VStack(alignment: .leading, spacing: 24) {
+      
+      // Occasion
+      VStack(alignment: .leading, spacing: 12) {
+        Label(Tx.t("design.step.scene"), systemImage: "gift")
+          .font(AppTheme.serifFont(size: 22, weight: .bold))
+          .foregroundColor(AppTheme.foreground)
 
-      HStack {
-        Text(Tx.t("design.step.scene"))
-        Spacer()
-        Picker("", selection: $viewModel.request.occasion) {
-          ForEach(OccasionType.allCases) { type in Text(type.displayName).tag(type) }
-        }.pickerStyle(.menu).tint(AppTheme.primary)
+        FlowChipSelector(
+          options: OccasionType.allCases.map { ($0, $0.displayName) },
+          selection: $viewModel.request.occasion
+        )
       }
+
       Divider()
-      HStack {
-        Text(Tx.t("design.style.title"))
-        Spacer()
-        Picker("", selection: $viewModel.request.style) {
-          ForEach(StyleType.allCases) { type in Text(type.displayName).tag(type) }
-        }.pickerStyle(.menu).tint(AppTheme.primary)
+
+      // Style
+      VStack(alignment: .leading, spacing: 12) {
+        Label(Tx.t("design.style.title"), systemImage: "paintpalette")
+          .font(AppTheme.serifFont(size: 18, weight: .semibold))
+          .foregroundColor(AppTheme.foreground)
+
+        FlowChipSelector(
+          options: StyleType.allCases.map { ($0, $0.displayName) },
+          selection: $viewModel.request.style,
+          activeColor: AppTheme.secondary
+        )
       }
+
       Divider()
-      HStack {
-        Text(Tx.t("design.budget.title"))
-        Spacer()
-        TextField("500", value: $viewModel.request.budget, format: .number)
-          .keyboardType(.decimalPad)
-          .multilineTextAlignment(.trailing)
-          .foregroundColor(AppTheme.primary)
-          .font(.system(size: 18, weight: .bold))
+
+      // Budget
+      VStack(alignment: .leading, spacing: 8) {
+        Label(Tx.t("design.budget.title"), systemImage: "banknote")
+          .font(AppTheme.serifFont(size: 18, weight: .semibold))
+          .foregroundColor(AppTheme.foreground)
+
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
+          Text(CurrencyFormat.currencyUnit)
+            .font(AppTheme.sansFont(size: 24, weight: .semibold))
+            .foregroundColor(AppTheme.mutedText)
+          
+          TextField("500", value: $viewModel.request.budget, format: .number)
+            .keyboardType(.decimalPad)
+            .font(.system(size: 32, weight: .bold))
+            .foregroundColor(AppTheme.primary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(AppTheme.surfaceGlass)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: AppTheme.controlRadius)
+                .stroke(AppTheme.hairline, lineWidth: 1)
+        )
       }
     }
-    .padding()
-    .glassmorphic()
   }
 }

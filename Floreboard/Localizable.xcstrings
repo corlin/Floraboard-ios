@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
-    "" : {
-
-    },
     "..." : {
 
     },
@@ -98,6 +95,9 @@
 
     },
     "Actions" : {
+
+    },
+    "Add a reference image to guide the AI" : {
 
     },
     "AI: %@" : {
@@ -1991,9 +1991,6 @@
     "Fetching Quota..." : {
 
     },
-    "Filter" : {
-
-    },
     "filter.culture.all" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3650,9 +3647,6 @@
         }
       }
     },
-    "Proportion" : {
-
-    },
     "Recent Floral Designs" : {
 
     },
@@ -3757,9 +3751,6 @@
           }
         }
       }
-    },
-    "Season" : {
-
     },
     "settings.account" : {
       "extractionState" : "stale",
