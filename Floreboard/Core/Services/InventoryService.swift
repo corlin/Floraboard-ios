@@ -35,9 +35,14 @@ class InventoryService: ObservableObject {
   }
 
   func loadInventory() {
-    guard let context = modelContext else { return }
+    guard let context = modelContext, let tenantId = AuthService.shared.currentTenant?.id else {
+      self.flowers = []
+      return
+    }
 
-    let descriptor = FetchDescriptor<FlowerRecord>()
+    let descriptor = FetchDescriptor<FlowerRecord>(
+      predicate: #Predicate { $0.tenantId == tenantId }
+    )
     do {
       let records = try context.fetch(descriptor)
       if records.isEmpty {
@@ -58,15 +63,17 @@ class InventoryService: ObservableObject {
   }
 
   func addFlower(_ flower: FlowerType) {
-    guard let context = modelContext else { return }
+    guard let context = modelContext, let tenantId = AuthService.shared.currentTenant?.id else { return }
 
     flowers.append(flower)
-    context.insert(FlowerRecord(from: flower))
+    let record = FlowerRecord(from: flower)
+    record.tenantId = tenantId
+    context.insert(record)
     try? context.save()
   }
 
   func updateFlower(_ flower: FlowerType) {
-    guard let context = modelContext else { return }
+    guard let context = modelContext, let tenantId = AuthService.shared.currentTenant?.id else { return }
 
     if let index = flowers.firstIndex(where: { $0.id == flower.id }) {
       flowers[index] = flower
@@ -80,8 +87,11 @@ class InventoryService: ObservableObject {
 
       if let existing = try? context.fetch(descriptor).first {
         existing.update(from: flower)
+        existing.tenantId = tenantId
       } else {
-        context.insert(FlowerRecord(from: flower))
+        let record = FlowerRecord(from: flower)
+        record.tenantId = tenantId
+        context.insert(record)
       }
       try? context.save()
     }
@@ -105,10 +115,12 @@ class InventoryService: ObservableObject {
   }
 
   private func saveInventory() {
-    guard let context = modelContext else { return }
+    guard let context = modelContext, let tenantId = AuthService.shared.currentTenant?.id else { return }
 
     // Sync all in-memory flowers to persistent records
-    let descriptor = FetchDescriptor<FlowerRecord>()
+    let descriptor = FetchDescriptor<FlowerRecord>(
+      predicate: #Predicate { $0.tenantId == tenantId }
+    )
     let existingRecords = (try? context.fetch(descriptor)) ?? []
     let existingMap = Dictionary(uniqueKeysWithValues: existingRecords.map { ($0.id, $0) })
 
@@ -116,8 +128,11 @@ class InventoryService: ObservableObject {
     for flower in flowers {
       if let record = existingMap[flower.id] {
         record.update(from: flower)
+        record.tenantId = tenantId
       } else {
-        context.insert(FlowerRecord(from: flower))
+        let newRecord = FlowerRecord(from: flower)
+        newRecord.tenantId = tenantId
+        context.insert(newRecord)
       }
       processedIDs.insert(flower.id)
     }

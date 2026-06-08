@@ -43,6 +43,17 @@ struct ContentView: View {
             }
             .tag(4)
         }
+        .fullScreenCover(isPresented: $authService.isNewlyRegistered) {
+            PaywallView()
+        }
+        .onAppear {
+            HistoryService.shared.loadDesigns()
+            InventoryService.shared.loadInventory()
+        }
+        .onChange(of: authService.currentTenant?.id) {
+            HistoryService.shared.loadDesigns()
+            InventoryService.shared.loadInventory()
+        }
       } else {
         LoginView()
       }

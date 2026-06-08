@@ -31,6 +31,7 @@ struct LoginRequest: Codable {
 @MainActor
 class AuthService: ObservableObject {
     @Published var isAuthenticated: Bool = false
+    @Published var isNewlyRegistered: Bool = false
     @Published var currentTenant: Tenant?
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
@@ -126,6 +127,49 @@ class AuthService: ObservableObject {
             return false
         }
     }
+
+    func register(storeName: String, password: String) async -> Bool {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            let url = URL(string: "\(authBaseURL)/v1/auth/register")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+            let body = LoginRequest(storeName: storeName, password: password)
+            request.httpBody = try JSONEncoder().encode(body)
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw AuthError.invalidResponse
+            }
+
+            guard (200..<300).contains(httpResponse.statusCode) else {
+                if let errResp = try? JSONDecoder().decode(AIProxyErrorResponse.self, from: data) {
+                    throw AuthError.serverError(errResp.message)
+                }
+                throw AuthError.httpError(httpResponse.statusCode)
+            }
+
+            let authResponse = try JSONDecoder().decode(AuthResponse.self, from: data)
+            // Flag as newly registered so we can show onboarding paywall
+            DispatchQueue.main.async {
+                self.isNewlyRegistered = true
+            }
+            saveSession(tokens: authResponse.tokens, tenant: authResponse.tenant)
+            return true
+        } catch let error as AuthError {
+            errorMessage = error.localizedDescription
+            return false
+        } catch {
+            errorMessage = error.localizedDescription
+            return false
+        }
+    }
+
 
     func refreshTokenIfNeeded() async throws {
         guard let expiresAt = tokenExpiresAt,

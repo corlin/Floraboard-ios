@@ -73,10 +73,14 @@ class HistoryService: ObservableObject {
     }
   }
 
-  private func loadDesigns() {
-    guard let context = modelContext else { return }
+  func loadDesigns() {
+    guard let context = modelContext, let tenantId = AuthService.shared.currentTenant?.id else {
+      self.savedDesigns = []
+      return
+    }
 
     let descriptor = FetchDescriptor<DesignRecord>(
+      predicate: #Predicate { $0.tenantId == tenantId },
       sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
     )
     do {
@@ -90,7 +94,7 @@ class HistoryService: ObservableObject {
 
   /// Persist a single design (upsert).
   private func persist(_ design: DesignResult) {
-    guard let context = modelContext else { return }
+    guard let context = modelContext, let tenantId = AuthService.shared.currentTenant?.id else { return }
 
     let designID = design.id
     var descriptor = FetchDescriptor<DesignRecord>(
@@ -100,8 +104,11 @@ class HistoryService: ObservableObject {
 
     if let existing = try? context.fetch(descriptor).first {
       existing.update(from: design)
+      existing.tenantId = tenantId
     } else {
-      context.insert(DesignRecord(from: design))
+      let record = DesignRecord(from: design)
+      record.tenantId = tenantId
+      context.insert(record)
     }
     try? context.save()
   }

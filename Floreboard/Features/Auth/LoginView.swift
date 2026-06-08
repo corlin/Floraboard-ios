@@ -4,6 +4,7 @@ struct LoginView: View {
   @EnvironmentObject var auth: AuthService
   @State private var storeName = ""
   @State private var password = ""
+  @State private var isRegistering = false
 
   var body: some View {
     ZStack {
@@ -29,6 +30,7 @@ struct LoginView: View {
             .background(AppTheme.surfaceElevated)
             .cornerRadius(AppTheme.controlRadius)
             .overlay(RoundedRectangle(cornerRadius: AppTheme.controlRadius).stroke(AppTheme.hairline, lineWidth: 1))
+            .autocapitalization(.none)
 
           SecureField("Password", text: $password)
             .padding()
@@ -36,11 +38,11 @@ struct LoginView: View {
             .cornerRadius(AppTheme.controlRadius)
             .overlay(RoundedRectangle(cornerRadius: AppTheme.controlRadius).stroke(AppTheme.hairline, lineWidth: 1))
 
-          Button(action: login) {
+          Button(action: submit) {
             if auth.isLoading {
               ProgressView().tint(AppTheme.iconOnAccent)
             } else {
-              Text(Tx.t("login.enter"))
+              Text(isRegistering ? "Create Account" : Tx.t("login.enter"))
                 .font(AppTheme.sansFont(size: 18, weight: .semibold))
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -48,6 +50,18 @@ struct LoginView: View {
           }
           .buttonStyle(PrimaryButtonStyle())
           .disabled(storeName.isEmpty || password.isEmpty || auth.isLoading)
+          
+          Button(action: {
+            withAnimation {
+              isRegistering.toggle()
+              auth.errorMessage = nil
+            }
+          }) {
+            Text(isRegistering ? "Already have an account? Login" : "Don't have an account? Register")
+              .font(AppTheme.sansFont(size: 14, weight: .medium))
+              .foregroundColor(AppTheme.primary)
+          }
+          .padding(.top, 4)
 
           if let errorMessage = auth.errorMessage {
             Text(errorMessage)
@@ -67,9 +81,13 @@ struct LoginView: View {
     }
   }
 
-  func login() {
+  func submit() {
     Task {
-      _ = await auth.login(storeName: storeName, password: password)
+      if isRegistering {
+        _ = await auth.register(storeName: storeName, password: password)
+      } else {
+        _ = await auth.login(storeName: storeName, password: password)
+      }
     }
   }
 }

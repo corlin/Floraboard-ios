@@ -11,6 +11,7 @@ import SwiftData
 @Model
 final class FlowerRecord {
   @Attribute(.unique) var id: String
+  var tenantId: String?
   var name: String
   var color: String
   var quantity: Int
@@ -91,6 +92,7 @@ final class FlowerRecord {
 @Model
 final class DesignRecord {
   @Attribute(.unique) var id: String
+  var tenantId: String?
   var requestId: String
   var title: String
   var designDescription: String

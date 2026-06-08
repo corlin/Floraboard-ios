@@ -103,6 +103,9 @@
     "AI: %@" : {
 
     },
+    "Already have an account? Login" : {
+
+    },
     "app.nav.dashboard" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -187,9 +190,6 @@
           }
         }
       }
-    },
-    "Close" : {
-
     },
     "color.auto" : {
       "extractionState" : "stale",
@@ -1458,6 +1458,9 @@
     "Designer - Floral AI" : {
 
     },
+    "Don't have an account? Register" : {
+
+    },
     "Done" : {
 
     },
@@ -1987,6 +1990,9 @@
           }
         }
       }
+    },
+    "Experience unlimited AI generation, premium visual muses, and priority processing." : {
+
     },
     "Fetching Quota..." : {
 
@@ -3241,6 +3247,9 @@
         }
       }
     },
+    "Maybe Later" : {
+
+    },
     "Orders" : {
 
     },
@@ -4248,10 +4257,7 @@
     "Stars" : {
 
     },
-    "Unlock unlimited AI flower designs and stunning visual concepts without limits." : {
-
-    },
-    "Upgrade to Pro" : {
+    "Unlock Floreboard Pro" : {
 
     },
     "x%lld" : {
