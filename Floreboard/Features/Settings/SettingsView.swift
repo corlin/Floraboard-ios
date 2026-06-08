@@ -33,6 +33,32 @@ struct SettingsView: View {
           }
         }
 
+        Section(header: Text("Account Quota")) {
+          if let quota = viewModel.userQuota {
+            HStack {
+              Text("Credits Balance")
+              Spacer()
+              Text("\(quota.balance)")
+                .bold()
+                .foregroundColor(AppTheme.primary)
+            }
+            HStack {
+              Text("Plan Tier")
+              Spacer()
+              Text(quota.tier.uppercased())
+                .bold()
+                .foregroundColor(quota.tier == "pro" ? .orange : AppTheme.mutedText)
+            }
+          } else {
+            HStack {
+              Text("Fetching Quota...")
+                .foregroundColor(AppTheme.mutedText)
+              Spacer()
+              ProgressView()
+            }
+          }
+        }
+
         Section(header: Text(localizationManager.t("settings.aiService"))) {
           HStack {
             Text(localizationManager.t("settings.aiServiceMode"))

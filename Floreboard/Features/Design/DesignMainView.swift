@@ -122,6 +122,9 @@ struct DesignMainView: View {
           ResultView(result: result)
         }
       }
+      .sheet(isPresented: $viewModel.showPaywall) {
+        PaywallView()
+      }
       .alert(
         item: Binding<AlertItem?>(
           get: { viewModel.errorMessage.map { AlertItem(message: $0) } },

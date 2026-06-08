@@ -6,6 +6,7 @@ struct DesignDetailView: View {
   @EnvironmentObject var inventoryService: InventoryService
   @Environment(\.imagePersistence) var imagePersistence
   @State private var designImage: UIImage? = nil
+  @State private var posterImage: UIImage? = nil
   @State private var isShowingFullScreen = false
   @State private var displayedStatus: DesignStatus?
   @State private var showStockWarning = false
@@ -194,6 +195,38 @@ struct DesignDetailView: View {
       }
     }
     .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .navigationBarTrailing) {
+        if let poster = posterImage {
+          ShareLink(
+            item: Image(uiImage: poster),
+            subject: Text(design.title),
+            message: Text(design.description),
+            preview: SharePreview(design.title, image: Image(uiImage: poster))
+          ) {
+            Image(systemName: "square.and.arrow.up")
+              .font(.system(size: 16, weight: .bold))
+          }
+        } else if let img = designImage {
+          ShareLink(
+            item: Image(uiImage: img),
+            subject: Text(design.title),
+            message: Text(design.description),
+            preview: SharePreview(design.title, image: Image(uiImage: img))
+          ) {
+            Image(systemName: "square.and.arrow.up")
+              .font(.system(size: 16, weight: .bold))
+          }
+        } else {
+          ShareLink(
+            item: "\(design.title)\n\(design.description)"
+          ) {
+            Image(systemName: "square.and.arrow.up")
+              .font(.system(size: 16, weight: .bold))
+          }
+        }
+      }
+    }
     .task {
       await loadDetailImageAsync()
     }
@@ -217,6 +250,19 @@ struct DesignDetailView: View {
   private func loadDetailImageAsync() async {
     if let path = design.imageUrl, !path.hasPrefix("http") {
       self.designImage = imagePersistence.loadImage(named: path)
+    }
+    
+    await MainActor.run {
+      generatePoster()
+    }
+  }
+
+  @MainActor
+  private func generatePoster() {
+    let renderer = ImageRenderer(content: SharePosterView(design: design, image: designImage))
+    renderer.scale = UIScreen.main.scale
+    if let uiImage = renderer.uiImage {
+      self.posterImage = uiImage
     }
   }
 }

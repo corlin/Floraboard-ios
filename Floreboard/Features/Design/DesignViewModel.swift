@@ -14,6 +14,7 @@ class DesignViewModel: ObservableObject {
   @Published var errorMessage: String?
   @Published var generatedResult: DesignResult?
   @Published var showResult = false
+  @Published var showPaywall = false
 
   // UX State
   @Published var cultureFilter: CultureFilter = .all
@@ -176,7 +177,12 @@ class DesignViewModel: ObservableObject {
 
       } catch {
         await MainActor.run {
-          self.errorMessage = AppError(from: error).localizedDescription
+          let appError = AppError(from: error)
+          if case AppError.quotaExceeded = appError {
+            self.showPaywall = true
+          } else {
+            self.errorMessage = appError.localizedDescription
+          }
           self.isLoading = false
         }
       }

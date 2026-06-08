@@ -10,6 +10,7 @@ class SettingsViewModel: ObservableObject {
   @Published var statusMessage: String?
   @Published var isStatusError = false
   @Published var isTestingConnection = false
+  @Published var userQuota: AIProxyQuotaResponse?
 
   private var aiService: AIService?
 
@@ -22,6 +23,21 @@ class SettingsViewModel: ObservableObject {
     guard self.aiService == nil else { return }
     self.aiService = service
     self.config = service.currentConfig
+    fetchQuota()
+  }
+
+  func fetchQuota() {
+    guard let service = aiService else { return }
+    Task {
+      do {
+        let quota = try await service.fetchQuota()
+        await MainActor.run {
+          self.userQuota = quota
+        }
+      } catch {
+        AppLogger.ai.warning("Failed to fetch quota: \(error.localizedDescription)")
+      }
+    }
   }
 
   func save() {

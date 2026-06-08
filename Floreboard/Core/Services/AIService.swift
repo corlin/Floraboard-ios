@@ -63,6 +63,16 @@ class AIService: ObservableObject {
     guard health.ok else { throw AIError.apiError(statusCode: 503) }
   }
 
+  func fetchQuota() async throws -> AIProxyQuotaResponse {
+    let tenantId = await currentTenantId()
+    return try await makeProxyClient().fetchUserQuota(tenantId: tenantId)
+  }
+
+  func verifyIAP(transactionId: String) async throws -> AIProxyQuotaResponse {
+    let tenantId = await currentTenantId()
+    return try await makeProxyClient().verifyIAP(tenantId: tenantId, transactionId: transactionId)
+  }
+
   /// Generates a floral design plan based on user request
   func generateFlowerPlan(request: DesignRequest, inventory: [FlowerType]) async throws
     -> DesignResult

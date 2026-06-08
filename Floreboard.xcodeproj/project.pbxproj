@@ -86,7 +86,7 @@
 				};
 			};
 			buildConfigurationList = 9854985F2F275B0300661CF0 /* Build configuration list for PBXProject "Floreboard" */;
-			developmentRegion = en;
+			developmentRegion = "zh-Hans";
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,

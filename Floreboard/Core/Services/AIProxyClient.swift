@@ -82,6 +82,19 @@ struct AIProxyClient {
     try await get("health")
   }
 
+  func fetchUserQuota(tenantId: String) async throws -> AIProxyQuotaResponse {
+    var request = try makeRequest(path: "v1/users/quota", method: "GET")
+    request.url = URL(string: "v1/users/quota?tenantId=\(tenantId)", relativeTo: baseURL)?.absoluteURL
+    return try await perform(request)
+  }
+
+  func verifyIAP(tenantId: String, transactionId: String) async throws -> AIProxyQuotaResponse {
+    let payload = AIProxyIAPVerifyRequest(tenantId: tenantId, transactionId: transactionId)
+    var request = try makeRequest(path: "v1/iap/verify", method: "POST")
+    request.httpBody = try JSONEncoder().encode(payload)
+    return try await perform(request)
+  }
+
   func uploadReferenceImage(slot: AIProxyUploadSlot, data: Data, contentType: String) async throws {
     var request = URLRequest(url: slot.uploadUrl)
     request.httpMethod = "PUT"
@@ -137,10 +150,16 @@ struct AIProxyClient {
         }
 
         guard (200..<300).contains(httpResponse.statusCode) else {
+          if httpResponse.statusCode == 402 {
+            throw AIProxyError.insufficientQuota
+          }
           if httpResponse.statusCode >= 500 {
             throw AIProxyError.httpStatus(httpResponse.statusCode)
           }
           if let error = try? JSONDecoder().decode(AIProxyErrorResponse.self, from: data) {
+            if error.code == "insufficient_quota" {
+              throw AIProxyError.insufficientQuota
+            }
             throw AIProxyError.rejected(error)
           }
           throw AIProxyError.httpStatus(httpResponse.statusCode)
@@ -307,6 +326,17 @@ struct AIProxyHealthResponse: Codable {
   var environment: String
 }
 
+struct AIProxyQuotaResponse: Codable {
+  var tenantId: String
+  var tier: String
+  var balance: Int
+}
+
+struct AIProxyIAPVerifyRequest: Codable {
+  var tenantId: String
+  var transactionId: String
+}
+
 struct AIProxyErrorResponse: Codable, Error {
   var requestId: String?
   var code: String
@@ -318,6 +348,7 @@ enum AIProxyError: LocalizedError {
   case invalidResponse
   case httpStatus(Int)
   case rejected(AIProxyErrorResponse)
+  case insufficientQuota
 
   var errorDescription: String? {
     switch self {
@@ -329,6 +360,8 @@ enum AIProxyError: LocalizedError {
       return Tx.t("error.apiError", ["code": "\(statusCode)"])
     case .rejected(let error):
       return error.message
+    case .insufficientQuota:
+      return Tx.t("error.api.insufficientQuota")
     }
   }
 }

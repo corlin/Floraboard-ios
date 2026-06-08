@@ -1,7 +1,10 @@
 {
-  "sourceLanguage" : "en",
+  "sourceLanguage" : "zh-Hans",
   "strings" : {
     "" : {
+
+    },
+    "..." : {
 
     },
     "·" : {
@@ -9,7 +12,7 @@
     },
     "%@ (%@)" : {
       "localizations" : {
-        "en" : {
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ (%2$@)"
@@ -19,7 +22,7 @@
     },
     "%@ (Stock: %lld)" : {
       "localizations" : {
-        "en" : {
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ (Stock: %2$lld)"
@@ -29,7 +32,7 @@
     },
     "%@ %lld" : {
       "localizations" : {
-        "en" : {
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ %2$lld"
@@ -39,7 +42,7 @@
     },
     "%@, %@ %lld, %@" : {
       "localizations" : {
-        "en" : {
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@, %2$@ %3$lld, %4$@"
@@ -49,7 +52,7 @@
     },
     "%@: %lld" : {
       "localizations" : {
-        "en" : {
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@: %2$lld"
@@ -59,7 +62,7 @@
     },
     "%@: < %lld" : {
       "localizations" : {
-        "en" : {
+        "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@: < %2$lld"
@@ -76,7 +79,25 @@
     "0.0" : {
 
     },
+    "1.2k" : {
+
+    },
+    "5 􀋙" : {
+
+    },
+    "42" : {
+
+    },
     "500" : {
+
+    },
+    "A beautiful horizontal gallery" : {
+
+    },
+    "Account Quota" : {
+
+    },
+    "Actions" : {
 
     },
     "AI: %@" : {
@@ -166,6 +187,9 @@
           }
         }
       }
+    },
+    "Close" : {
+
     },
     "color.auto" : {
       "extractionState" : "stale",
@@ -404,6 +428,12 @@
           }
         }
       }
+    },
+    "Created with Floraboard" : {
+
+    },
+    "Credits Balance" : {
+
     },
     "design.action.execute" : {
       "extractionState" : "stale",
@@ -1425,6 +1455,12 @@
         }
       }
     },
+    "Designer - Floral AI" : {
+
+    },
+    "Done" : {
+
+    },
     "enum.category.filler" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1952,6 +1988,9 @@
         }
       }
     },
+    "Fetching Quota..." : {
+
+    },
     "Filter" : {
 
     },
@@ -2022,6 +2061,9 @@
           }
         }
       }
+    },
+    "Floraboard" : {
+
     },
     "Floreboard" : {
 
@@ -3148,6 +3190,9 @@
         }
       }
     },
+    "Likes" : {
+
+    },
     "login.brand" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3199,7 +3244,19 @@
         }
       }
     },
+    "Orders" : {
+
+    },
+    "Overview" : {
+
+    },
     "Password" : {
+
+    },
+    "Petal & Bloom" : {
+
+    },
+    "Plan Tier" : {
 
     },
     "pro.prop.7_5_3.name" : {
@@ -3594,6 +3651,9 @@
       }
     },
     "Proportion" : {
+
+    },
+    "Recent Floral Designs" : {
 
     },
     "result.bom.title" : {
@@ -4193,6 +4253,15 @@
           }
         }
       }
+    },
+    "Stars" : {
+
+    },
+    "Unlock unlimited AI flower designs and stunning visual concepts without limits." : {
+
+    },
+    "Upgrade to Pro" : {
+
     },
     "x%lld" : {
 

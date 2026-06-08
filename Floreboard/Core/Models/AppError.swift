@@ -4,6 +4,7 @@ enum AppError: LocalizedError {
   case network(String)
   case server(String)
   case authentication
+  case quotaExceeded
   case unknown(String)
 
   init(from error: Error) {
@@ -41,6 +42,8 @@ enum AppError: LocalizedError {
       case .rejected(let resp):
         // If the backend returned a specific error message, we display it directly
         self = .server(resp.message)
+      case .insufficientQuota:
+        self = .quotaExceeded
       }
     } else {
       let nsError = error as NSError
@@ -57,6 +60,7 @@ enum AppError: LocalizedError {
     case .network(let msg): return msg
     case .server(let msg): return msg
     case .authentication: return Tx.t("error.authentication")
+    case .quotaExceeded: return Tx.t("error.api.insufficientQuota")
     case .unknown(let msg): return msg
     }
   }

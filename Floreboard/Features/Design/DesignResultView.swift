@@ -8,6 +8,7 @@ struct ResultView: View {
   @Environment(\.imagePersistence) var imagePersistence
 
   @State private var designImage: UIImage? = nil
+  @State private var posterImage: UIImage? = nil
   @State private var isShowingFullScreen = false
   @State private var showStockWarning = false
   @State private var shortages: [InventoryService.StockShortage] = []
@@ -188,11 +189,42 @@ struct ResultView: View {
       .navigationTitle(Tx.t("result.title"))
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
-        ToolbarItem(placement: .confirmationAction) {
-          Button(Tx.t("general.done")) {
-            dismiss()
+        ToolbarItem(placement: .navigationBarTrailing) {
+          HStack(spacing: 16) {
+            if let poster = posterImage {
+              ShareLink(
+                item: Image(uiImage: poster),
+                subject: Text(result.title),
+                message: Text(result.description),
+                preview: SharePreview(result.title, image: Image(uiImage: poster))
+              ) {
+                Image(systemName: "square.and.arrow.up")
+                  .font(.system(size: 16, weight: .bold))
+              }
+            } else if let img = designImage {
+              ShareLink(
+                item: Image(uiImage: img),
+                subject: Text(result.title),
+                message: Text(result.description),
+                preview: SharePreview(result.title, image: Image(uiImage: img))
+              ) {
+                Image(systemName: "square.and.arrow.up")
+                  .font(.system(size: 16, weight: .bold))
+              }
+            } else {
+              ShareLink(
+                item: "\(result.title)\n\(result.description)"
+              ) {
+                Image(systemName: "square.and.arrow.up")
+                  .font(.system(size: 16, weight: .bold))
+              }
+            }
+
+            Button(Tx.t("general.done")) {
+              dismiss()
+            }
+            .font(AppTheme.sansFont(size: 16, weight: .bold))
           }
-          .font(AppTheme.sansFont(size: 16, weight: .bold))
         }
       }
       .task {
@@ -214,6 +246,19 @@ struct ResultView: View {
   private func loadDetailImageAsync() async {
     if let path = result.imageUrl, !path.hasPrefix("http") {
       self.designImage = imagePersistence.loadImage(named: path)
+    }
+    
+    await MainActor.run {
+      generatePoster()
+    }
+  }
+
+  @MainActor
+  private func generatePoster() {
+    let renderer = ImageRenderer(content: SharePosterView(design: result, image: designImage))
+    renderer.scale = UIScreen.main.scale
+    if let uiImage = renderer.uiImage {
+      self.posterImage = uiImage
     }
   }
 }
