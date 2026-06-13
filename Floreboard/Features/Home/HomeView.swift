@@ -28,20 +28,7 @@ struct HomeView: View {
   var body: some View {
     NavigationStack {
       ZStack {
-        AppTheme.premiumGradient.ignoresSafeArea()
-
-        // Background decorative elements (optional, subtle)
-        Circle()
-            .fill(AppTheme.primary.opacity(0.05))
-            .frame(width: 300, height: 300)
-            .blur(radius: 60)
-            .offset(x: 150, y: -200)
-
-        Circle()
-            .fill(AppTheme.accent.opacity(0.04))
-            .frame(width: 250, height: 250)
-            .blur(radius: 50)
-            .offset(x: -100, y: 150)
+        PremiumBackgroundView()
 
         ScrollView(showsIndicators: false) {
           VStack(alignment: .leading, spacing: 32) {
@@ -75,7 +62,7 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 6) {
                   Text(loc.t("home.greeting", ["name": auth.currentTenant?.name ?? "Sarah"]))
                     .font(AppTheme.serifFont(size: 32, weight: .bold))
-                    .foregroundColor(AppTheme.foreground)
+                    .foregroundStyle(AppTheme.titleGradient)
                 }
                 Spacer()
                 Text(Date().formatted(date: .abbreviated, time: .omitted))
@@ -102,7 +89,7 @@ struct HomeView: View {
                     subValue: "Total: \(totalStock)",
                     icon: "cart",
                     color: AppTheme.inventory,
-                    trend: "+5.2% 􀄥"
+                    trend: nil
                   )
 
                   StatCard(
@@ -117,10 +104,10 @@ struct HomeView: View {
                   StatCard(
                     title: loc.t("home.stats.revenue"),
                     value: CurrencyFormat.compact(totalRevenue),
-                    subValue: "Daily Revenue",
+                    subValue: "Total Revenue",
                     icon: "dollarsign.circle",
                     color: AppTheme.revenue,
-                    trend: "+12% 􀄥"
+                    trend: nil
                   )
                   Spacer().frame(width: 8)
                 }
@@ -218,7 +205,7 @@ struct HomeView: View {
               }
             }
           }
-          .padding(.bottom, 60)
+          .padding(.bottom, 100)
         }
       }
       .toolbar(.hidden, for: .navigationBar)
@@ -237,37 +224,46 @@ struct StatCard: View {
   let trend: String?
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      HStack {
-        Text(title)
-          .font(AppTheme.sansFont(size: 14, weight: .medium))
-          .foregroundColor(AppTheme.foreground.opacity(0.8))
-        Spacer()
-        Image(systemName: icon)
-          .foregroundColor(color)
-          .font(.system(size: 14, weight: .semibold))
-          .frame(width: 28, height: 28)
-          .background(color.opacity(0.15))
-          .clipShape(Circle())
-      }
+    HStack(spacing: 0) {
+      // Colored left bar
+      RoundedRectangle(cornerRadius: 2)
+        .fill(color)
+        .frame(width: 4)
+        .padding(.vertical, 8)
 
-      VStack(alignment: .leading, spacing: 4) {
-        Text(value)
-          .font(AppTheme.sansFont(size: 28, weight: .bold))
-          .foregroundColor(AppTheme.foreground)
-
+      VStack(alignment: .leading, spacing: 12) {
         HStack {
-            if let trend = trend {
-                Text(trend)
-                    .font(AppTheme.sansFont(size: 12, weight: .semibold))
-                    .foregroundColor(color)
-            } else {
-                Text(subValue)
-                    .font(AppTheme.sansFont(size: 12, weight: .medium))
-                    .foregroundColor(color)
-            }
+          Text(title)
+            .font(AppTheme.sansFont(size: 14, weight: .medium))
+            .foregroundColor(AppTheme.foreground.opacity(0.8))
+          Spacer()
+          Image(systemName: icon)
+            .foregroundColor(color)
+            .font(.system(size: 14, weight: .semibold))
+            .frame(width: 28, height: 28)
+            .background(color.opacity(0.15))
+            .clipShape(Circle())
+        }
+
+        VStack(alignment: .leading, spacing: 4) {
+          Text(value)
+            .font(AppTheme.sansFont(size: 28, weight: .bold))
+            .foregroundColor(AppTheme.foreground)
+
+          HStack {
+              if let trend = trend {
+                  Text(trend)
+                      .font(AppTheme.sansFont(size: 12, weight: .semibold))
+                      .foregroundColor(color)
+              } else {
+                  Text(subValue)
+                      .font(AppTheme.sansFont(size: 12, weight: .medium))
+                      .foregroundColor(color)
+              }
+          }
         }
       }
+      .padding(.leading, 12)
     }
     .frame(width: 150)
     .padding(16)

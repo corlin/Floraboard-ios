@@ -8,7 +8,7 @@ struct LoginView: View {
 
   var body: some View {
     ZStack {
-      AppTheme.premiumGradient.ignoresSafeArea()
+      PremiumBackgroundView()
 
       VStack(spacing: 30) {
         Image("LoginIllustration")

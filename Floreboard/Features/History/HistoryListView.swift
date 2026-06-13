@@ -22,7 +22,7 @@ struct HistoryView: View {
   var body: some View {
     NavigationStack {
       ZStack {
-        AppTheme.premiumGradient.ignoresSafeArea()
+        PremiumBackgroundView()
 
         ScrollView {
           VStack(spacing: 20) {

@@ -49,7 +49,9 @@ class InventoryService: ObservableObject {
         // Seed with initial data
         let initialFlowers = FlowerType.initialData
         for flower in initialFlowers {
-          context.insert(FlowerRecord(from: flower))
+          let record = FlowerRecord(from: flower)
+          record.tenantId = tenantId
+          context.insert(record)
         }
         try context.save()
         self.flowers = initialFlowers

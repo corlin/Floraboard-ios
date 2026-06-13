@@ -15,7 +15,7 @@ struct DesignDetailView: View {
 
   var body: some View {
     ZStack {
-      AppTheme.premiumGradient.ignoresSafeArea()
+      PremiumBackgroundView()
 
       ScrollView {
         VStack(alignment: .leading, spacing: 24) {

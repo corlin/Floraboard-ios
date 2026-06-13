@@ -9,39 +9,32 @@ struct ContentView: View {
   var body: some View {
     Group {
       if authService.isAuthenticated {
-        TabView(selection: $selection) {
-          HomeView(selection: $selection)
-            .tabItem {
-              Label(localizationManager.t("app.nav.dashboard"), systemImage: "square.grid.2x2")
+        ZStack(alignment: .bottom) {
+          // Page Content
+          Group {
+            switch selection {
+            case 0:
+              HomeView(selection: $selection)
+            case 1:
+              InventoryView()
+            case 2:
+              DesignMainView()
+            case 3:
+              HistoryView(onStartDesign: {
+                hapticManager.impact(style: .light)
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                  selection = 2
+                }
+              })
+            case 4:
+              SettingsView()
+            default:
+              HomeView(selection: $selection)
             }
-            .tag(0)
+          }
 
-          InventoryView()
-            .tabItem {
-              Label(localizationManager.t("app.nav.inventory"), systemImage: "leaf.fill")
-            }
-            .tag(1)
-
-          DesignMainView()
-            .tabItem {
-              Label(localizationManager.t("app.nav.design"), systemImage: "wand.and.stars")
-            }
-            .tag(2)
-
-          HistoryView(onStartDesign: {
-            hapticManager.impact(style: .light)
-            selection = 2
-          })
-            .tabItem {
-              Label(localizationManager.t("app.nav.history"), systemImage: "clock.arrow.circlepath")
-            }
-            .tag(3)
-
-          SettingsView()
-            .tabItem {
-              Label(localizationManager.t("app.nav.settings"), systemImage: "gear")
-            }
-            .tag(4)
+          // Floating Tab Bar
+          FloatingTabBar(selection: $selection)
         }
         .fullScreenCover(isPresented: $authService.isNewlyRegistered) {
             PaywallView()

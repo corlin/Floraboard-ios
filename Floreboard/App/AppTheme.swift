@@ -127,6 +127,7 @@ struct AppTheme {
   static let stockRisk = warning
 
   // MARK: - Gradients & Textures
+  /// Legacy gradient for backward compatibility — prefer PremiumBackgroundView() for full pages
   static var premiumGradient: LinearGradient {
     LinearGradient(
       gradient: Gradient(colors: [
@@ -135,6 +136,15 @@ struct AppTheme {
       ]),
       startPoint: .topLeading,
       endPoint: .bottomTrailing
+    )
+  }
+
+  /// Gradient for text foreground styling
+  static var titleGradient: LinearGradient {
+    LinearGradient(
+      colors: [primary, secondary],
+      startPoint: .leading,
+      endPoint: .trailing
     )
   }
 
@@ -209,6 +219,47 @@ struct PrimaryButtonStyle: ButtonStyle {
       .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
       .opacity(configuration.isPressed ? 0.9 : 1.0)
       .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+  }
+}
+
+struct SecondaryButtonStyle: ButtonStyle {
+  var color: Color = AppTheme.primary
+
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .font(AppTheme.titleMedium)
+      .padding(.vertical, 14)
+      .padding(.horizontal, 20)
+      .foregroundColor(color)
+      .background(color.opacity(0.08))
+      .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius, style: .continuous))
+      .overlay(
+        RoundedRectangle(cornerRadius: AppTheme.controlRadius, style: .continuous)
+          .stroke(color.opacity(0.3), lineWidth: 1)
+      )
+      .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+      .opacity(configuration.isPressed ? 0.85 : 1.0)
+      .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+  }
+}
+
+// MARK: - Section Header
+struct SectionHeader: View {
+  let title: String
+  let icon: String
+  var subtitle: String? = nil
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      Label(title, systemImage: icon)
+        .font(AppTheme.serifFont(size: 20, weight: .semibold))
+        .foregroundColor(AppTheme.foreground)
+      if let subtitle {
+        Text(subtitle)
+          .font(AppTheme.sansFont(size: 13))
+          .foregroundColor(AppTheme.mutedText)
+      }
+    }
   }
 }
 

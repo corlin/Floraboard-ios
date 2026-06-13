@@ -20,7 +20,7 @@ struct DesignMainView: View {
     NavigationStack {
       ZStack {
         // Global Background
-        AppTheme.premiumGradient.ignoresSafeArea()
+        PremiumBackgroundView()
 
         ScrollView {
           VStack(spacing: 24) {

@@ -57,16 +57,6 @@
         }
       }
     },
-    "%@: < %lld" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@: < %2$lld"
-          }
-        }
-      }
-    },
     "%lld" : {
 
     },
@@ -89,9 +79,6 @@
 
     },
     "A beautiful horizontal gallery" : {
-
-    },
-    "Account Quota" : {
 
     },
     "Actions" : {
@@ -3247,6 +3234,9 @@
         }
       }
     },
+    "Manage your store preferences" : {
+
+    },
     "Maybe Later" : {
 
     },
@@ -3260,9 +3250,6 @@
 
     },
     "Petal & Bloom" : {
-
-    },
-    "Plan Tier" : {
 
     },
     "pro.prop.7_5_3.name" : {

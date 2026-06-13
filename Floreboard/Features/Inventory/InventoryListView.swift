@@ -10,7 +10,7 @@ struct InventoryView: View {
   var body: some View {
     NavigationStack {
       ZStack {
-        AppTheme.premiumGradient.ignoresSafeArea()
+        PremiumBackgroundView()
 
         ScrollView {
           VStack(spacing: 16) {

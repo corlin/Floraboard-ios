@@ -7,129 +7,261 @@ struct SettingsView: View {
   @StateObject private var viewModel = SettingsViewModel()
   @FocusState private var isEditingText: Bool
   @State private var isShowingLogoutConfirmation = false
+  @State private var appeared = false
 
   var body: some View {
     NavigationStack {
-      Form {
-        // Added Language Picker Section
-        Section(header: Text(localizationManager.t("settings.language"))) {
-          Picker(
-            localizationManager.t("settings.language"),
-            selection: $localizationManager.currentLanguage
-          ) {
-            ForEach(Language.allCases) { lang in
-              Text(lang.displayName).tag(lang)
-            }
-          }
-          .pickerStyle(SegmentedPickerStyle())
-        }
+      ZStack {
+        PremiumBackgroundView()
 
-        Section(header: Text(localizationManager.t("settings.account"))) {
-          HStack {
-            Text(localizationManager.t("settings.storeName"))
-            Spacer()
-            Text(auth.currentTenant?.name ?? "Unknown")
-              .foregroundColor(AppTheme.mutedText)
-          }
-        }
+        ScrollView(showsIndicators: false) {
+          VStack(alignment: .leading, spacing: 24) {
 
-        Section(header: Text("Account Quota")) {
-          if let quota = viewModel.userQuota {
-            HStack {
-              Text("Credits Balance")
-              Spacer()
-              Text("\(quota.balance)")
-                .bold()
-                .foregroundColor(AppTheme.primary)
-            }
-            HStack {
-              Text("Plan Tier")
-              Spacer()
-              Text(quota.tier.uppercased())
-                .bold()
-                .foregroundColor(quota.tier == "pro" ? .orange : AppTheme.mutedText)
-            }
-          } else {
-            HStack {
-              Text("Fetching Quota...")
+            // Page Header
+            VStack(alignment: .leading, spacing: 6) {
+              Text(localizationManager.t("settings.title"))
+                .font(AppTheme.serifFont(size: 32, weight: .bold))
+                .foregroundStyle(AppTheme.titleGradient)
+              Text("Manage your store preferences")
+                .font(AppTheme.sansFont(size: 15))
                 .foregroundColor(AppTheme.mutedText)
-              Spacer()
-              ProgressView()
             }
-          }
-        }
+            .padding(.horizontal, 24)
+            .padding(.top, 16)
 
-        Section(header: Text(localizationManager.t("settings.aiService"))) {
-          HStack {
-            Text(localizationManager.t("settings.aiServiceMode"))
-            Spacer()
-            Label(localizationManager.t("settings.aiServiceManaged"), systemImage: "checkmark.seal.fill")
-              .font(AppTheme.sansFont(size: 13, weight: .semibold))
-              .foregroundColor(AppTheme.success)
-          }
+            // Account Card
+            VStack(alignment: .leading, spacing: 16) {
+              SectionHeader(title: localizationManager.t("settings.account"), icon: "person.crop.circle.fill")
 
-          Text(localizationManager.t("settings.aiServiceManagedDesc"))
-            .font(.footnote)
-            .foregroundColor(AppTheme.mutedText)
+              HStack(spacing: 14) {
+                ZStack {
+                  Circle()
+                    .fill(AppTheme.primary.opacity(0.12))
+                    .frame(width: 48, height: 48)
+                  Text(String((auth.currentTenant?.name ?? "U").prefix(1)).uppercased())
+                    .font(AppTheme.serifFont(size: 22, weight: .bold))
+                    .foregroundColor(AppTheme.primary)
+                }
 
-          Button {
-            viewModel.testConnection()
-          } label: {
-            HStack {
-              Label(localizationManager.t("settings.testConnection"), systemImage: "bolt.heart.fill")
-              Spacer()
-              if viewModel.isTestingConnection {
-                ProgressView()
+                VStack(alignment: .leading, spacing: 3) {
+                  Text(auth.currentTenant?.name ?? "Unknown")
+                    .font(AppTheme.sansFont(size: 17, weight: .semibold))
+                    .foregroundColor(AppTheme.foreground)
+                  Text(auth.currentTenant?.id ?? "")
+                    .font(AppTheme.caption)
+                    .foregroundColor(AppTheme.mutedText)
+                    .lineLimit(1)
+                }
+                Spacer()
               }
             }
-          }
-          .disabled(viewModel.isTestingConnection)
-        }
+            .padding(20)
+            .glassmorphic()
+            .padding(.horizontal, 24)
 
-        Section(header: Text(localizationManager.t("settings.businessRules"))) {
-          HStack {
-            Text(localizationManager.t("settings.defaultBudget"))
-            Spacer()
-            TextField("500", value: $viewModel.config.budget, format: .number)
-              .keyboardType(.numberPad)
-              .multilineTextAlignment(.trailing)
-              .focused($isEditingText)
-          }
+            // Quota Card
+            VStack(alignment: .leading, spacing: 16) {
+              SectionHeader(title: "Account Quota", icon: "sparkles")
 
-          Stepper(
-            "\(localizationManager.t("settings.lowStockWarning")): < \(viewModel.config.lowStockThreshold)",
-            value: $viewModel.config.lowStockThreshold)
-        }
+              if let quota = viewModel.userQuota {
+                VStack(spacing: 16) {
+                  // Balance display
+                  HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                      Text("Credits Balance")
+                        .font(AppTheme.labelMedium)
+                        .foregroundColor(AppTheme.mutedText)
+                      Text("\(quota.balance)")
+                        .font(AppTheme.sansFont(size: 28, weight: .bold))
+                        .foregroundColor(AppTheme.foreground)
+                    }
+                    Spacer()
+                    // Tier Badge
+                    Text(quota.tier.uppercased())
+                      .font(AppTheme.sansFont(size: 12, weight: .bold))
+                      .padding(.horizontal, 12)
+                      .padding(.vertical, 6)
+                      .foregroundColor(quota.tier == "pro" ? AppTheme.accent : AppTheme.mutedText)
+                      .background(
+                        (quota.tier == "pro" ? AppTheme.accent : AppTheme.mutedText).opacity(0.12)
+                      )
+                      .clipShape(Capsule())
+                  }
 
-        Section {
-          Button(localizationManager.t("settings.saveConfig")) {
-            viewModel.save()
-          }
-
-          if let message = viewModel.statusMessage {
-            Text(message)
-              .font(.footnote)
-              .foregroundColor(viewModel.isStatusError ? AppTheme.danger : AppTheme.success)
-          }
-        }
-
-        Section {
-          Button(role: .destructive) {
-            isShowingLogoutConfirmation = true
-          } label: {
-            HStack {
-              Spacer()
-              Text(localizationManager.t("settings.logout"))
-              Spacer()
+                  // Progress bar
+                  GeometryReader { geo in
+                    let ratio = min(Double(quota.balance) / 100000.0, 1.0)
+                    ZStack(alignment: .leading) {
+                      Capsule()
+                        .fill(AppTheme.primary.opacity(0.12))
+                        .frame(height: 8)
+                      Capsule()
+                        .fill(
+                          LinearGradient(
+                            colors: [AppTheme.primary, AppTheme.secondary],
+                            startPoint: .leading, endPoint: .trailing
+                          )
+                        )
+                        .frame(width: geo.size.width * ratio, height: 8)
+                    }
+                  }
+                  .frame(height: 8)
+                }
+              } else {
+                HStack {
+                  Text("Fetching Quota...")
+                    .font(AppTheme.bodySmall)
+                    .foregroundColor(AppTheme.mutedText)
+                  Spacer()
+                  ProgressView()
+                }
+              }
             }
+            .padding(20)
+            .glassmorphic()
+            .padding(.horizontal, 24)
+
+            // Language Card
+            VStack(alignment: .leading, spacing: 16) {
+              SectionHeader(title: localizationManager.t("settings.language"), icon: "globe")
+
+              Picker(
+                localizationManager.t("settings.language"),
+                selection: $localizationManager.currentLanguage
+              ) {
+                ForEach(Language.allCases) { lang in
+                  Text(lang.displayName).tag(lang)
+                }
+              }
+              .pickerStyle(SegmentedPickerStyle())
+            }
+            .padding(20)
+            .glassmorphic()
+            .padding(.horizontal, 24)
+
+            // AI Service Card
+            VStack(alignment: .leading, spacing: 16) {
+              SectionHeader(title: localizationManager.t("settings.aiService"), icon: "cpu")
+
+              HStack {
+                Label(localizationManager.t("settings.aiServiceManaged"), systemImage: "checkmark.seal.fill")
+                  .font(AppTheme.sansFont(size: 14, weight: .semibold))
+                  .foregroundColor(AppTheme.success)
+                Spacer()
+              }
+
+              Text(localizationManager.t("settings.aiServiceManagedDesc"))
+                .font(AppTheme.caption)
+                .foregroundColor(AppTheme.mutedText)
+
+              Button {
+                viewModel.testConnection()
+              } label: {
+                HStack(spacing: 8) {
+                  if viewModel.isTestingConnection {
+                    ProgressView().tint(AppTheme.primary)
+                  } else {
+                    Image(systemName: "bolt.heart.fill")
+                  }
+                  Text(localizationManager.t("settings.testConnection"))
+                }
+                .frame(maxWidth: .infinity)
+              }
+              .buttonStyle(SecondaryButtonStyle())
+              .disabled(viewModel.isTestingConnection)
+
+              if let message = viewModel.statusMessage {
+                Text(message)
+                  .font(AppTheme.caption)
+                  .foregroundColor(viewModel.isStatusError ? AppTheme.danger : AppTheme.success)
+              }
+            }
+            .padding(20)
+            .glassmorphic()
+            .padding(.horizontal, 24)
+
+            // Business Rules Card
+            VStack(alignment: .leading, spacing: 16) {
+              SectionHeader(title: localizationManager.t("settings.businessRules"), icon: "slider.horizontal.3")
+
+              VStack(spacing: 14) {
+                HStack {
+                  Text(localizationManager.t("settings.defaultBudget"))
+                    .font(AppTheme.bodySmall)
+                    .foregroundColor(AppTheme.foreground)
+                  Spacer()
+                  TextField("500", value: $viewModel.config.budget, format: .number)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                    .font(AppTheme.sansFont(size: 16, weight: .semibold))
+                    .foregroundColor(AppTheme.primary)
+                    .frame(width: 100)
+                    .focused($isEditingText)
+                }
+
+                Divider().foregroundColor(AppTheme.hairline)
+
+                HStack {
+                  Text(localizationManager.t("settings.lowStockWarning"))
+                    .font(AppTheme.bodySmall)
+                    .foregroundColor(AppTheme.foreground)
+                  Spacer()
+                  Stepper(
+                    "\(viewModel.config.lowStockThreshold)",
+                    value: $viewModel.config.lowStockThreshold
+                  )
+                  .labelsHidden()
+                  Text("\(viewModel.config.lowStockThreshold)")
+                    .font(AppTheme.sansFont(size: 16, weight: .semibold))
+                    .foregroundColor(AppTheme.primary)
+                    .frame(width: 30)
+                }
+              }
+
+              Button {
+                viewModel.save()
+              } label: {
+                Text(localizationManager.t("settings.saveConfig"))
+                  .frame(maxWidth: .infinity)
+              }
+              .buttonStyle(PrimaryButtonStyle())
+
+              if let message = viewModel.statusMessage {
+                Text(message)
+                  .font(AppTheme.caption)
+                  .foregroundColor(viewModel.isStatusError ? AppTheme.danger : AppTheme.success)
+              }
+            }
+            .padding(20)
+            .glassmorphic()
+            .padding(.horizontal, 24)
+
+            // Logout
+            Button {
+              isShowingLogoutConfirmation = true
+            } label: {
+              HStack(spacing: 8) {
+                Image(systemName: "rectangle.portrait.and.arrow.right")
+                Text(localizationManager.t("settings.logout"))
+              }
+              .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(SecondaryButtonStyle(color: AppTheme.danger))
+            .padding(.horizontal, 24)
+
+            Text(localizationManager.t("settings.logoutHint"))
+              .font(AppTheme.captionSmall)
+              .foregroundColor(AppTheme.mutedText)
+              .multilineTextAlignment(.center)
+              .frame(maxWidth: .infinity)
+              .padding(.horizontal, 24)
+
+            Spacer().frame(height: 100) // Bottom padding for floating tab bar
           }
-        } footer: {
-          Text(localizationManager.t("settings.logoutHint"))
         }
+        .scrollDismissesKeyboard(.interactively)
       }
-      .scrollContentBackground(.hidden)
-      .background(AppTheme.premiumGradient.ignoresSafeArea())
-      .scrollDismissesKeyboard(.interactively)
+      .toolbar(.hidden, for: .navigationBar)
       .toolbar {
         ToolbarItemGroup(placement: .keyboard) {
           Spacer()
@@ -150,9 +282,11 @@ struct SettingsView: View {
       } message: {
         Text(localizationManager.t("settings.logoutConfirmMessage"))
       }
-      .navigationTitle(localizationManager.t("settings.title"))
       .onAppear {
         viewModel.setup(with: aiService)
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+          appeared = true
+        }
       }
     }
   }

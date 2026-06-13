@@ -55,13 +55,21 @@ class AuthService: ObservableObject {
             as? String,
             !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         {
-            return value.trimmingCharacters(in: .whitespacesAndNewlines)
+            var cleanValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !cleanValue.hasPrefix("http") {
+                cleanValue = "https://" + cleanValue
+            }
+            return cleanValue
         }
 
         if let value = UserDefaults.standard.string(forKey: "ai_proxy_base_url"),
             !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         {
-            return value.trimmingCharacters(in: .whitespacesAndNewlines)
+            var cleanValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !cleanValue.hasPrefix("http") {
+                cleanValue = "https://" + cleanValue
+            }
+            return cleanValue
         }
 
         return "https://floreboard-ai-proxy.cybercorlin.workers.dev"
@@ -96,7 +104,11 @@ class AuthService: ObservableObject {
         }
 
         do {
-            let url = URL(string: "\(authBaseURL)/v1/auth/login")!
+            guard let url = URL(string: "\(authBaseURL)/v1/auth/login") else {
+                self.errorMessage = "Invalid API URL configuration."
+                self.isLoading = false
+                return false
+            }
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -134,7 +146,11 @@ class AuthService: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let url = URL(string: "\(authBaseURL)/v1/auth/register")!
+            guard let url = URL(string: "\(authBaseURL)/v1/auth/register") else {
+                self.errorMessage = "Invalid API URL configuration."
+                self.isLoading = false
+                return false
+            }
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -179,7 +195,9 @@ class AuthService: ObservableObject {
             return
         }
 
-        let url = URL(string: "\(authBaseURL)/v1/auth/refresh")!
+        guard let url = URL(string: "\(authBaseURL)/v1/auth/refresh") else {
+            throw AuthError.invalidResponse
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")

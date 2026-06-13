@@ -129,7 +129,7 @@ class AIService: ObservableObject {
   }
 
   private func makeProxyClient() throws -> AIProxyClient {
-    guard let baseURL = URL(string: configuredProxyBaseURL()) else {
+    guard let baseURL = URL(string: aiProxyBaseURL) else {
       throw AIError.invalidURL
     }
 
@@ -139,21 +139,29 @@ class AIService: ObservableObject {
     )
   }
 
-  private func configuredProxyBaseURL() -> String {
-    if let value = Bundle.main.object(forInfoDictionaryKey: ManagedAIConfig.proxyBaseURLInfoKey)
+  private var aiProxyBaseURL: String {
+    if let value = Bundle.main.object(forInfoDictionaryKey: "FLOREBOARD_AI_PROXY_BASE_URL")
       as? String,
       !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     {
-      return value.trimmingCharacters(in: .whitespacesAndNewlines)
+      var cleanValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+      if !cleanValue.hasPrefix("http") {
+        cleanValue = "https://" + cleanValue
+      }
+      return cleanValue
     }
 
-    if let value = UserDefaults.standard.string(forKey: ManagedAIConfig.proxyBaseURLDefaultsKey),
+    if let value = UserDefaults.standard.string(forKey: "ai_proxy_base_url"),
       !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     {
-      return value.trimmingCharacters(in: .whitespacesAndNewlines)
+      var cleanValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+      if !cleanValue.hasPrefix("http") {
+        cleanValue = "https://" + cleanValue
+      }
+      return cleanValue
     }
 
-    return ManagedAIConfig.defaultProxyBaseURL
+    return "https://floreboard-ai-proxy.cybercorlin.workers.dev"
   }
 
   private func configuredProxyToken() -> String? {

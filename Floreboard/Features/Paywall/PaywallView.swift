@@ -7,7 +7,7 @@ struct PaywallView: View {
 
   var body: some View {
     ZStack {
-      AppTheme.premiumGradient.ignoresSafeArea()
+      PremiumBackgroundView()
 
       ScrollView(showsIndicators: false) {
         VStack(spacing: 32) {
