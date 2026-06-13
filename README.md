@@ -5,6 +5,7 @@ This is the native iOS client for **Floraboard**, built completely with **SwiftU
 ## ✨ Key Features
 
 *   **Native Performance**: 100% SwiftUI interface with smooth animations and transitions.
+*   **Premium UI Design**: Features a custom glassmorphic `FloatingTabBar`, animated `PremiumBackgroundView` with floating orbs, and rich visual layering to provide a high-end user experience.
 *   **AI-Powered Design**: Generates floral arrangements and "Image to Flower" analysis through a managed Floreboard AI backend.
 *   **Inventory Management**: dedicated `InventoryViews` for managing stock with haptic feedback.
 *   **History & Portfolio**: Browse past designs in `HistoryViews` with zoomable image support (`ZoomableImageView`).

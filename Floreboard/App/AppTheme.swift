@@ -365,7 +365,7 @@ struct WorkbenchPrimaryActionBar: View {
     .disabled(!isEnabled || isLoading)
     .padding(.horizontal, 20)
     .padding(.top, 24)
-    .padding(.bottom, 16)
+    .padding(.bottom, 96)
     .background(
       LinearGradient(
         colors: [

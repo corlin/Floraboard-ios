@@ -61,7 +61,7 @@ struct DesignMainView: View {
 
           }
           .padding()
-          .padding(.bottom, 96)
+          .padding(.bottom, 180)
         }
       }
       .scrollDismissesKeyboard(.interactively)

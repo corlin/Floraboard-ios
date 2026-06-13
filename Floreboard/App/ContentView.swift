@@ -32,6 +32,9 @@ struct ContentView: View {
               HomeView(selection: $selection)
             }
           }
+          .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: 100)
+          }
 
           // Floating Tab Bar
           FloatingTabBar(selection: $selection)

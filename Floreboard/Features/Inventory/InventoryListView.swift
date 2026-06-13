@@ -110,7 +110,7 @@ struct InventoryView: View {
               }
             }
             .padding(.horizontal)
-            .padding(.bottom, 96)
+            .padding(.bottom, 180)
           }
           .padding(.top)
         }
