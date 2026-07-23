@@ -157,6 +157,11 @@ struct AppTheme {
     return .system(size: size, weight: weight, design: .default)
   }
 
+  // MARK: - Motion Tokens
+  static let buttonSpring = Animation.spring(response: 0.25, dampingFraction: 1.0)
+  static let interactiveSpring = Animation.spring(response: 0.35, dampingFraction: 0.8)
+  static let sheetSpring = Animation.spring(response: 0.4, dampingFraction: 0.82)
+
   // MARK: - Typography Tokens
   static let displayLarge = serifFont(size: 34, weight: .bold)
   static let displayMedium = serifFont(size: 28, weight: .bold)
@@ -190,7 +195,6 @@ struct GlassmorphicCard: ViewModifier {
   func body(content: Content) -> some View {
     content
       .background(.ultraThinMaterial)
-      .background(AppTheme.card)
       .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius, style: .continuous))
       .shadow(color: AppTheme.elevation2.color, radius: AppTheme.elevation2.radius, x: 0, y: AppTheme.elevation2.y)
       .overlay(
@@ -218,7 +222,13 @@ struct PrimaryButtonStyle: ButtonStyle {
       .shadow(color: AppTheme.primary.opacity(0.3), radius: 10, x: 0, y: 5)
       .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
       .opacity(configuration.isPressed ? 0.9 : 1.0)
-      .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+      .animation(AppTheme.buttonSpring, value: configuration.isPressed)
+      .onChange(of: configuration.isPressed) { _, isPressed in
+        if isPressed {
+          let generator = UIImpactFeedbackGenerator(style: .light)
+          generator.impactOccurred()
+        }
+      }
   }
 }
 
@@ -239,7 +249,13 @@ struct SecondaryButtonStyle: ButtonStyle {
       )
       .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
       .opacity(configuration.isPressed ? 0.85 : 1.0)
-      .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+      .animation(AppTheme.buttonSpring, value: configuration.isPressed)
+      .onChange(of: configuration.isPressed) { _, isPressed in
+        if isPressed {
+          let generator = UIImpactFeedbackGenerator(style: .light)
+          generator.impactOccurred()
+        }
+      }
   }
 }
 
@@ -402,3 +418,46 @@ extension View {
     }
   }
 }
+
+extension Text {
+  func displayLargeStyle() -> Text {
+    self.font(AppTheme.displayLarge).tracking(-0.5)
+  }
+
+  func displayMediumStyle() -> Text {
+    self.font(AppTheme.displayMedium).tracking(-0.4)
+  }
+}
+
+struct SkeletonShimmerView: ViewModifier {
+  @State private var phase: CGFloat = -150
+
+  func body(content: Content) -> some View {
+    content
+      .overlay(
+        LinearGradient(
+          colors: [
+            Color.white.opacity(0.0),
+            Color.white.opacity(0.25),
+            Color.white.opacity(0.0)
+          ],
+          startPoint: .topLeading,
+          endPoint: .bottomTrailing
+        )
+        .offset(x: phase)
+        .onAppear {
+          withAnimation(Animation.linear(duration: 1.6).repeatForever(autoreverses: false)) {
+            phase = 300
+          }
+        }
+      )
+      .mask(content)
+  }
+}
+
+extension View {
+  func skeletonShimmer() -> some View {
+    self.modifier(SkeletonShimmerView())
+  }
+}
+

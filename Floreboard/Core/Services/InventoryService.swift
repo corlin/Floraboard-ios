@@ -116,6 +116,15 @@ class InventoryService: ObservableObject {
     }
   }
 
+  func deductStock(flowerId: String, amount: Int) {
+    if let index = flowers.firstIndex(where: { $0.id == flowerId }) {
+      var updated = flowers[index]
+      updated.quantity = max(0, updated.quantity - amount)
+      updated.totalUsed = (updated.totalUsed ?? 0) + amount
+      updateFlower(updated)
+    }
+  }
+
   private func saveInventory() {
     guard let context = modelContext, let tenantId = AuthService.shared.currentTenant?.id else { return }
 

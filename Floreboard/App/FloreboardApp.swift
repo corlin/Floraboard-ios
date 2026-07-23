@@ -13,7 +13,7 @@ struct FloreboardApp: App {
   let container: ModelContainer
 
   init() {
-    let schema = Schema([FlowerRecord.self, DesignRecord.self])
+    let schema = Schema([FlowerRecord.self, DesignRecord.self, OrderRecord.self])
     let config = ModelConfiguration(isStoredInMemoryOnly: false)
     do {
       container = try ModelContainer(for: schema, configurations: config)
@@ -23,6 +23,7 @@ struct FloreboardApp: App {
     let context = ModelContext(container)
     InventoryService.shared.configure(with: context)
     HistoryService.shared.configure(with: context)
+    OrderService.shared.configure(with: context)
   }
 
   var body: some Scene {
@@ -32,6 +33,7 @@ struct FloreboardApp: App {
         .environmentObject(AuthService.shared)
         .environmentObject(InventoryService.shared)
         .environmentObject(HistoryService.shared)
+        .environmentObject(OrderService.shared)
         .environmentObject(LocalizationManager.shared)
     }
   }

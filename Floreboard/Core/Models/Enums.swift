@@ -81,3 +81,16 @@ enum CultureType: String {
     }
   }
 }
+
+enum OrderStatus: String, Codable, CaseIterable, Identifiable {
+  case draft
+  case quoted
+  case confirmed
+  case inProduction
+  case delivered
+  case cancelled
+
+  var id: String { self.rawValue }
+
+  var displayName: String { Tx.t("order.status.\(rawValue)") }
+}

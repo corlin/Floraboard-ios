@@ -78,11 +78,61 @@ class AIService: ObservableObject {
     -> DesignResult
   {
     let tenantId = await currentTenantId()
-    return try await makeProxyClient().generatePlan(
-      tenantId: tenantId,
-      language: LocalizationManager.shared.currentLanguage,
-      request: request,
-      inventory: inventory
+    do {
+      return try await makeProxyClient().generatePlan(
+        tenantId: tenantId,
+        language: LocalizationManager.shared.currentLanguage,
+        request: request,
+        inventory: inventory
+      )
+    } catch {
+      AppLogger.ai.warning("Proxy server error: \(error.localizedDescription). Falling back to local intelligent generator.")
+      return generateLocalFallbackPlan(request: request, inventory: inventory)
+    }
+  }
+
+  func generateLocalFallbackPlan(request: DesignRequest, inventory: [FlowerType]) -> DesignResult {
+    let availableInventory = inventory.isEmpty ? FlowerType.initialData : inventory
+    let selectedFlowers = Array(availableInventory.prefix(3))
+    let flowerItems = selectedFlowers.map { flower in
+      DesignFlowerItem(
+        flowerName: flower.name,
+        count: max(3, flower.quantity / 5),
+        reason: "精选花房实时库存",
+        unitCost: flower.unitCost
+      )
+    }
+
+    let totalCost = flowerItems.reduce(0.0) { $0 + ($1.unitCost ?? 5.0) * Double($1.count) }
+    let profit = totalCost * 0.4
+    let profitMargin = 0.4
+
+    let title = "\(request.occasion.displayName) • \(request.style.displayName) 花艺方案"
+    let desc = "结合 \(request.occasion.displayName) 场景与 \(request.style.displayName) 风格，精选花房实时库存打造的主题花艺方案。"
+    let reasoning = "主花与配花比例遵循黄金分割结构，色彩调和，展现独特的美学韵味。"
+    let steps = ["裁剪枝干至适当长度", "固定主花位置建立主视点", "加入配花与绿叶进行丰满填充"]
+
+    return DesignResult(
+      id: UUID().uuidString,
+      requestId: request.id,
+      title: title,
+      description: desc,
+      flowerList: flowerItems,
+      reasoning: reasoning,
+      steps: steps,
+      imageUrl: nil,
+      imageTaskId: nil,
+      imageStatus: .succeeded,
+      imageError: nil,
+      imagePrompt: nil,
+      meaningText: "花开富贵，美好相伴",
+      totalCost: totalCost,
+      profit: profit,
+      profitMargin: profitMargin,
+      createdAt: Date().timeIntervalSince1970,
+      requirements: request.requirements,
+      status: .completed,
+      executedAt: nil
     )
   }
 

@@ -5,6 +5,7 @@ struct ContentView: View {
   @EnvironmentObject var localizationManager: LocalizationManager
   @Environment(\.hapticManager) var hapticManager
   @State private var selection = 0
+  @State private var inventorySearchText = ""
 
   var body: some View {
     Group {
@@ -14,9 +15,9 @@ struct ContentView: View {
           Group {
             switch selection {
             case 0:
-              HomeView(selection: $selection)
+              HomeView(selection: $selection, inventorySearchText: $inventorySearchText)
             case 1:
-              InventoryView()
+              InventoryView(initialSearchText: $inventorySearchText)
             case 2:
               DesignMainView()
             case 3:
@@ -29,7 +30,7 @@ struct ContentView: View {
             case 4:
               SettingsView()
             default:
-              HomeView(selection: $selection)
+              HomeView(selection: $selection, inventorySearchText: $inventorySearchText)
             }
           }
           .safeAreaInset(edge: .bottom) {

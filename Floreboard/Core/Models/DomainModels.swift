@@ -175,3 +175,20 @@ let SEASONS: [FloralSeason] = [
   FloralSeason(id: "winter", cultures: [.japanese, .chinese, .western]),
   FloralSeason(id: "all", cultures: [.japanese, .chinese, .western]),
 ]
+
+struct OrderItem: Codable, Identifiable, Hashable {
+  var id: String
+  var flowerId: String?
+  var flowerName: String
+  var count: Int
+  var unitPrice: Double
+
+  init(id: String = UUID().uuidString, flowerId: String? = nil, flowerName: String, count: Int, unitPrice: Double) {
+    self.id = id
+    self.flowerId = flowerId
+    self.flowerName = flowerName
+    self.count = count
+    self.unitPrice = unitPrice
+  }
+}
+

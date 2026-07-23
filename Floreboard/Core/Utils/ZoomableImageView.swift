@@ -17,6 +17,9 @@ struct ZoomableImageView: UIViewRepresentable {
     scrollView.maximumZoomScale = 5.0
     scrollView.minimumZoomScale = 1.0
     scrollView.bouncesZoom = true
+    scrollView.alwaysBounceVertical = true
+    scrollView.alwaysBounceHorizontal = true
+    scrollView.decelerationRate = .normal
     scrollView.backgroundColor = .black
     scrollView.showsHorizontalScrollIndicator = false
     scrollView.showsVerticalScrollIndicator = false

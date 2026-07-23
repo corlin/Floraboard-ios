@@ -2,19 +2,32 @@ import SwiftUI
 
 struct HomeView: View {
   @Binding var selection: Int
+  @Binding var inventorySearchText: String
   @EnvironmentObject var auth: AuthService
   @EnvironmentObject var loc: LocalizationManager
   @EnvironmentObject var inventoryService: InventoryService
   @EnvironmentObject var historyService: HistoryService
   @Environment(\.hapticManager) var hapticManager
+  @State private var showNotifications = false
+  @State private var showInventoryAnalytics = false
+  @State private var showRevenueAnalytics = false
+
+  init(selection: Binding<Int>, inventorySearchText: Binding<String> = .constant("")) {
+    self._selection = selection
+    self._inventorySearchText = inventorySearchText
+  }
 
   // Computed Stats
   var totalStock: Int {
     inventoryService.flowers.reduce(0) { $0 + $1.quantity }
   }
 
+  var lowStockItems: [FlowerType] {
+    inventoryService.flowers.filter { $0.quantity < 10 }
+  }
+
   var lowStockCount: Int {
-    inventoryService.flowers.filter { $0.quantity < 10 }.count
+    lowStockItems.count
   }
 
   var totalRevenue: Double {
@@ -42,16 +55,21 @@ struct HomeView: View {
                   .foregroundColor(AppTheme.primary)
                 Spacer()
                 Button {
-                  // notification action
+                  hapticManager.impact(style: .medium)
+                  showNotifications = true
                 } label: {
                   Image(systemName: "bell")
                     .font(.system(size: 18, weight: .medium))
                     .foregroundColor(AppTheme.primary)
                     .overlay(
-                        Circle()
+                      Group {
+                        if lowStockCount > 0 {
+                          Circle()
                             .fill(AppTheme.danger)
                             .frame(width: 8, height: 8)
                             .offset(x: 6, y: -6)
+                        }
+                      }
                     )
                 }
                 .buttonStyle(.plain)
@@ -75,7 +93,7 @@ struct HomeView: View {
 
             // Quick Stats Row (Overview)
             VStack(alignment: .leading, spacing: 16) {
-              Text("Overview")
+              Text(loc.t("home.section.overview"))
                 .font(AppTheme.serifFont(size: 22, weight: .semibold))
                 .foregroundColor(AppTheme.foreground)
                 .padding(.horizontal, 24)
@@ -83,32 +101,50 @@ struct HomeView: View {
               ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                   Spacer().frame(width: 8)
-                  StatCard(
-                    title: loc.t("home.stats.inventoryOverview"),
-                    value: "\(inventoryService.flowers.count)",
-                    subValue: "Total: \(totalStock)",
-                    icon: "cart",
-                    color: AppTheme.inventory,
-                    trend: nil
-                  )
+                  Button {
+                    hapticManager.impact(style: .light)
+                    showInventoryAnalytics = true
+                  } label: {
+                    StatCard(
+                      title: loc.t("home.stats.inventoryOverview"),
+                      value: "\(inventoryService.flowers.count)",
+                      subValue: "Total: \(totalStock)",
+                      icon: "cart",
+                      color: AppTheme.inventory,
+                      trend: nil
+                    )
+                  }
+                  .buttonStyle(.plain)
 
-                  StatCard(
-                    title: loc.t("home.stats.stockAlert"),
-                    value: "\(lowStockCount)",
-                    subValue: loc.t("home.stats.card.lowStock"),
-                    icon: "clock",
-                    color: lowStockCount > 0 ? AppTheme.danger : AppTheme.success,
-                    trend: nil
-                  )
+                  Button {
+                    hapticManager.impact(style: .light)
+                    showNotifications = true
+                  } label: {
+                    StatCard(
+                      title: loc.t("home.stats.stockAlert"),
+                      value: "\(lowStockCount)",
+                      subValue: loc.t("home.stats.card.lowStock"),
+                      icon: "clock",
+                      color: lowStockCount > 0 ? AppTheme.danger : AppTheme.success,
+                      trend: nil
+                    )
+                  }
+                  .buttonStyle(.plain)
 
-                  StatCard(
-                    title: loc.t("home.stats.revenue"),
-                    value: CurrencyFormat.compact(totalRevenue),
-                    subValue: "Total Revenue",
-                    icon: "dollarsign.circle",
-                    color: AppTheme.revenue,
-                    trend: nil
-                  )
+                  Button {
+                    hapticManager.impact(style: .light)
+                    showRevenueAnalytics = true
+                  } label: {
+                    StatCard(
+                      title: loc.t("home.stats.revenue"),
+                      value: CurrencyFormat.compact(totalRevenue),
+                      subValue: loc.t("home.stats.total_revenue"),
+                      icon: "dollarsign.circle",
+                      color: AppTheme.revenue,
+                      trend: nil
+                    )
+                  }
+                  .buttonStyle(.plain)
                   Spacer().frame(width: 8)
                 }
               }
@@ -116,7 +152,7 @@ struct HomeView: View {
 
             // Quick Actions (Modernized)
             VStack(alignment: .leading, spacing: 16) {
-              Text("Actions")
+              Text(loc.t("home.section.actions"))
                 .font(AppTheme.serifFont(size: 22, weight: .semibold))
                 .foregroundColor(AppTheme.foreground)
                 .padding(.horizontal, 24)
@@ -153,10 +189,10 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 16) {
               HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Recent Floral Designs")
+                    Text(loc.t("home.section.recent_designs"))
                       .font(AppTheme.serifFont(size: 22, weight: .semibold))
                       .foregroundColor(AppTheme.foreground)
-                    Text("A beautiful horizontal gallery")
+                    Text(loc.t("home.section.gallery_subtitle"))
                         .font(AppTheme.sansFont(size: 14))
                         .foregroundColor(AppTheme.mutedText)
                 }
@@ -209,6 +245,22 @@ struct HomeView: View {
         }
       }
       .toolbar(.hidden, for: .navigationBar)
+      .sheet(isPresented: $showNotifications) {
+        NotificationSheetView(
+          lowStockItems: lowStockItems,
+          onGoToInventory: { flowerName in
+            inventorySearchText = flowerName ?? ""
+            showNotifications = false
+            selection = 1
+          }
+        )
+      }
+      .sheet(isPresented: $showInventoryAnalytics) {
+        InventoryAnalyticsSheetView(inventory: inventoryService.flowers)
+      }
+      .sheet(isPresented: $showRevenueAnalytics) {
+        RevenueAnalyticsSheetView(designs: historyService.savedDesigns)
+      }
     }
   }
 }
@@ -319,7 +371,7 @@ struct DesignGalleryCard: View {
               .foregroundColor(AppTheme.foreground)
         }
 
-        Text("Designer - Floral AI")
+        Text(Tx.t("home.card.designer_role"))
             .font(AppTheme.sansFont(size: 12))
             .foregroundColor(AppTheme.mutedText)
 
@@ -330,7 +382,7 @@ struct DesignGalleryCard: View {
             VStack(alignment: .center, spacing: 2) {
                 Text("42")
                     .font(AppTheme.sansFont(size: 13, weight: .bold))
-                Text("Orders")
+                Text(Tx.t("home.card.orders"))
                     .font(AppTheme.sansFont(size: 11))
                     .foregroundColor(AppTheme.mutedText)
             }
@@ -339,7 +391,7 @@ struct DesignGalleryCard: View {
                 Text("5 􀋙")
                     .font(AppTheme.sansFont(size: 13, weight: .bold))
                     .foregroundColor(AppTheme.warning)
-                Text("Stars")
+                Text(Tx.t("home.card.stars"))
                     .font(AppTheme.sansFont(size: 11))
                     .foregroundColor(AppTheme.mutedText)
             }
@@ -347,7 +399,7 @@ struct DesignGalleryCard: View {
             VStack(alignment: .center, spacing: 2) {
                 Text("1.2k")
                     .font(AppTheme.sansFont(size: 13, weight: .bold))
-                Text("Likes")
+                Text(Tx.t("home.card.likes"))
                     .font(AppTheme.sansFont(size: 11))
                     .foregroundColor(AppTheme.mutedText)
             }
@@ -398,3 +450,117 @@ struct GalleryThumbnail: View {
     }
   }
 }
+
+// MARK: - Notifications
+
+struct NotificationSheetView: View {
+  @Environment(\.dismiss) var dismiss
+  @EnvironmentObject var loc: LocalizationManager
+  let lowStockItems: [FlowerType]
+  let onGoToInventory: (String?) -> Void
+
+  var body: some View {
+    NavigationStack {
+      ZStack {
+        PremiumBackgroundView()
+
+        ScrollView {
+          VStack(spacing: 16) {
+            if lowStockItems.isEmpty {
+              VStack(spacing: 16) {
+                Image(systemName: "bell.badge.slash")
+                  .font(.system(size: 48))
+                  .foregroundColor(AppTheme.success)
+                Text(loc.t("home.notifications.empty"))
+                  .font(AppTheme.serifFont(size: 20, weight: .bold))
+                  .foregroundColor(AppTheme.foreground)
+                Text(loc.t("home.notifications.emptyDesc"))
+                  .font(AppTheme.sansFont(size: 14))
+                  .foregroundColor(AppTheme.mutedText)
+                  .multilineTextAlignment(.center)
+              }
+              .frame(maxWidth: .infinity)
+              .padding(.vertical, 60)
+              .glassmorphic()
+            } else {
+              VStack(alignment: .leading, spacing: 16) {
+                HStack {
+                  Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(AppTheme.danger)
+                  Text(loc.t("home.notifications.alert"))
+                    .font(AppTheme.sansFont(size: 16, weight: .bold))
+                    .foregroundColor(AppTheme.foreground)
+                }
+                
+                Text(loc.t("home.notifications.lowStock", ["count": "\(lowStockItems.count)"]))
+                  .font(AppTheme.sansFont(size: 14))
+                  .foregroundColor(AppTheme.mutedText)
+                  .fixedSize(horizontal: false, vertical: true)
+                
+                VStack(spacing: 12) {
+                  ForEach(lowStockItems) { item in
+                    Button {
+                      onGoToInventory(item.name)
+                    } label: {
+                      HStack {
+                        Text(item.name)
+                          .font(AppTheme.sansFont(size: 16, weight: .medium))
+                          .foregroundColor(AppTheme.foreground)
+                        Spacer()
+                        Text(loc.t("home.notifications.only_left", ["count": "\(item.quantity)"]))
+                          .font(AppTheme.sansFont(size: 14, weight: .bold))
+                          .foregroundColor(AppTheme.danger)
+                        Image(systemName: "chevron.right")
+                          .font(.caption)
+                          .foregroundColor(AppTheme.mutedText)
+                      }
+                      .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+                    
+                    if item.id != lowStockItems.last?.id {
+                      Divider().background(Color.white.opacity(0.1))
+                    }
+                  }
+                }
+                .padding(.top, 8)
+                
+                Button(action: { onGoToInventory(lowStockItems.first?.name) }) {
+                  Text(loc.t("home.notifications.replenish"))
+                    .font(AppTheme.sansFont(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(AppTheme.primary)
+                    .cornerRadius(AppTheme.containerRadius)
+                }
+                .padding(.top, 16)
+              }
+              .padding(20)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .glassmorphic()
+              .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.containerRadius)
+                  .stroke(AppTheme.danger.opacity(0.3), lineWidth: 1)
+              )
+            }
+          }
+          .padding()
+        }
+      }
+      .navigationTitle(loc.t("home.notifications.title"))
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .navigationBarTrailing) {
+          Button(loc.t("common.done")) {
+            dismiss()
+          }
+          .fontWeight(.semibold)
+          .foregroundColor(AppTheme.primary)
+        }
+      }
+    }
+    .presentationDetents([.medium, .large])
+  }
+}
+

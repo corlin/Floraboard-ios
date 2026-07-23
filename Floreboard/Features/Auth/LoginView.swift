@@ -32,7 +32,7 @@ struct LoginView: View {
             .overlay(RoundedRectangle(cornerRadius: AppTheme.controlRadius).stroke(AppTheme.hairline, lineWidth: 1))
             .autocapitalization(.none)
 
-          SecureField("Password", text: $password)
+          SecureField(Tx.t("login.password"), text: $password)
             .padding()
             .background(AppTheme.surfaceElevated)
             .cornerRadius(AppTheme.controlRadius)
@@ -42,7 +42,7 @@ struct LoginView: View {
             if auth.isLoading {
               ProgressView().tint(AppTheme.iconOnAccent)
             } else {
-              Text(isRegistering ? "Create Account" : Tx.t("login.enter"))
+              Text(isRegistering ? Tx.t("login.createAccount") : Tx.t("login.enter"))
                 .font(AppTheme.sansFont(size: 18, weight: .semibold))
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -57,7 +57,7 @@ struct LoginView: View {
               auth.errorMessage = nil
             }
           }) {
-            Text(isRegistering ? "Already have an account? Login" : "Don't have an account? Register")
+            Text(isRegistering ? Tx.t("login.hasAccount") : Tx.t("login.noAccount"))
               .font(AppTheme.sansFont(size: 14, weight: .medium))
               .foregroundColor(AppTheme.primary)
           }

@@ -30,7 +30,7 @@ struct DesignExecutionSheet: View {
             VStack(alignment: .leading, spacing: 12) {
               // AI Suggestion
               HStack {
-                Text("AI: \(item.originalItem.flowerName)")
+                Text("\(Tx.t("design.execution.ai_prefix")): \(item.originalItem.flowerName)")
                   .font(AppTheme.sansFont(size: 14, weight: .semibold))
                 Spacer()
                 Text("x\(item.originalItem.count)")
@@ -44,7 +44,7 @@ struct DesignExecutionSheet: View {
               Picker(Tx.t("design.execution.match"), selection: $item.mappedFlowerId) {
                 Text(Tx.t("design.execution.skip")).tag(String?.none)
                 ForEach(inventoryService.flowers) { flower in
-                  Text("\(flower.name) (Stock: \(flower.quantity))").tag(String?.some(flower.id))
+                  Text("\(flower.name) (\(Tx.t("inventory.stock")): \(flower.quantity))").tag(String?.some(flower.id))
                 }
               }
               
@@ -69,6 +69,28 @@ struct DesignExecutionSheet: View {
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button(Tx.t("general.cancel")) {
+            dismiss()
+          }
+        }
+        ToolbarItem(placement: .primaryAction) {
+          Button(Tx.t("order.action.convert")) {
+            let orderItems = items.compactMap { item -> OrderItem? in
+              guard let flowerId = item.mappedFlowerId else { return nil }
+              let flower = inventoryService.flowers.first(where: { $0.id == flowerId })
+              return OrderItem(
+                flowerId: flowerId,
+                flowerName: item.originalItem.flowerName,
+                count: item.mappedAmount,
+                unitPrice: flower?.retailPrice ?? 10.0
+              )
+            }
+            OrderService.shared.createOrder(
+              customerName: Tx.t("order.default_customer"),
+              status: .confirmed,
+              designId: design.id,
+              totalAmount: design.totalCost,
+              items: orderItems
+            )
             dismiss()
           }
         }

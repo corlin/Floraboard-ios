@@ -22,7 +22,7 @@ struct SettingsView: View {
               Text(localizationManager.t("settings.title"))
                 .font(AppTheme.serifFont(size: 32, weight: .bold))
                 .foregroundStyle(AppTheme.titleGradient)
-              Text("Manage your store preferences")
+              Text(localizationManager.t("settings.subtitle"))
                 .font(AppTheme.sansFont(size: 15))
                 .foregroundColor(AppTheme.mutedText)
             }
@@ -61,14 +61,14 @@ struct SettingsView: View {
 
             // Quota Card
             VStack(alignment: .leading, spacing: 16) {
-              SectionHeader(title: "Account Quota", icon: "sparkles")
+              SectionHeader(title: localizationManager.t("settings.quota"), icon: "sparkles")
 
               if let quota = viewModel.userQuota {
                 VStack(spacing: 16) {
                   // Balance display
                   HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                      Text("Credits Balance")
+                      Text(localizationManager.t("settings.quota_balance"))
                         .font(AppTheme.labelMedium)
                         .foregroundColor(AppTheme.mutedText)
                       Text("\(quota.balance)")
@@ -109,7 +109,7 @@ struct SettingsView: View {
                 }
               } else {
                 HStack {
-                  Text("Fetching Quota...")
+                  Text(localizationManager.t("settings.fetching_quota"))
                     .font(AppTheme.bodySmall)
                     .foregroundColor(AppTheme.mutedText)
                   Spacer()

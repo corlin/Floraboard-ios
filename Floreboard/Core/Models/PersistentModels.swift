@@ -208,3 +208,53 @@ final class DesignRecord {
     syncedAt = design.syncedAt
   }
 }
+
+@Model
+final class OrderRecord {
+  @Attribute(.unique) var id: String
+  var tenantId: String?
+  var customerName: String
+  var customerPhone: String
+  var statusRaw: String
+  var designId: String?
+  var totalAmount: Double
+  var itemsData: Data
+  var notes: String?
+  var createdAt: Double
+  var updatedAt: Double
+
+  init(
+    id: String = UUID().uuidString,
+    tenantId: String? = nil,
+    customerName: String,
+    customerPhone: String = "",
+    status: OrderStatus = .draft,
+    designId: String? = nil,
+    totalAmount: Double = 0.0,
+    items: [OrderItem] = [],
+    notes: String? = nil,
+    createdAt: Double = Date().timeIntervalSince1970
+  ) {
+    self.id = id
+    self.tenantId = tenantId
+    self.customerName = customerName
+    self.customerPhone = customerPhone
+    self.statusRaw = status.rawValue
+    self.designId = designId
+    self.totalAmount = totalAmount
+    self.itemsData = (try? JSONEncoder().encode(items)) ?? Data()
+    self.notes = notes
+    self.createdAt = createdAt
+    self.updatedAt = createdAt
+  }
+
+  var status: OrderStatus {
+    get { OrderStatus(rawValue: statusRaw) ?? .draft }
+    set { statusRaw = newValue.rawValue }
+  }
+
+  var items: [OrderItem] {
+    (try? JSONDecoder().decode([OrderItem].self, from: itemsData)) ?? []
+  }
+}
+

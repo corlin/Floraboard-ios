@@ -62,7 +62,7 @@ struct VisualMuseView: View {
                 Text(Tx.t("design.scene.uploadBtn"))
                   .font(AppTheme.sansFont(size: 16, weight: .semibold))
                   .foregroundColor(AppTheme.foreground)
-                Text("Add a reference image to guide the AI")
+                Text(Tx.t("design.scene.uploadDesc"))
                   .font(AppTheme.sansFont(size: 13))
                   .foregroundColor(AppTheme.mutedText)
               }

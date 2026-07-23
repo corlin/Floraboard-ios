@@ -29,6 +29,37 @@ struct AIProxyClient {
     return response.toDesignResult(localRequestId: request.id, inventory: inventory)
   }
 
+  func generatePlanStream(
+    tenantId: String,
+    language: Language,
+    request: DesignRequest,
+    inventory: [FlowerType]
+  ) -> AsyncThrowingStream<String, Error> {
+    AsyncThrowingStream { continuation in
+      Task {
+        let result: DesignResult
+        do {
+          result = try await generatePlan(
+            tenantId: tenantId,
+            language: language,
+            request: request,
+            inventory: inventory
+          )
+        } catch {
+          result = AIService.shared.generateLocalFallbackPlan(request: request, inventory: inventory)
+        }
+        
+        // Emits description words for typing effect
+        let characters = Array(result.description)
+        for char in characters {
+          continuation.yield(String(char))
+          try await Task.sleep(nanoseconds: 20_000_000) // 20ms character stream
+        }
+        continuation.finish()
+      }
+    }
+  }
+
   func createReferenceImageUpload(
     tenantId: String,
     contentType: String,

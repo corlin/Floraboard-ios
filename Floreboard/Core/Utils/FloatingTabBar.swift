@@ -17,8 +17,6 @@ struct FloatingTabBar: View {
     @EnvironmentObject var loc: LocalizationManager
     @Namespace private var indicatorNamespace
 
-    @State private var bounceItemID: Int?
-
     var items: [TabBarItem] = [
         TabBarItem(id: 0, iconDefault: "square.grid.2x2", iconSelected: "square.grid.2x2.fill", localizationKey: "app.nav.dashboard"),
         TabBarItem(id: 1, iconDefault: "leaf", iconSelected: "leaf.fill", localizationKey: "app.nav.inventory"),
@@ -72,26 +70,15 @@ struct FloatingTabBar: View {
             let generator = UIImpactFeedbackGenerator(style: .light)
             generator.impactOccurred()
 
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.6)) {
+            withAnimation(AppTheme.interactiveSpring) {
                 selection = item.id
-            }
-
-            // Trigger bounce
-            bounceItemID = item.id
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                if bounceItemID == item.id {
-                    bounceItemID = nil
-                }
             }
         } label: {
             VStack(spacing: 3) {
                 Image(systemName: iconName)
                     .font(.system(size: 20, weight: .medium))
-                    .scaleEffect(bounceItemID == item.id ? 1.15 : 1.0)
-                    .animation(
-                        .spring(response: 0.35, dampingFraction: 0.6),
-                        value: bounceItemID
-                    )
+                    .scaleEffect(isSelected ? 1.08 : 1.0)
+                    .animation(AppTheme.interactiveSpring, value: selection)
 
                 Text(loc.t(item.localizationKey))
                     .font(AppTheme.captionSmall)

@@ -1,11 +1,18 @@
 import SwiftUI
 
 struct InventoryView: View {
+  @Binding var initialSearchText: String
   @EnvironmentObject var inventoryService: InventoryService
   @StateObject private var viewModel = InventoryViewModel()
   @State private var showingAddSheet = false
   @State private var editingFlower: FlowerType? = nil
   @State private var animateItems = false
+  @State private var showingExportSheet = false
+  @State private var exportText = ""
+
+  init(initialSearchText: Binding<String> = .constant("")) {
+    self._initialSearchText = initialSearchText
+  }
 
   var body: some View {
     NavigationStack {
@@ -126,6 +133,18 @@ struct InventoryView: View {
           showingAddSheet = true
         }
       }
+      .toolbar {
+        ToolbarItem(placement: .navigationBarTrailing) {
+          Button {
+            exportText = PurchaseOrderGenerator.generateRestockingSummary(flowers: inventoryService.flowers)
+            showingExportSheet = true
+          } label: {
+            Image(systemName: "square.and.arrow.up")
+              .font(.system(size: 16, weight: .medium))
+              .foregroundColor(AppTheme.primary)
+          }
+        }
+      }
       // Add Sheet
       .sheet(isPresented: $showingAddSheet) {
         EditFlowerSheet(viewModel: viewModel, flowerToEdit: nil)
@@ -134,9 +153,21 @@ struct InventoryView: View {
       .sheet(item: $editingFlower) { flower in
         EditFlowerSheet(viewModel: viewModel, flowerToEdit: flower)
       }
+      // Export Sheet
+      .sheet(isPresented: $showingExportSheet) {
+        ActivityView(activityItems: [exportText])
+      }
       .onAppear {
         viewModel.setup(with: inventoryService)
+        if !initialSearchText.isEmpty {
+          viewModel.searchText = initialSearchText
+        }
         animateItems = true
+      }
+      .onChange(of: initialSearchText) { newValue in
+        if !newValue.isEmpty {
+          viewModel.searchText = newValue
+        }
       }
     }
   }

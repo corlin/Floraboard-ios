@@ -3,6 +3,7 @@ import StoreKit
 
 struct PaywallView: View {
   @StateObject private var storeManager = StoreKitManager()
+  @EnvironmentObject var loc: LocalizationManager
   @Environment(\.dismiss) var dismiss
 
   var body: some View {
@@ -26,12 +27,12 @@ struct PaywallView: View {
 
           // Titles
           VStack(spacing: 12) {
-            Text("Unlock Floreboard Pro")
+            Text(loc.t("paywall.title"))
               .font(AppTheme.serifFont(size: 32, weight: .bold))
               .foregroundColor(AppTheme.foreground)
               .multilineTextAlignment(.center)
 
-            Text("Experience unlimited AI generation, premium visual muses, and priority processing.")
+            Text(loc.t("paywall.subtitle"))
               .font(AppTheme.sansFont(size: 16))
               .foregroundColor(AppTheme.mutedText)
               .multilineTextAlignment(.center)
@@ -40,9 +41,9 @@ struct PaywallView: View {
 
           // Features List
           VStack(alignment: .leading, spacing: 20) {
-            FeatureRow(icon: "infinity", title: "Unlimited AI Designs", subtitle: "Generate as many concepts as you need")
-            FeatureRow(icon: "sparkles.tv", title: "4K Resolution Export", subtitle: "Crystal clear presentations for clients")
-            FeatureRow(icon: "bolt.fill", title: "Priority Processing", subtitle: "Skip the queue with dedicated servers")
+            FeatureRow(icon: "infinity", title: loc.t("paywall.feature1.title"), subtitle: loc.t("paywall.feature1.subtitle"))
+            FeatureRow(icon: "sparkles.tv", title: loc.t("paywall.feature2.title"), subtitle: loc.t("paywall.feature2.subtitle"))
+            FeatureRow(icon: "bolt.fill", title: loc.t("paywall.feature3.title"), subtitle: loc.t("paywall.feature3.subtitle"))
           }
           .padding(24)
           .glassmorphic()
@@ -92,7 +93,7 @@ struct PaywallView: View {
           Button(action: {
             dismiss()
           }) {
-            Text("Maybe Later")
+            Text(loc.t("paywall.skip"))
               .font(AppTheme.sansFont(size: 16, weight: .medium))
               .foregroundColor(AppTheme.mutedText)
               .underline()

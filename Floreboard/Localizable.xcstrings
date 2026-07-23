@@ -7,22 +7,22 @@
     "·" : {
 
     },
+    "%@ (%@: %lld)" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$@: %3$lld)"
+          }
+        }
+      }
+    },
     "%@ (%@)" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ (%2$@)"
-          }
-        }
-      }
-    },
-    "%@ (Stock: %lld)" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ (Stock: %2$lld)"
           }
         }
       }
@@ -47,6 +47,16 @@
         }
       }
     },
+    "%@: %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
     "%@: %lld" : {
       "localizations" : {
         "zh-Hans" : {
@@ -61,6 +71,12 @@
 
     },
     "•" : {
+
+    },
+    "+¥%@" : {
+
+    },
+    "¥%@" : {
 
     },
     "0.0" : {
@@ -78,20 +94,175 @@
     "500" : {
 
     },
-    "A beautiful horizontal gallery" : {
-
+    "analytics.inventory.category_dist" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category Distribution"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "花材类型占比"
+          }
+        }
+      }
     },
-    "Actions" : {
-
+    "analytics.inventory.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inventory Analytics"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "库存概览"
+          }
+        }
+      }
     },
-    "Add a reference image to guide the AI" : {
-
+    "analytics.inventory.top5" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top 5 in Stock"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "库存排名 Top 5"
+          }
+        }
+      }
     },
-    "AI: %@" : {
-
+    "analytics.inventory.total_value" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Inventory Value"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前库存总货值"
+          }
+        }
+      }
     },
-    "Already have an account? Login" : {
-
+    "analytics.revenue.avg_margin" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avg Margin"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平均利润率"
+          }
+        }
+      }
+    },
+    "analytics.revenue.no_data" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No data yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无数据"
+          }
+        }
+      }
+    },
+    "analytics.revenue.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revenue Analytics"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "营收分析"
+          }
+        }
+      }
+    },
+    "analytics.revenue.top3" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top 3 Profitable Designs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高利润方案 Top 3"
+          }
+        }
+      }
+    },
+    "analytics.revenue.total" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Revenue"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "累计营收"
+          }
+        }
+      }
+    },
+    "analytics.revenue.trend" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent Revenue Trend"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近期营收趋势"
+          }
+        }
+      }
     },
     "app.nav.dashboard" : {
       "extractionState" : "stale",
@@ -177,6 +348,9 @@
           }
         }
       }
+    },
+    "Category" : {
+
     },
     "color.auto" : {
       "extractionState" : "stale",
@@ -416,10 +590,30 @@
         }
       }
     },
+    "common.done" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
+      }
+    },
+    "Count" : {
+
+    },
     "Created with Floraboard" : {
 
     },
-    "Credits Balance" : {
+    "Date" : {
 
     },
     "design.action.execute" : {
@@ -469,6 +663,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "预算范围 (元)"
+          }
+        }
+      }
+    },
+    "design.execution.ai_prefix" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI Recommended"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 建议"
           }
         }
       }
@@ -966,6 +1177,23 @@
         }
       }
     },
+    "design.scene.uploadDesc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a reference image to guide the AI"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加参考图片引导 AI 生成"
+          }
+        }
+      }
+    },
     "design.scene.visual" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1441,12 +1669,6 @@
           }
         }
       }
-    },
-    "Designer - Floral AI" : {
-
-    },
-    "Don't have an account? Register" : {
-
     },
     "Done" : {
 
@@ -1978,12 +2200,6 @@
         }
       }
     },
-    "Experience unlimited AI generation, premium visual muses, and priority processing." : {
-
-    },
-    "Fetching Quota..." : {
-
-    },
     "filter.culture.all" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2313,6 +2529,74 @@
         }
       }
     },
+    "home.card.designer_role" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Designer - Floral AI"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设计师 - 花艺 AI"
+          }
+        }
+      }
+    },
+    "home.card.likes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Likes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点赞"
+          }
+        }
+      }
+    },
+    "home.card.orders" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orders"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "订单"
+          }
+        }
+      }
+    },
+    "home.card.stars" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stars"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "评分"
+          }
+        }
+      }
+    },
     "home.greeting" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2343,6 +2627,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日灵感"
+          }
+        }
+      }
+    },
+    "home.notifications.alert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low Stock Alert"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "库存不足提醒"
+          }
+        }
+      }
+    },
+    "home.notifications.empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're all caught up!"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一切安好！"
+          }
+        }
+      }
+    },
+    "home.notifications.emptyDesc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No new alerts or low stock warnings."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前没有新的通知或库存告警。"
+          }
+        }
+      }
+    },
+    "home.notifications.lowStock" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have {{count}} flower(s) running low in stock. Please restock soon to avoid disruption to your floral designs."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您有 {{count}} 种花材库存告急，请尽快补货，以免影响您的花艺创作。"
+          }
+        }
+      }
+    },
+    "home.notifications.only_left" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only {{count}} left"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅剩 {{count}} 件"
+          }
+        }
+      }
+    },
+    "home.notifications.replenish" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to Inventory"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "去补货"
+          }
+        }
+      }
+    },
+    "home.notifications.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知中心"
           }
         }
       }
@@ -2479,6 +2882,74 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "查看全部"
+          }
+        }
+      }
+    },
+    "home.section.actions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actions"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快捷操作"
+          }
+        }
+      }
+    },
+    "home.section.gallery_subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A beautiful horizontal gallery"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设计作品全景画廊"
+          }
+        }
+      }
+    },
+    "home.section.overview" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overview"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "概览"
+          }
+        }
+      }
+    },
+    "home.section.recent_designs" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent Floral Designs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最新花艺设计"
           }
         }
       }
@@ -2632,6 +3103,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "库存预警"
+          }
+        }
+      }
+    },
+    "home.stats.total_revenue" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Revenue"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "总营收"
           }
         }
       }
@@ -3163,6 +3651,23 @@
         }
       }
     },
+    "inventory.stock" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stock"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "库存"
+          }
+        }
+      }
+    },
     "inventory.title" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3180,9 +3685,6 @@
         }
       }
     },
-    "Likes" : {
-
-    },
     "login.brand" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3196,6 +3698,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Floreboard"
+          }
+        }
+      }
+    },
+    "login.createAccount" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Account"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "创建账户"
           }
         }
       }
@@ -3217,6 +3736,57 @@
         }
       }
     },
+    "login.hasAccount" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already have an account? Login"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已有账户？立即登录"
+          }
+        }
+      }
+    },
+    "login.noAccount" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don't have an account? Register"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有账户？立即注册"
+          }
+        }
+      }
+    },
+    "login.password" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "密码"
+          }
+        }
+      }
+    },
     "login.storeName" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -3234,20 +3804,413 @@
         }
       }
     },
-    "Manage your store preferences" : {
-
+    "order.action.convert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convert to Order"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转为客户订单"
+          }
+        }
+      }
     },
-    "Maybe Later" : {
-
+    "order.default_customer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Floral Client"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "花艺客户"
+          }
+        }
+      }
     },
-    "Orders" : {
-
+    "order.detail.items" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordered Items"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "订单花材明细"
+          }
+        }
+      }
     },
-    "Overview" : {
-
+    "order.detail.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Order Detail"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "订单详情"
+          }
+        }
+      }
     },
-    "Password" : {
-
+    "order.detail.total" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Order Total"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "订单总计"
+          }
+        }
+      }
+    },
+    "order.detail.update_status" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update Order Status"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更改订单状态"
+          }
+        }
+      }
+    },
+    "order.items_count" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "items"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "项花材"
+          }
+        }
+      }
+    },
+    "order.list.empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No customer orders yet"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暂无客户订单"
+          }
+        }
+      }
+    },
+    "order.list.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customer Orders"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "客户订单"
+          }
+        }
+      }
+    },
+    "order.status.cancelled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelled"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已取消"
+          }
+        }
+      }
+    },
+    "order.status.confirmed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stock Locked"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "锁定库存"
+          }
+        }
+      }
+    },
+    "order.status.delivered" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delivered"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已交付"
+          }
+        }
+      }
+    },
+    "order.status.draft" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draft"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "草稿"
+          }
+        }
+      }
+    },
+    "order.status.inProduction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Production"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "制作中"
+          }
+        }
+      }
+    },
+    "order.status.quoted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quoted"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "报价中"
+          }
+        }
+      }
+    },
+    "paywall.feature1.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generate as many concepts as you need"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "随心生成无限花艺创意灵感"
+          }
+        }
+      }
+    },
+    "paywall.feature1.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlimited AI Designs"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无限 AI 设计方案"
+          }
+        }
+      }
+    },
+    "paywall.feature2.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crystal clear presentations for clients"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为客户呈现高清花艺展示方案"
+          }
+        }
+      }
+    },
+    "paywall.feature2.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4K Resolution Export"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4K 高清分辨率导出"
+          }
+        }
+      }
+    },
+    "paywall.feature3.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip the queue with dedicated servers"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无需排队，享受高速服务器运算"
+          }
+        }
+      }
+    },
+    "paywall.feature3.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Priority Processing"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "专属优先处理通道"
+          }
+        }
+      }
+    },
+    "paywall.skip" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maybe Later"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "稍后再说"
+          }
+        }
+      }
+    },
+    "paywall.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experience unlimited AI generation, premium visual muses, and priority processing."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "畅享无限 AI 生成、高级灵感库及优先处理服务。"
+          }
+        }
+      }
+    },
+    "paywall.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock Floreboard Pro"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解锁 Floreboard 专业版"
+          }
+        }
+      }
     },
     "Petal & Bloom" : {
 
@@ -3643,8 +4606,124 @@
         }
       }
     },
-    "Recent Floral Designs" : {
-
+    "purchase.cost" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Est. Cost"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预估成本"
+          }
+        }
+      }
+    },
+    "purchase.estimated_total" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total Estimated Cost"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "预估总预算"
+          }
+        }
+      }
+    },
+    "purchase.need" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restock"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建议补货"
+          }
+        }
+      }
+    },
+    "purchase.no_low_stock" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All items are well stocked!"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前暂无低于预警值的缺货花材！"
+          }
+        }
+      }
+    },
+    "purchase.notes" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "供应商备注"
+          }
+        }
+      }
+    },
+    "purchase.supplier_note" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please deliver fresh A-grade stems."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请优先安排新鲜A级鲜花配送。"
+          }
+        }
+      }
+    },
+    "purchase.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restocking Purchase Order"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "花房花材补货单"
+          }
+        }
+      }
     },
     "result.bom.title" : {
       "extractionState" : "stale",
@@ -3747,6 +4826,9 @@
           }
         }
       }
+    },
+    "Revenue" : {
+
     },
     "settings.account" : {
       "extractionState" : "stale",
@@ -3935,6 +5017,23 @@
         }
       }
     },
+    "settings.fetching_quota" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fetching Quota..."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在获取配额..."
+          }
+        }
+      }
+    },
     "settings.imageEndpoint" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4105,6 +5204,40 @@
         }
       }
     },
+    "settings.quota" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account Quota"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "账户配额"
+          }
+        }
+      }
+    },
+    "settings.quota_balance" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credits Balance"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "额度余额"
+          }
+        }
+      }
+    },
     "settings.saveConfig" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4152,6 +5285,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "店铺名称"
+          }
+        }
+      }
+    },
+    "settings.subtitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage your store preferences"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理您的花店偏好设置"
           }
         }
       }
@@ -4241,10 +5391,7 @@
         }
       }
     },
-    "Stars" : {
-
-    },
-    "Unlock Floreboard Pro" : {
+    "Status" : {
 
     },
     "x%lld" : {
