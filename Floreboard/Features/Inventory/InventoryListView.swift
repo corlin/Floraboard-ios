@@ -164,7 +164,7 @@ struct InventoryView: View {
         }
         animateItems = true
       }
-      .onChange(of: initialSearchText) { newValue in
+      .onChange(of: initialSearchText) { _, newValue in
         if !newValue.isEmpty {
           viewModel.searchText = newValue
         }

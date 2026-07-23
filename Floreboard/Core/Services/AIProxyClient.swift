@@ -36,7 +36,7 @@ struct AIProxyClient {
     inventory: [FlowerType]
   ) -> AsyncThrowingStream<String, Error> {
     AsyncThrowingStream { continuation in
-      Task {
+      _ = Task {
         let result: DesignResult
         do {
           result = try await generatePlan(
@@ -48,12 +48,12 @@ struct AIProxyClient {
         } catch {
           result = AIService.shared.generateLocalFallbackPlan(request: request, inventory: inventory)
         }
-        
+
         // Emits description words for typing effect
         let characters = Array(result.description)
         for char in characters {
           continuation.yield(String(char))
-          try await Task.sleep(nanoseconds: 20_000_000) // 20ms character stream
+          try? await Task.sleep(nanoseconds: 20_000_000) // 20ms character stream
         }
         continuation.finish()
       }
