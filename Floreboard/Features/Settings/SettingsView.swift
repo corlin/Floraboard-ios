@@ -1,5 +1,9 @@
 import SwiftUI
 
+extension AppTheme {
+  static let springDefault = Animation.spring(response: 0.35, dampingFraction: 0.8)
+}
+
 struct SettingsView: View {
   @Environment(\.aiService) var aiService
   @EnvironmentObject var auth: AuthService
@@ -45,7 +49,7 @@ struct SettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
-                  Text(auth.currentTenant?.name ?? "花店空间")
+                  Text(auth.currentTenant?.name ?? localizationManager.t("settings.storeName"))
                     .font(AppTheme.sansFont(size: 18, weight: .bold))
                     .foregroundColor(AppTheme.foreground)
 
@@ -69,12 +73,12 @@ struct SettingsView: View {
 
             // Member Tier & Credits Center
             VStack(alignment: .leading, spacing: 16) {
-              SectionHeader(title: "会员与点数中心", icon: "sparkles")
+              SectionHeader(title: localizationManager.t("settings.credits.title"), icon: "sparkles")
 
               VStack(spacing: 16) {
                 HStack(alignment: .center) {
                   VStack(alignment: .leading, spacing: 4) {
-                    Text("当前剩余点数")
+                    Text(localizationManager.t("settings.credits.remaining"))
                       .font(AppTheme.labelMedium)
                       .foregroundColor(AppTheme.mutedText)
 
@@ -82,7 +86,7 @@ struct SettingsView: View {
                       Text("\(currentCredits)")
                         .font(AppTheme.sansFont(size: 32, weight: .bold))
                         .foregroundColor(AppTheme.foreground)
-                      Text("点")
+                      Text(localizationManager.t("settings.credits.unit"))
                         .font(AppTheme.sansFont(size: 14, weight: .medium))
                         .foregroundColor(AppTheme.mutedText)
                     }
@@ -94,7 +98,7 @@ struct SettingsView: View {
                     HStack(spacing: 4) {
                       Image(systemName: isProTier ? "crown.fill" : "person.fill")
                         .font(.system(size: 11))
-                      Text(isProTier ? "PRO 专业版" : "免费体验")
+                      Text(isProTier ? proBadgeTitle : freeBadgeTitle)
                         .font(AppTheme.sansFont(size: 13, weight: .bold))
                     }
                     .padding(.horizontal, 12)
@@ -104,7 +108,7 @@ struct SettingsView: View {
                     .clipShape(Capsule())
 
                     if let exp = viewModel.creditsData?.subscriptionExpiresAt {
-                      Text("到期: \(formatExpirationDate(exp))")
+                      Text(expirationText(exp))
                         .font(AppTheme.captionSmall)
                         .foregroundColor(AppTheme.mutedText)
                     }
@@ -116,7 +120,7 @@ struct SettingsView: View {
                 } label: {
                   HStack {
                     Image(systemName: "plus.circle.fill")
-                    Text("充值点数 / 升级会员")
+                    Text(rechargeButtonTitle)
                       .font(AppTheme.sansFont(size: 15, weight: .semibold))
                   }
                   .frame(maxWidth: .infinity)
@@ -127,7 +131,7 @@ struct SettingsView: View {
                 // Recent Transactions List
                 if let txs = viewModel.creditsData?.transactions, !txs.isEmpty {
                   VStack(alignment: .leading, spacing: 10) {
-                    Text("近期账单明细")
+                    Text(historyTitle)
                       .font(AppTheme.sansFont(size: 13, weight: .semibold))
                       .foregroundColor(AppTheme.mutedText)
                       .padding(.top, 4)
@@ -135,7 +139,7 @@ struct SettingsView: View {
                     ForEach(txs.prefix(5)) { tx in
                       HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                          Text(tx.description ?? (tx.amount > 0 ? "充值到账" : "点数消耗"))
+                          Text(tx.description ?? (tx.amount > 0 ? localizationManager.t("settings.credits.top_up") : localizationManager.t("settings.credits.consume")))
                             .font(AppTheme.sansFont(size: 13, weight: .medium))
                             .foregroundColor(AppTheme.foreground)
 
@@ -157,6 +161,12 @@ struct SettingsView: View {
                       }
                     }
                   }
+                } else if viewModel.creditsData != nil {
+                  Text(noHistoryTitle)
+                    .font(AppTheme.caption)
+                    .foregroundColor(AppTheme.mutedText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
                 }
               }
             }
@@ -168,15 +178,48 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 16) {
               SectionHeader(title: localizationManager.t("settings.language"), icon: "globe")
 
-              Picker(
-                localizationManager.t("settings.language"),
-                selection: $localizationManager.currentLanguage
-              ) {
-                ForEach(Language.allCases) { lang in
-                  Text(lang.displayName).tag(lang)
+              HStack {
+                Text(localizationManager.t("settings.currentLanguage"))
+                  .font(AppTheme.bodySmall)
+                  .foregroundColor(AppTheme.foreground)
+
+                Spacer()
+
+                Menu {
+                  ForEach(Language.allCases) { lang in
+                    Button {
+                      withAnimation(AppTheme.springDefault) {
+                        localizationManager.currentLanguage = lang
+                      }
+                    } label: {
+                      HStack {
+                        Text(lang.displayName)
+                        if localizationManager.currentLanguage == lang {
+                          Image(systemName: "checkmark")
+                        }
+                      }
+                    }
+                  }
+                } label: {
+                  HStack(spacing: 6) {
+                    Text(localizationManager.currentLanguage.displayName)
+                      .font(AppTheme.sansFont(size: 14, weight: .medium))
+                      .foregroundColor(AppTheme.foreground)
+
+                    Image(systemName: "chevron.up.chevron.down")
+                      .font(.system(size: 11, weight: .medium))
+                      .foregroundColor(AppTheme.mutedText)
+                  }
+                  .padding(.horizontal, 12)
+                  .padding(.vertical, 8)
+                  .background(AppTheme.surfaceElevated)
+                  .clipShape(Capsule())
+                  .overlay(
+                    Capsule()
+                      .stroke(AppTheme.hairline, lineWidth: 1)
+                  )
                 }
               }
-              .pickerStyle(SegmentedPickerStyle())
             }
             .padding(20)
             .glassmorphic()
@@ -346,6 +389,40 @@ struct SettingsView: View {
   private var isProTier: Bool {
     let tier = viewModel.creditsData?.tier ?? auth.currentTenant?.tier ?? "free"
     return tier.lowercased() == "pro"
+  }
+
+  private var proBadgeTitle: String {
+    let t = localizationManager.t("settings.credits.proBadge")
+    return t != "settings.credits.proBadge" ? t : localizationManager.t("settings.credits.tier_pro")
+  }
+
+  private var freeBadgeTitle: String {
+    let t = localizationManager.t("settings.credits.freeBadge")
+    return t != "settings.credits.freeBadge" ? t : localizationManager.t("settings.credits.tier_free")
+  }
+
+  private func expirationText(_ dateString: String) -> String {
+    let formatted = formatExpirationDate(dateString)
+    let t = localizationManager.t("settings.credits.expires", ["date": formatted])
+    if t != "settings.credits.expires" {
+      return t
+    }
+    return localizationManager.t("settings.credits.expires_at", ["date": formatted])
+  }
+
+  private var rechargeButtonTitle: String {
+    let t = localizationManager.t("settings.credits.recharge")
+    return t != "settings.credits.recharge" ? t : localizationManager.t("settings.credits.upgrade_button")
+  }
+
+  private var historyTitle: String {
+    let t = localizationManager.t("settings.credits.history")
+    return t != "settings.credits.history" ? t : localizationManager.t("settings.credits.recent_title")
+  }
+
+  private var noHistoryTitle: String {
+    let t = localizationManager.t("settings.credits.noHistory")
+    return t != "settings.credits.noHistory" ? t : localizationManager.t("settings.credits.empty")
   }
 
   private func formatExpirationDate(_ dateString: String) -> String {
