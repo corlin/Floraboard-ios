@@ -142,11 +142,10 @@ struct InventoryAnalyticsSheetView: View {
     }
     
     func categoryName(_ raw: String) -> String {
-        let zh = loc.currentLanguage == .zh
         switch raw {
-        case "main": return zh ? "主花" : "Main"
-        case "secondary": return zh ? "配花" : "Secondary"
-        case "foliage": return zh ? "叶材" : "Foliage"
+        case "main": return Tx.t("inventory.category.primary")
+        case "secondary": return Tx.t("inventory.category.secondary")
+        case "foliage": return Tx.t("inventory.category.foliage")
         default: return raw.capitalized
         }
     }

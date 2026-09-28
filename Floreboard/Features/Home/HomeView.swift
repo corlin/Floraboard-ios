@@ -333,7 +333,7 @@ struct HomeView: View {
             Text("\(totalStock)")
               .font(AppTheme.sansFont(size: 15, weight: .bold))
               .foregroundColor(AppTheme.foreground)
-            Text("枝在库")
+            Text(Tx.t("home.stats.stockUnit"))
               .font(AppTheme.captionSmall)
               .foregroundColor(AppTheme.mutedText)
           }
@@ -353,7 +353,7 @@ struct HomeView: View {
             Text("\(lowStockCount)")
               .font(AppTheme.sansFont(size: 15, weight: .bold))
               .foregroundColor(lowStockCount > 0 ? AppTheme.danger : AppTheme.foreground)
-            Text("种紧缺")
+            Text(Tx.t("home.stats.shortageUnit"))
               .font(AppTheme.captionSmall)
               .foregroundColor(AppTheme.mutedText)
           }
@@ -373,7 +373,7 @@ struct HomeView: View {
             Text(CurrencyFormat.compact(totalRevenue))
               .font(AppTheme.sansFont(size: 15, weight: .bold))
               .foregroundColor(AppTheme.foreground)
-            Text("总营收")
+            Text(Tx.t("home.stats.revenueTitle"))
               .font(AppTheme.captionSmall)
               .foregroundColor(AppTheme.mutedText)
           }
@@ -516,7 +516,7 @@ struct EditorialLookbookCard: View {
         HStack(spacing: 4) {
           Image(systemName: "leaf.fill")
             .font(.system(size: 9))
-          Text("\(totalStems > 0 ? totalStems : design.flowerList.count) 枝精选")
+          Text(Tx.t("home.stats.stemsSelected", ["count": "\(totalStems > 0 ? totalStems : design.flowerList.count)"]))
             .font(AppTheme.captionSmall)
             .fontWeight(.semibold)
         }

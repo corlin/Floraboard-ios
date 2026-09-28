@@ -69,7 +69,7 @@ struct DesignMainView: View {
       .navigationTitle(Tx.t("app.nav.design"))
       .safeAreaInset(edge: .bottom, spacing: 0) {
         WorkbenchPrimaryActionBar(
-          title: viewModel.isLoading ? Tx.t("design.generate.loading") : "\(Tx.t("design.generate.button")) (1点)",
+          title: viewModel.isLoading ? Tx.t("design.generate.loading") : "\(Tx.t("design.generate.button")) \(Tx.t("design.costBadge", ["points": "1"]))",
           systemImage: "sparkles",
           isLoading: viewModel.isLoading,
           isEnabled: !viewModel.isLoading

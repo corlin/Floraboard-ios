@@ -24,44 +24,46 @@ struct PaywallView: View {
   @State private var isProcessing: Bool = false
   @State private var statusMessage: String? = nil
 
-  private let defaultPlans: [DisplayPlan] = [
-    DisplayPlan(
-      id: "pro_yearly",
-      name: "Pro 专业版年卡",
-      credits: 4000,
-      price: "$89.00/年",
-      badge: "立省 25%",
-      description: "全年 4000 点数，折合 $7.4/月，点数跨周期滚动",
-      isSubscription: true
-    ),
-    DisplayPlan(
-      id: "pro_monthly",
-      name: "Pro 专业版月卡",
-      credits: 300,
-      price: "$9.90/月",
-      badge: "热门推荐",
-      description: "每月自动注入 300 点数，解锁高峰期优先生成",
-      isSubscription: true
-    ),
-    DisplayPlan(
-      id: "credit_pack_300",
-      name: "300 点数进阶包",
-      credits: 300,
-      price: "$12.99",
-      badge: nil,
-      description: "300 点永久有效，高频设计与旺季首选",
-      isSubscription: false
-    ),
-    DisplayPlan(
-      id: "credit_pack_100",
-      name: "100 点数加油包",
-      credits: 100,
-      price: "$4.99",
-      badge: nil,
-      description: "100 点永久有效，支持约 100 套方案生成",
-      isSubscription: false
-    )
-  ]
+  private var defaultPlans: [DisplayPlan] {
+    [
+      DisplayPlan(
+        id: "pro_yearly",
+        name: Tx.t("paywall.proYearly"),
+        credits: 4000,
+        price: Tx.t("paywall.priceYearly"),
+        badge: Tx.t("paywall.save25"),
+        description: Tx.t("paywall.proYearlyDesc"),
+        isSubscription: true
+      ),
+      DisplayPlan(
+        id: "pro_monthly",
+        name: Tx.t("paywall.proMonthly"),
+        credits: 300,
+        price: Tx.t("paywall.priceMonthly"),
+        badge: Tx.t("paywall.popular"),
+        description: Tx.t("paywall.proMonthlyDesc"),
+        isSubscription: true
+      ),
+      DisplayPlan(
+        id: "credit_pack_300",
+        name: Tx.t("paywall.pack300"),
+        credits: 300,
+        price: "$12.99",
+        badge: Tx.t("paywall.bestValue"),
+        description: Tx.t("paywall.pack300Desc"),
+        isSubscription: false
+      ),
+      DisplayPlan(
+        id: "credit_pack_100",
+        name: Tx.t("paywall.pack100"),
+        credits: 100,
+        price: "$4.99",
+        badge: nil,
+        description: Tx.t("paywall.pack100Desc"),
+        isSubscription: false
+      )
+    ]
+  }
 
   var body: some View {
     ZStack {
@@ -83,21 +85,21 @@ struct PaywallView: View {
 
           // Titles
           VStack(spacing: 8) {
-            Text("升级会员与点数充值")
+            Text(Tx.t("paywall.title"))
               .font(AppTheme.serifFont(size: 28, weight: .bold))
               .foregroundColor(AppTheme.foreground)
               .multilineTextAlignment(.center)
 
             if let credits = currentCredits {
               HStack(spacing: 6) {
-                Text("当前剩余点数:")
+                Text(Tx.t("paywall.currentCredits"))
                   .font(AppTheme.sansFont(size: 14))
                   .foregroundColor(AppTheme.mutedText)
                 Text("\(credits)")
                   .font(AppTheme.sansFont(size: 15, weight: .bold))
                   .foregroundColor(AppTheme.primary)
                 if tier == "pro" {
-                  Text("PRO 会员")
+                  Text(Tx.t("paywall.proBadge"))
                     .font(AppTheme.sansFont(size: 11, weight: .bold))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
@@ -107,7 +109,7 @@ struct PaywallView: View {
                 }
               }
             } else {
-              Text("尊享大模型极速方案设计与 4K 商业效果图渲染")
+              Text(Tx.t("paywall.subtitle"))
                 .font(AppTheme.sansFont(size: 14))
                 .foregroundColor(AppTheme.mutedText)
                 .multilineTextAlignment(.center)
@@ -116,9 +118,9 @@ struct PaywallView: View {
 
           // Value Highlights
           HStack(spacing: 12) {
-            CreditUsageTag(icon: "doc.text.fill", text: "方案生成 1点")
-            CreditUsageTag(icon: "camera.viewfinder", text: "多模态 1点")
-            CreditUsageTag(icon: "photo.artframe", text: "4K生图 5点")
+            CreditUsageTag(icon: "doc.text.fill", text: Tx.t("paywall.feature.plan_gen"))
+            CreditUsageTag(icon: "camera.viewfinder", text: Tx.t("paywall.feature.vision"))
+            CreditUsageTag(icon: "photo.artframe", text: Tx.t("paywall.feature.render"))
           }
           .padding(.horizontal)
 
@@ -151,7 +153,7 @@ struct PaywallView: View {
           Button(action: {
             dismiss()
           }) {
-            Text("稍后再说")
+            Text(Tx.t("paywall.later"))
               .font(AppTheme.sansFont(size: 14, weight: .medium))
               .foregroundColor(AppTheme.mutedText)
               .underline()
@@ -180,7 +182,7 @@ struct PaywallView: View {
   private func handlePlanSelection(_ plan: DisplayPlan) {
     guard !isProcessing else { return }
     isProcessing = true
-    statusMessage = "正在处理购买..."
+    statusMessage = Tx.t("paywall.status.processing")
 
     Task {
       defer { isProcessing = false }
@@ -189,13 +191,13 @@ struct PaywallView: View {
         do {
           try await storeManager.purchase(product)
           await refreshCredits()
-          statusMessage = "充值成功！"
+          statusMessage = Tx.t("paywall.status.success")
           try? await Task.sleep(nanoseconds: 800_000_000)
           onPurchaseSuccess?()
           dismiss()
           return
         } catch {
-          statusMessage = "购买未完成: \(error.localizedDescription)"
+          statusMessage = Tx.t("paywall.status.uncompleted", ["error": error.localizedDescription])
         }
       } else {
         do {
@@ -205,12 +207,12 @@ struct PaywallView: View {
             self.currentCredits = updated.credits
             self.tier = updated.tier
           }
-          statusMessage = "充值成功！已更新点数"
+          statusMessage = Tx.t("paywall.status.updated")
           try? await Task.sleep(nanoseconds: 800_000_000)
           onPurchaseSuccess?()
           dismiss()
         } catch {
-          statusMessage = "处理失败: \(error.localizedDescription)"
+          statusMessage = Tx.t("paywall.status.failed", ["error": error.localizedDescription])
         }
       }
     }
@@ -278,7 +280,7 @@ struct PlanCardView: View {
             .font(AppTheme.sansFont(size: 18, weight: .bold))
             .foregroundColor(AppTheme.primary)
 
-          Text("+\(plan.credits) 点数")
+          Text(Tx.t("paywall.creditsBadge", ["count": "\(plan.credits)"]))
             .font(AppTheme.sansFont(size: 11, weight: .medium))
             .foregroundColor(AppTheme.creative)
         }

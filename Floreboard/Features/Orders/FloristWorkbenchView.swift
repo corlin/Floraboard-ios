@@ -131,7 +131,7 @@ struct FloristWorkbenchView: View {
             HStack(spacing: 4) {
               Image(systemName: "arrow.up.left.and.arrow.down.right")
                 .font(.system(size: 12, weight: .bold))
-              Text("原图")
+              Text(Tx.t("order.originalImage"))
                 .font(AppTheme.captionSmall)
             }
             .padding(.horizontal, 10)
@@ -150,7 +150,7 @@ struct FloristWorkbenchView: View {
             .font(.system(size: 32))
             .foregroundColor(AppTheme.primary.opacity(0.6))
           VStack(alignment: .leading, spacing: 4) {
-            Text(associatedDesign?.title ?? order.customerName + " · 定制花艺")
+            Text(associatedDesign?.title ?? "\(order.customerName) · \(Tx.t("order.customFloral"))")
               .font(AppTheme.serifFont(size: 16, weight: .bold))
               .foregroundColor(AppTheme.foreground)
             if let meaning = associatedDesign?.meaningText, !meaning.isEmpty {
