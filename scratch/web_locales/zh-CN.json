@@ -1,0 +1,628 @@
+{
+    "app": {
+        "title": "FloraBoard",
+        "nav": {
+            "dashboard": "仪表盘",
+            "design": "花艺创作",
+            "history": "历史方案",
+            "inventory": "库存管理",
+            "settings": "系统设置"
+        },
+        "tenant": {
+            "search": "搜索店铺...",
+            "myShops": "我的店铺",
+            "create": "创建新店铺",
+            "notFound": "未找到相关店铺"
+        }
+    },
+    "onboarding": {
+        "title": "为您的花店命名",
+        "subtitle": "让我们开始初始化您的数字工作区",
+        "shopName": "店铺名称",
+        "placeholder": "例如：花样年华",
+        "submit": "创建工作区",
+        "cancel": "取消",
+        "success": "店铺创建成功！",
+        "error": "创建店铺失败"
+    },
+    "home": {
+        "greeting": "早安，{{name}}",
+        "subtitle": "今天是 {{date}}，准备好创造美了吗？",
+        "startDesign": "开始新设计",
+        "stats": {
+            "inventoryOverview": "库存概览",
+            "flowerCount": "{{count}} 种花材",
+            "totalStock": "总库存 {{count}} 枝",
+            "stockAlert": "库存预警",
+            "alertItems": "{{count}} 项",
+            "alertDesc": "库存低于 10 枝的花材",
+            "revenue": "累计创收",
+            "designCount": "共设计 {{count}} 个方案"
+        },
+        "recentDesigns": {
+            "title": "最近设计",
+            "viewAll": "查看全部",
+            "empty": "暂无设计记录",
+            "createOne": "去创建一个",
+            "profit": "利润"
+        },
+        "quickActions": {
+            "title": "快捷操作",
+            "addInventory": "花材入库",
+            "addInventoryDesc": "录入新到货的鲜花",
+            "smartDesign": "智能设计",
+            "smartDesignDesc": "快速生成客户方案",
+            "inspirationTitle": "今日灵感",
+            "inspirationText": "“插花是无声的诗，立体的画。” 尝试在今天的作品中加入一点点尤加利叶，为作品增添几分自然的呼吸感。"
+        }
+    },
+    "settings": {
+        "title": "系统设置与点数中心",
+        "subtitle": "管理花店订阅会员、充值点数及花店日常风控配置",
+        "subscription": {
+            "title": "会员订阅与点数中心",
+            "subtitle": "统一基于 Cloudflare 全球边缘服务与 Waffo 聚合收单，享受极速 AI 方案生成与 4K 渲染",
+            "creditsBalance": "当前可用点数",
+            "points": "点",
+            "tier": "会员等级",
+            "free": "体验版",
+            "pro": "专业会员",
+            "enterprise": "旗舰商户",
+            "validUntil": "有效期至",
+            "refresh": "刷新点数",
+            "rulesTitle": "点数消耗规则",
+            "ruleText": "AI 花艺设计 / 识花方案：1 点 / 次",
+            "ruleImage": "高清 4K 渲染出图：5 点 / 次",
+            "ruleEdge": "Cloudflare 全球边缘直连，免梯极速响应",
+            "plansTitle": "升级会员与点数充值",
+            "popular": "超值推荐",
+            "subscribe": "立即开通",
+            "buyPack": "立即购买",
+            "processing": "正在调起安全收银台...",
+            "transactionsTitle": "点数收支明细",
+            "historyEmpty": "暂无点数收支记录",
+            "openCheckout": "已打开 Waffo 聚合支付收银台",
+            "paymentSuccessTip": "支付完成后请点击刷新以同步最新点数"
+        },
+        "region": {
+            "title": "数据存储区域",
+            "description": "选择数据存储节点，影响访问速度和数据合规",
+            "tip": "💡 中国大陆用户建议选择「中国节点」；海外用户建议选择「海外节点」；离线使用选择「本地存储」。",
+            "current": "当前",
+            "switched": "已切换到{{name}}",
+            "refreshTip": "刷新页面后生效",
+            "options": {
+                "cloudflare": {
+                    "name": "Cloudflare 边缘节点",
+                    "desc": "Cloudflare Workers & D1 全球边缘计算，极速响应"
+                },
+                "local": {
+                    "name": "本地存储",
+                    "desc": "数据存储在浏览器本地，无需网络"
+                },
+                "supabase": {
+                    "name": "Supabase 节点",
+                    "desc": "Supabase 云服务"
+                },
+                "aliyun": {
+                    "name": "中国节点",
+                    "desc": "阿里云服务，适合中国大陆用户"
+                }
+            }
+        },
+        "api": {
+            "title": "API 接入配置",
+            "description": "配置兼容 OpenAI 格式的文生图接口信息",
+            "provider": "服务提供商 (Provider)",
+            "endpoint": "API Endpoint (Base URL)",
+            "apiKey": "API Key",
+            "textModel": "文本推理模型 (Reasoning)",
+            "textModelDesc": "用于生成方案逻辑、花语与步骤 (Need Strong Reasoning)",
+            "visionModel": "视觉分析模型 (Vision)",
+            "visionModelDesc": "用于[以图生花]功能，分析图片的色调与风格 (Need Vision Capability)",
+            "imageModel": "绘图模型 (Image Gen)",
+            "imageModelDesc": "用于生成最终效果图 (Supports wanx/dall-e/gemini)",
+            "manualInput": "手动输入...",
+            "selectPlaceholder": "选择..."
+        },
+        "save": {
+            "button": "保存所有配置",
+            "saving": "保存中...",
+            "success": "配置已保存",
+            "error": "保存失败"
+        },
+        "budget": {
+            "title": "预算风控",
+            "total": "总预算",
+            "threshold": "预警阈值"
+        },
+        "stock": {
+            "title": "库存预警",
+            "threshold": "低库存阈值",
+            "unit": "枝",
+            "desc": "库存低于此值时显示 <1>红色警示</1>"
+        },
+        "usage": {
+            "overview": "消耗概览",
+            "approaching": "接近预算",
+            "used": "已用: {{val}}",
+            "remaining": "剩余: {{val}}",
+            "chartTitle": "近7日消耗趋势",
+            "reportTitle": "消耗日报",
+            "export": "导出",
+            "date": "日期",
+            "count": "次数",
+            "token": "Token",
+            "noRecords": "暂无记录"
+        }
+    },
+    "design": {
+        "title": "定制设计向导",
+        "subtitle": "只需三步，为您生成专属插花方案",
+        "tabs": {
+            "quick": "快捷模式",
+            "quickDesc": "送礼/装饰",
+            "pro": "专业模式",
+            "proDesc": "花艺创作"
+        },
+        "steps": {
+            "scene": "选择场景",
+            "target": "对象与风格",
+            "confirm": "确认生成"
+        },
+        "scene": {
+            "title": "主要的赠送场景是？",
+            "muse": "场景灵感",
+            "visual": "以图生花 (Visual Muse)",
+            "uploadTitle": "上传灵感参考图",
+            "uploadDesc": "可以是礼服照片、婚礼现场、油画或任何您想复刻的氛围图",
+            "uploadBtn": "点击或拖拽上传图片",
+            "uploadHint": "支持 JPG, PNG (Max 5MB)",
+            "options": {
+                "birthday": {
+                    "label": "生日祝福",
+                    "desc": "鲜艳明快，传递喜悦"
+                },
+                "wedding": {
+                    "label": "婚礼/纪念日",
+                    "desc": "浪漫唯美，见证爱意"
+                },
+                "comfort": {
+                    "label": "慰问/探病",
+                    "desc": "宁静淡雅，抚慰人心"
+                },
+                "home": {
+                    "label": "居家装饰",
+                    "desc": "温馨自然，点缀生活"
+                },
+                "graduation": {
+                    "label": "毕业典礼",
+                    "desc": "祝贺学业有成"
+                },
+                "opening": {
+                    "label": "开业庆典",
+                    "desc": "繁荣昌盛，生意兴隆"
+                },
+                "valentine": {
+                    "label": "情人节",
+                    "desc": "爱意满满，浪漫表白"
+                },
+                "mother_day": {
+                    "label": "母亲节",
+                    "desc": "感恩母爱，温情送达"
+                }
+            }
+        },
+        "recipient": {
+            "title": "赠送对象是？",
+            "options": {
+                "partner": "恋人/伴侣",
+                "parent": "父母",
+                "friend": "朋友",
+                "elder": "长辈/老师",
+                "self": "自己",
+                "colleague": "同事/合作伙伴",
+                "child": "孩子"
+            }
+        },
+        "style": {
+            "title": "偏好的风格？",
+            "options": {
+                "romantic": "浪漫唯美",
+                "fresh": "自然清新",
+                "vintage": "复古油画",
+                "passionate": "热烈浓郁",
+                "minimalist": "极简线条",
+                "wild": "野趣自由",
+                "elegant": "高雅精致"
+            }
+        },
+        "color": {
+            "title": "偏好的色调？",
+            "options": {
+                "warm": "暖色调",
+                "cool": "冷色调",
+                "pastel": "柔和粉彩",
+                "vibrant": "鲜艳明快",
+                "monochrome": "单色优雅",
+                "auto": "让AI发挥"
+            }
+        },
+        "format": {
+            "title": "作品形态？",
+            "options": {
+                "bouquet": "手捧花束",
+                "vase": "插瓶花艺",
+                "box": "花盒礼盒",
+                "basket": "花篮"
+            }
+        },
+        "requirements": {
+            "title": "特殊要求 (可选)",
+            "placeholder": "例如：不喜欢百合花味，想要多一点叶材..."
+        },
+        "budget": {
+            "title": "预算范围 (元)",
+            "level": {
+                "low": "简约小束",
+                "mid": "标准花礼",
+                "high": "豪华设计"
+            },
+            "lowRisk": "预算余额不足",
+            "exhausted": "预算已耗尽，请联系管理员充值",
+            "alert": "预算余额不足 {{val}}%，请注意控制消耗"
+        },
+        "generate": {
+            "ready": "准备生成方案",
+            "cost": "即将为您生成专属设计方案，预计消耗 150 Token",
+            "button": "立即生成",
+            "back": "返回修改",
+            "loading": "AI 设计师正在工作中...",
+            "noBudget": "预算不足",
+            "steps": {
+                "analyze": "分析您的设计需求与偏好...",
+                "stock": "检索当前花材库存与成本...",
+                "vision": "视觉引擎正在解析参考图...",
+                "construct": "构建色彩搭配与空间结构...",
+                "render": "生成最终效果图与花语..."
+            }
+        },
+        "pro": {
+            "tabs": {
+                "manual": "流派选择",
+                "image": "以图生花 (专业版)"
+            },
+            "school": {
+                "title": "选择花艺流派",
+                "filter": {
+                    "all": "全部",
+                    "japanese": "🇯🇵 日本",
+                    "chinese": "🇨🇳 中国",
+                    "western": "🇪🇺 欧洲"
+                },
+                "options": {
+                    "japanese_ikenobo": {
+                        "name": "池坊流",
+                        "desc": "日本最古老的花道，天地人三主枝"
+                    },
+                    "japanese_ohara": {
+                        "name": "小原流",
+                        "desc": "盛花之美，水面风景意象"
+                    },
+                    "japanese_sogetsu": {
+                        "name": "草月流",
+                        "desc": "现代前卫，个人表达"
+                    },
+                    "chinese_literati": {
+                        "name": "文人花",
+                        "desc": "诗情画意，梅兰竹菊"
+                    },
+                    "chinese_zen": {
+                        "name": "禅花",
+                        "desc": "一花一世界，极简禅意"
+                    },
+                    "western_biedermeier": {
+                        "name": "比德迈尔",
+                        "desc": "经典圆形，密集饱满"
+                    },
+                    "western_english": {
+                        "name": "英式花园",
+                        "desc": "自然浪漫，乡村风格"
+                    },
+                    "fusion": {
+                        "name": "融合创意",
+                        "desc": "打破边界，自由创作"
+                    }
+                }
+            },
+            "technique": {
+                "title": "选择技法",
+                "options": {
+                    "kenzan": {
+                        "name": "剑山固定",
+                        "desc": "日式花道经典"
+                    },
+                    "spiral_hand_tied": {
+                        "name": "螺旋手绑",
+                        "desc": "欧式花束"
+                    },
+                    "parallel": {
+                        "name": "平行式",
+                        "desc": "现代简约"
+                    },
+                    "pave": {
+                        "name": "铺面式",
+                        "desc": "花盒桌饰"
+                    },
+                    "cascade": {
+                        "name": "瀑布式",
+                        "desc": "垂吊优雅"
+                    },
+                    "oasis": {
+                        "name": "花泥插制",
+                        "desc": "自由造型"
+                    },
+                    "wiring": {
+                        "name": "铁丝技法",
+                        "desc": "胸花头花"
+                    }
+                }
+            },
+            "proportion": {
+                "title": "比例规则",
+                "options": {
+                    "7_5_3": {
+                        "label": "花道 7:5:3",
+                        "desc": "真・副・体"
+                    },
+                    "golden_ratio": {
+                        "label": "黄金比例",
+                        "desc": "1:1.618"
+                    },
+                    "free": {
+                        "label": "自由比例",
+                        "desc": "设计师决定"
+                    }
+                }
+            },
+            "season": {
+                "title": "季节美学",
+                "options": {
+                    "spring": {
+                        "label": "🌸 春",
+                        "desc": "新生"
+                    },
+                    "summer": {
+                        "label": "🌻 夏",
+                        "desc": "热烈"
+                    },
+                    "autumn": {
+                        "label": "🍂 秋",
+                        "desc": "成熟"
+                    },
+                    "winter": {
+                        "label": "❄️ 冬",
+                        "desc": "清寂"
+                    },
+                    "all": {
+                        "label": "🌈 四季",
+                        "desc": "通用"
+                    }
+                }
+            },
+            "image": {
+                "title": "上传参考图 (专业版)",
+                "desc": "AI 将深度分析图片的结构、尺寸、氛围，生成专业花艺方案",
+                "advanced": {
+                    "title": "高级分析参数",
+                    "hint": "(可选，优化 AI 识别)",
+                    "scale": "尺寸偏好",
+                    "mood": "情绪氛围",
+                    "form": "形态结构",
+                    "background": "背景风格",
+                    "scaleOptions": {
+                        "auto": "🔮 自动检测",
+                        "micro": "🌸 微型",
+                        "small": "💐 小型",
+                        "medium": "🏵️ 中型",
+                        "large": "🌺 大型",
+                        "monumental": "🏛️ 巨型"
+                    },
+                    "moodOptions": {
+                        "serene": "🕊️ 宁静",
+                        "romantic": "💕 浪漫",
+                        "dramatic": "🎭 戏剧",
+                        "whimsical": "🎪 梦幻",
+                        "luxurious": "👑 奢华"
+                    },
+                    "formOptions": {
+                        "auto": "自动",
+                        "vertical": "垂直",
+                        "horizontal": "水平",
+                        "radial": "放射",
+                        "cascade": "瀑布",
+                        "organic": "有机"
+                    },
+                    "backgroundOptions": {
+                        "minimal": "极简",
+                        "environmental": "环境",
+                        "luxe": "奢华",
+                        "rustic": "质朴",
+                        "zen": "禅意"
+                    }
+                }
+            },
+            "cultureContext": {
+                "title": "文化语境 (可选)",
+                "placeholder": "例如：茶席花、禅意空间、婚礼设计、展览作品..."
+            },
+            "confirm": {
+                "title": "设计确认",
+                "school": "流派",
+                "technique": "技法",
+                "proportion": "比例",
+                "budget": "预算",
+                "generate": "🎨 生成专业方案"
+            },
+            "loading": {
+                "title": "花艺大师正在创作中...",
+                "steps": {
+                    "analyze": "分析流派美学与文化内涵...",
+                    "technique": "应用专业技法与比例规则...",
+                    "match": "匹配库存花材与文化象征...",
+                    "generate": "生成艺术命名与步骤指导..."
+                }
+            },
+            "steps": {
+                "next": "下一步",
+                "prev": "上一步"
+            }
+        }
+    },
+    "inventory": {
+        "title": "花材库存",
+        "subtitle": "管理店内现有的鲜花种类与数量",
+        "add": "新增入库",
+        "edit": "编辑花材",
+        "form": {
+            "name": "名称",
+            "namePlaceholder": "例如：红玫瑰",
+            "category": "分类",
+            "culture": "文化属性",
+            "stock": "当前库存 (剩余)",
+            "cost": "成本 (元)",
+            "retail": "零售 (元)",
+            "color": "色系/描述",
+            "colorPlaceholder": "例如：深红色，丝绒质感",
+            "meaning": "花语",
+            "meaningPlaceholder": "例如：热烈的爱",
+            "submit": "确认入库",
+            "save": "保存修改",
+            "cancel": "取消",
+            "cultureOptions": {
+                "western": "西式",
+                "chinese": "中式",
+                "japanese": "日式",
+                "universal": "通用"
+            },
+            "categories": {
+                "main": "主花",
+                "filler": "配花",
+                "foliage": "叶材"
+            }
+        },
+        "list": {
+            "title": "当前库存",
+            "search": "搜索...",
+            "export": "导出 Excel",
+            "headers": {
+                "name": "名称",
+                "category": "分类/文化",
+                "price": "成本/零售",
+                "cost": "进",
+                "out": "出",
+                "margin": "毛利率",
+                "initial": "初始库存",
+                "used": "总消耗 (枝)",
+                "remaining": "剩余库存",
+                "actions": "操作"
+            },
+            "empty": {
+                "title": "库存空空如也",
+                "desc": "在左侧表单录入您的第一批鲜花吧"
+            },
+            "lowStock": "库存不足",
+            "unit": "枝"
+        },
+        "messages": {
+            "noData": "暂无库存数据可导出",
+            "exportSuccess": "导出成功",
+            "enterName": "请输入鲜花名称",
+            "updateSuccess": "花材信息已更新",
+            "addSuccess": "已添加花材",
+            "editing": "正在编辑: {{name}}",
+            "cancelEdit": "已取消编辑"
+        }
+    },
+    "history": {
+        "title": "设计方案历史",
+        "subtitle": "回顾、查询与管理过往的设计作品 ({{count}})",
+        "search": "搜索方案...",
+        "empty": {
+            "title": "暂无历史方案",
+            "desc": "您的创作之旅尚未开始。使用设计助手，只需几步即可生成精美的花艺方案。",
+            "create": "去创建一个"
+        },
+        "unknownTime": "未知时间",
+        "deleteConfirm": "确定要删除这个方案吗？此操作不可恢复。",
+        "cost": "成本"
+    },
+    "designDetail": {
+        "notFound": "未找到该方案",
+        "savedEval": "评价已保存",
+        "confirmExec": "确认执行此方案吗？这将扣除相应的库存花材。",
+        "execSuccess": "方案已执行，库存已扣除",
+        "usageUpdated": "花材用量已更新",
+        "exportSuccess": "导出成功",
+        "exportFail": "导出失败",
+        "back": "返回历史列表",
+        "print": "打印",
+        "pdf": "PDF",
+        "executed": "已执行",
+        "pending": "待执行",
+        "meaning": "花语寓意",
+        "requirements": "特殊要求",
+        "flowerList": "花材清单",
+        "save": "保存",
+        "adjustUsage": "调整用量",
+        "instructions": "制作指导",
+        "analysis": {
+            "title": "成本利润分析",
+            "cost": "预估成本",
+            "profit": "预估利润",
+            "margin": "利润率"
+        },
+        "status": {
+            "title": "方案状态",
+            "executedAt": "已于 {{time}} 执行",
+            "deducted": "库存已扣除",
+            "notExecutedDesc": "此方案尚未执行，库存花材暂未扣除。",
+            "confirmBtn": "确认执行方案",
+            "confirmHint": "点击后将自动扣减对应库存"
+        },
+        "evaluation": {
+            "title": "方案评价",
+            "rating": "评分",
+            "feedback": "心得 / 客户反馈",
+            "placeholder": "记录客户的反馈，或设计过程中的心得...",
+            "saveBtn": "保存评价"
+        }
+    },
+    "auth": {
+        "title": "FloraBoard SaaS",
+        "subtitle": "专业花艺设计平台",
+        "configMissingTitle": "缺少配置",
+        "configMissingDesc": "请创建 .env 文件并填入您的 Supabase 凭据：",
+        "tabs": {
+            "signIn": "登录",
+            "signUp": "注册"
+        },
+        "fields": {
+            "email": "邮箱",
+            "password": "密码",
+            "shopName": "店铺名称（例如：花样年华）"
+        },
+        "buttons": {
+            "signIn": "登录",
+            "signUp": "创建账号与工作区"
+        },
+        "terms": "继续操作即代表您同意我们的服务条款",
+        "messages": {
+            "welcomeBack": "欢迎回来！",
+            "signInFailed": "登录失败",
+            "accountCreated": "账号创建成功！请查收邮件或登录。",
+            "signUpFailed": "注册失败",
+            "missingConfig": "Supabase 客户端未初始化，请检查 .env 文件。"
+        }
+    }
+}

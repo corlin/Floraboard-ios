@@ -1,0 +1,583 @@
+{
+    "app": {
+        "title": "FloraBoard",
+        "nav": {
+            "dashboard": "ダッシュボード",
+            "design": "デザイン",
+            "history": "履歴",
+            "inventory": "在庫管理",
+            "settings": "設定"
+        }
+    },
+    "home": {
+        "greeting": "おはようございます、{{name}}",
+        "subtitle": "今日は {{date}} です。美しい作品を作りましょう。",
+        "startDesign": "新しいデザインを開始",
+        "stats": {
+            "inventoryOverview": "在庫概要",
+            "flowerCount": "{{count}} 種類の花",
+            "totalStock": "総在庫 {{count}} 本",
+            "stockAlert": "在庫アラート",
+            "alertItems": "{{count}} 件",
+            "alertDesc": "在庫が 10 本未満の花材",
+            "revenue": "累計収益",
+            "designCount": "合計 {{count}} デザイン"
+        },
+        "recentDesigns": {
+            "title": "最近のデザイン",
+            "viewAll": "すべて見る",
+            "empty": "デザイン履歴はありません",
+            "createOne": "作成する",
+            "profit": "利益"
+        },
+        "quickActions": {
+            "title": "クイックアクション",
+            "addInventory": "在庫追加",
+            "addInventoryDesc": "新しい花の入荷を記録",
+            "smartDesign": "スマートデザイン",
+            "smartDesignDesc": "顧客向けプランを素早く生成",
+            "inspirationTitle": "今日のインスピレーション",
+            "inspirationText": "「生け花は無言の詩、立体の絵画。」 今日の作品に少しユーカリを加えて、自然な息吹を吹き込んでみてはいかがでしょうか。"
+        }
+    },
+    "settings": {
+        "title": "システム設定",
+        "subtitle": "画像生成AI APIアクセス、トークン予算管理、使用状況の監視",
+        "region": {
+            "title": "データ保存地域",
+            "description": "データ保存ノードを選択（速度とコンプライアンスに影響）",
+            "tip": "💡 中国本土のユーザーは「中国ノード」、海外ユーザーは「海外ノード」、オフライン使用は「ローカル保存」を推奨します。",
+            "current": "現在の",
+            "switched": "{{name}} に切り替えました",
+            "refreshTip": "ページを更新後に有効になります",
+            "options": {
+                "local": {
+                    "name": "ローカル保存",
+                    "desc": "ブラウザ内に保存、ネットワーク不要"
+                },
+                "supabase": {
+                    "name": "海外ノード",
+                    "desc": "Supabase クラウドサービス (海外ユーザー向け)"
+                },
+                "aliyun": {
+                    "name": "中国ノード",
+                    "desc": "Alibaba Cloud サービス (中国本土ユーザー向け)"
+                }
+            }
+        },
+        "api": {
+            "title": "API 接続設定",
+            "description": "OpenAI 互換の画像生成インターフェース情報を設定",
+            "provider": "サービスプロバイダー (Provider)",
+            "endpoint": "API エンドポイント (Base URL)",
+            "apiKey": "API キー",
+            "textModel": "テキスト推論モデル (Reasoning)",
+            "textModelDesc": "ロジック、花言葉、手順の生成に使用 (Need Strong Reasoning)",
+            "visionModel": "視覚分析モデル (Vision)",
+            "visionModelDesc": "「画像から花へ」機能で、画像の色調とスタイルを分析 (Need Vision Capability)",
+            "imageModel": "作画モデル (Image Gen)",
+            "imageModelDesc": "最終的なイメージ図の生成に使用 (Supports wanx/dall-e/gemini)",
+            "manualInput": "手動入力...",
+            "selectPlaceholder": "選択..."
+        },
+        "save": {
+            "button": "設定を保存",
+            "saving": "保存中...",
+            "success": "設定を保存しました",
+            "error": "保存に失敗しました"
+        },
+        "budget": {
+            "title": "予算管理",
+            "total": "総予算",
+            "threshold": "アラート閾値"
+        },
+        "stock": {
+            "title": "在庫アラート",
+            "threshold": "低在庫閾値",
+            "unit": "本",
+            "desc": "在庫がこの値を下回ると <1>赤色のアラート</1> を表示します"
+        },
+        "usage": {
+            "overview": "使用状況概要",
+            "approaching": "予算の限界に近い",
+            "used": "使用済み: {{val}}",
+            "remaining": "残り: {{val}}",
+            "chartTitle": "過去7日間の使用傾向",
+            "reportTitle": "使用状況レポート",
+            "export": "エクスポート",
+            "date": "日付",
+            "count": "回数",
+            "token": "トークン",
+            "noRecords": "記録なし"
+        }
+    },
+    "design": {
+        "title": "カスタムデザインウィザード",
+        "subtitle": "たった3ステップで、あなただけのフラワーアレンジメントプランを生成",
+        "tabs": {
+            "quick": "クイックモード",
+            "quickDesc": "ギフト・装飾",
+            "pro": "プロモード",
+            "proDesc": "アート作品"
+        },
+        "steps": {
+            "scene": "シーン選択",
+            "target": "対象とスタイル",
+            "confirm": "生成確認"
+        },
+        "scene": {
+            "title": "主な贈答シーンは？",
+            "muse": "シーンのインスピレーション",
+            "visual": "画像から花へ (Visual Muse)",
+            "uploadTitle": "インスピレーション画像をアップロード",
+            "uploadDesc": "ドレスの写真、結婚式の会場、油絵、または再現したい雰囲気の画像",
+            "uploadBtn": "クリックまたはドラッグしてアップロード",
+            "uploadHint": "対応形式: JPG, PNG (最大 5MB)",
+            "options": {
+                "birthday": {
+                    "label": "誕生日祝い",
+                    "desc": "鮮やかで明るく、喜びを伝える"
+                },
+                "wedding": {
+                    "label": "結婚・記念日",
+                    "desc": "ロマンチックで美しく、愛を証明する"
+                },
+                "comfort": {
+                    "label": "お見舞い・慰問",
+                    "desc": "静かで上品、心を癒やす"
+                },
+                "home": {
+                    "label": "インテリア装飾",
+                    "desc": "温かみのある自然、生活の彩り"
+                },
+                "graduation": {
+                    "label": "卒業式",
+                    "desc": "学業成就を祝う"
+                },
+                "opening": {
+                    "label": "開店祝い",
+                    "desc": "繁栄と商売繁盛"
+                },
+                "valentine": {
+                    "label": "バレンタイン",
+                    "desc": "愛に溢れた、ロマンチックな告白"
+                },
+                "mother_day": {
+                    "label": "母の日",
+                    "desc": "母への感謝、温かい気持ち"
+                }
+            }
+        },
+        "recipient": {
+            "title": "贈る相手は？",
+            "options": {
+                "partner": "恋人・パートナー",
+                "parent": "両親",
+                "friend": "友人",
+                "elder": "目上の方・恩師",
+                "self": "自分",
+                "colleague": "同僚・パートナー",
+                "child": "子供"
+            }
+        },
+        "style": {
+            "title": "好みのスタイル？",
+            "options": {
+                "romantic": "ロマンチック",
+                "fresh": "ナチュラル・フレッシュ",
+                "vintage": "ヴィンテージ・油絵風",
+                "passionate": "情熱的・ゴージャス",
+                "minimalist": "ミニマリスト",
+                "wild": "ワイルド・自然",
+                "elegant": "エレガント・上品"
+            }
+        },
+        "color": {
+            "title": "好みの色調？",
+            "options": {
+                "warm": "暖色系",
+                "cool": "寒色系",
+                "pastel": "パステルカラー",
+                "vibrant": "ビビッドカラー",
+                "monochrome": "モノクローム",
+                "auto": "AIにお任せ"
+            }
+        },
+        "format": {
+            "title": "作品の形態？",
+            "options": {
+                "bouquet": "ブーケ（花束）",
+                "vase": "アレンジメント（花瓶）",
+                "box": "フラワーボックス",
+                "basket": "バスケット"
+            }
+        },
+        "requirements": {
+            "title": "特別な要望 (任意)",
+            "placeholder": "例：ユリの香りが苦手、葉物を多めにしたい..."
+        },
+        "budget": {
+            "title": "予算範囲 (円)",
+            "level": {
+                "low": "シンプル",
+                "mid": "スタンダード",
+                "high": "豪華"
+            },
+            "lowRisk": "予算残高不足",
+            "exhausted": "予算が尽きました。管理者に連絡してチャージしてください",
+            "alert": "予算残高が {{val}}% 以下です。消耗に注意してください"
+        },
+        "generate": {
+            "ready": "プラン生成の準備完了",
+            "cost": "あなただけのデザインプランを生成します。予想消費: 150 トークン",
+            "button": "今すぐ生成",
+            "back": "戻って修正",
+            "loading": "AI デザイナーが作業中...",
+            "noBudget": "予算不足",
+            "steps": {
+                "analyze": "デザインの要件と好みを分析中...",
+                "stock": "現在の在庫とコストを検索中...",
+                "vision": "ビジュアルエンジンが参考画像を解析中...",
+                "construct": "配と空間構造を構築中...",
+                "render": "最終イメージと花言葉を生成中..."
+            }
+        },
+        "pro": {
+            "tabs": {
+                "manual": "流派選択",
+                "image": "画像から花へ (Pro)"
+            },
+            "school": {
+                "title": "花芸流派を選択",
+                "filter": {
+                    "all": "すべて",
+                    "japanese": "🇯🇵 日本",
+                    "chinese": "🇨🇳 中国",
+                    "western": "🇪🇺 欧州"
+                },
+                "options": {
+                    "japanese_ikenobo": {
+                        "name": "池坊",
+                        "desc": "最古のいけばな、天地人の三主枝"
+                    },
+                    "japanese_ohara": {
+                        "name": "小原流",
+                        "desc": "盛花、水盤に広がる風景"
+                    },
+                    "japanese_sogetsu": {
+                        "name": "草月流",
+                        "desc": "現代的・前衛的、自由な表現"
+                    },
+                    "chinese_literati": {
+                        "name": "文人花",
+                        "desc": "詩情画意、梅蘭竹菊"
+                    },
+                    "chinese_zen": {
+                        "name": "禅花",
+                        "desc": "一花一世界、極限の禅意"
+                    },
+                    "western_biedermeier": {
+                        "name": "ビーダーマイヤー",
+                        "desc": "クラシックな円形、密集的"
+                    },
+                    "western_english": {
+                        "name": "イングリッシュガーデン",
+                        "desc": "自然でロマンチック、カントリースタイル"
+                    },
+                    "fusion": {
+                        "name": "フュージョン",
+                        "desc": "境界を超えた自由な創作"
+                    }
+                }
+            },
+            "technique": {
+                "title": "技法を選択",
+                "options": {
+                    "kenzan": {
+                        "name": "剣山留め",
+                        "desc": "日本いけばなの定番"
+                    },
+                    "spiral_hand_tied": {
+                        "name": "スパイラル（手組み）",
+                        "desc": "欧風花束の基本"
+                    },
+                    "parallel": {
+                        "name": "パラレル（平行）",
+                        "desc": "モダンでシンプル"
+                    },
+                    "pave": {
+                        "name": "パヴェ（敷き詰め）",
+                        "desc": "ボックスフラワー・テーブル装飾"
+                    },
+                    "cascade": {
+                        "name": "キャスケード",
+                        "desc": "流れ落ちる優雅さ"
+                    },
+                    "oasis": {
+                        "name": "吸水スポンジ",
+                        "desc": "自由な造形"
+                    },
+                    "wiring": {
+                        "name": "ワイヤリング",
+                        "desc": "コサージュ・ヘッドドレス"
+                    }
+                }
+            },
+            "proportion": {
+                "title": "比率のルール",
+                "options": {
+                    "7_5_3": {
+                        "label": "いけばな 7:5:3",
+                        "desc": "真・副・体"
+                    },
+                    "golden_ratio": {
+                        "label": "黄金比",
+                        "desc": "1:1.618"
+                    },
+                    "free": {
+                        "label": "フリースタイル",
+                        "desc": "デザイナーの決定"
+                    }
+                }
+            },
+            "season": {
+                "title": "季節の美学",
+                "options": {
+                    "spring": {
+                        "label": "🌸 春",
+                        "desc": "新生"
+                    },
+                    "summer": {
+                        "label": "🌻 夏",
+                        "desc": "情熱"
+                    },
+                    "autumn": {
+                        "label": "🍂 秋",
+                        "desc": "成熟"
+                    },
+                    "winter": {
+                        "label": "❄️ 冬",
+                        "desc": "静寂"
+                    },
+                    "all": {
+                        "label": "🌈 四季",
+                        "desc": "通年"
+                    }
+                }
+            },
+            "image": {
+                "title": "参考画像をアップロード (Pro)",
+                "desc": "AI が画像の構造、サイズ、雰囲気を深く分析し、プロフェッショナルな花芸プランを生成します",
+                "advanced": {
+                    "title": "高度な分析パラメータ",
+                    "hint": "(任意、AI認識を最適化)",
+                    "scale": "サイズ設定",
+                    "mood": "ムード・雰囲気",
+                    "form": "形態・構造",
+                    "background": "背景スタイル",
+                    "scaleOptions": {
+                        "auto": "🔮 自動検出",
+                        "micro": "🌸 極小",
+                        "small": "💐 小型",
+                        "medium": "🏵️ 中型",
+                        "large": "🌺 大型",
+                        "monumental": "🏛️ 超大型"
+                    },
+                    "moodOptions": {
+                        "serene": "🕊️ 静寂",
+                        "romantic": "💕 ロマンチック",
+                        "dramatic": "🎭 ドラマチック",
+                        "whimsical": "🎪 幻想的",
+                        "luxurious": "👑 ラグジュアリー"
+                    },
+                    "formOptions": {
+                        "auto": "自動",
+                        "vertical": "垂直",
+                        "horizontal": "水平",
+                        "radial": "放射状",
+                        "cascade": "キャスケード",
+                        "organic": "オーガニック"
+                    },
+                    "backgroundOptions": {
+                        "minimal": "ミニマル",
+                        "environmental": "環境",
+                        "luxe": "豪華",
+                        "rustic": "ラスティック",
+                        "zen": "禅"
+                    }
+                }
+            },
+            "cultureContext": {
+                "title": "文化的コンテキスト (任意)",
+                "placeholder": "例：茶花、禅スペース、ウェディング、展示作品..."
+            },
+            "confirm": {
+                "title": "デザイン確認",
+                "school": "流派",
+                "technique": "技法",
+                "proportion": "比率",
+                "budget": "予算",
+                "generate": "🎨 プロプランを生成"
+            },
+            "loading": {
+                "title": "マイスターが創作中...",
+                "steps": {
+                    "analyze": "流派の美学と文化的意味を分析中...",
+                    "technique": "専門的な技法と比率ルールを適用中...",
+                    "match": "在庫の花材と文化的な象徴をマッチング中...",
+                    "generate": "芸術的なタイトルと手順書を作成中..."
+                }
+            },
+            "steps": {
+                "next": "次へ",
+                "prev": "戻る"
+            }
+        }
+    },
+    "inventory": {
+        "title": "花材在庫",
+        "subtitle": "店内の花の種類と数量を管理",
+        "add": "新規入荷",
+        "edit": "花材を編集",
+        "form": {
+            "name": "名称",
+            "namePlaceholder": "例：赤バラ",
+            "category": "カテゴリ",
+            "culture": "文化属性",
+            "stock": "現在庫 (残り)",
+            "cost": "原価 (円)",
+            "retail": "売価 (円)",
+            "color": "色/説明",
+            "colorPlaceholder": "例：深紅、ベルベットのような質感",
+            "meaning": "花言葉",
+            "meaningPlaceholder": "例：情熱的な愛",
+            "submit": "入荷を確定",
+            "save": "変更を保存",
+            "cancel": "キャンセル",
+            "cultureOptions": {
+                "western": "洋風",
+                "chinese": "中華風",
+                "japanese": "和風",
+                "universal": "共通"
+            },
+            "categories": {
+                "main": "メイン",
+                "filler": "フィラー",
+                "foliage": "葉物"
+            }
+        },
+        "list": {
+            "title": "現在の在庫",
+            "search": "検索...",
+            "export": "Excel エクスポート",
+            "headers": {
+                "name": "名称",
+                "category": "種別/文化",
+                "price": "原価/売価",
+                "cost": "入",
+                "out": "出",
+                "margin": "粗利率",
+                "initial": "初期在庫",
+                "used": "総消費 (本)",
+                "remaining": "残在庫",
+                "actions": "操作"
+            },
+            "empty": {
+                "title": "在庫がありません",
+                "desc": "左側のフォームから最初の花材を登録しましょう"
+            },
+            "lowStock": "在庫不足",
+            "unit": "本"
+        },
+        "messages": {
+            "noData": "エクスポートできる在庫データがありません",
+            "exportSuccess": "エクスポート成功",
+            "enterName": "花材名を入力してください",
+            "updateSuccess": "情報を更新しました",
+            "addSuccess": "花材を追加しました",
+            "editing": "編集モード: {{name}}",
+            "cancelEdit": "編集をキャンセルしました"
+        }
+    },
+    "history": {
+        "title": "デザイン履歴",
+        "subtitle": "過去のデザイン作品を確認・管理 ({{count}})",
+        "search": "プランを検索...",
+        "empty": {
+            "title": "履歴はありません",
+            "desc": "まだデザインが作成されていません。デザインアシスタントを使って、素敵なプランを作りましょう。",
+            "create": "作成しに行く"
+        },
+        "unknownTime": "不明な日時",
+        "deleteConfirm": "このプランを削除してもよろしいですか？この操作は取り消せません。",
+        "cost": "コスト"
+    },
+    "designDetail": {
+        "notFound": "プランが見つかりません",
+        "savedEval": "評価を保存しました",
+        "confirmExec": "このプランを実行しますか？対応する在庫の花材が差し引かれます。",
+        "execSuccess": "プランを実行しました。在庫を更新しました",
+        "usageUpdated": "花材使用量を更新しました",
+        "exportSuccess": "エクスポート成功",
+        "exportFail": "エクスポート失敗",
+        "back": "一覧に戻る",
+        "print": "印刷",
+        "pdf": "PDF",
+        "executed": "実行済み",
+        "pending": "未実行",
+        "meaning": "花言葉・意味",
+        "requirements": "特別な要件",
+        "flowerList": "花材リスト",
+        "save": "保存",
+        "adjustUsage": "使用量を調整",
+        "instructions": "制作ガイド",
+        "analysis": {
+            "title": "コスト・利益分析",
+            "cost": "予想コスト",
+            "profit": "予想利益",
+            "margin": "利益率"
+        },
+        "status": {
+            "title": "プランの状態",
+            "executedAt": "{{time}} に実行済み",
+            "deducted": "在庫引き落とし済み",
+            "notExecutedDesc": "このプランはまだ実行されていません。在庫は引き落とされていません。",
+            "confirmBtn": "プラン実行を確定",
+            "confirmHint": "クリックすると在庫から自動的に差し引かれます"
+        },
+        "evaluation": {
+            "title": "プラン評価",
+            "rating": "評価",
+            "feedback": "メモ / 顧客フィードバック",
+            "placeholder": "お客様の反応や、デザイン時のメモを記録...",
+            "saveBtn": "評価を保存"
+        }
+    },
+    "auth": {
+        "title": "FloraBoard SaaS",
+        "subtitle": "プロフェッショナル・フラワーデザイン・プラットフォーム",
+        "configMissingTitle": "設定が不足しています",
+        "configMissingDesc": "Supabase の認証情報を記載した .env ファイルを作成してください：",
+        "tabs": {
+            "signIn": "ログイン",
+            "signUp": "新規登録"
+        },
+        "fields": {
+            "email": "メールアドレス",
+            "password": "パスワード",
+            "shopName": "店舗名（例：マイ・フローラ）"
+        },
+        "buttons": {
+            "signIn": "ログイン",
+            "signUp": "アカウントとワークスペースを作成"
+        },
+        "terms": "続行することで、利用規約に同意したものとみなされます",
+        "messages": {
+            "welcomeBack": "おかえりなさい！",
+            "signInFailed": "ログインに失敗しました",
+            "accountCreated": "アカウントが作成されました！メールを確認するかログインしてください。",
+            "signUpFailed": "登録に失敗しました",
+            "missingConfig": "Supabase クライアントが初期化されていません。.env ファイルを確認してください。"
+        }
+    }
+}

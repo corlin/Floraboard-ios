@@ -1,0 +1,628 @@
+{
+    "app": {
+        "title": "FloraBoard",
+        "nav": {
+            "dashboard": "Dashboard",
+            "design": "Design",
+            "history": "History",
+            "inventory": "Inventory",
+            "settings": "Settings"
+        },
+        "tenant": {
+            "search": "Search shop...",
+            "myShops": "My Shops",
+            "create": "Create New Shop",
+            "notFound": "No shop found."
+        }
+    },
+    "onboarding": {
+        "title": "Name Your Flower Shop",
+        "subtitle": "Let's set up your digital workspace.",
+        "shopName": "Shop Name",
+        "placeholder": "e.g. My Lovely Florist",
+        "submit": "Create Workspace",
+        "cancel": "Cancel",
+        "success": "Shop created successfully!",
+        "error": "Failed to create shop"
+    },
+    "home": {
+        "greeting": "Good morning, {{name}}",
+        "subtitle": "Today is {{date}}, ready to create beauty?",
+        "startDesign": "Start Design",
+        "stats": {
+            "inventoryOverview": "Inventory Overview",
+            "flowerCount": "{{count}} types",
+            "totalStock": "Total Stock: {{count}}",
+            "stockAlert": "Low Stock Alert",
+            "alertItems": "{{count}} items",
+            "alertDesc": "Flowers with less than 10 stems",
+            "revenue": "Total Revenue",
+            "designCount": "Designed {{count}} plans"
+        },
+        "recentDesigns": {
+            "title": "Recent Designs",
+            "viewAll": "View All",
+            "empty": "No design records yet",
+            "createOne": "Create One",
+            "profit": "Profit"
+        },
+        "quickActions": {
+            "title": "Quick Actions",
+            "addInventory": "Add Inventory",
+            "addInventoryDesc": "Register new flower arrivals",
+            "smartDesign": "Smart Design",
+            "smartDesignDesc": "Generate customer plans quickly",
+            "inspirationTitle": "Daily Inspiration",
+            "inspirationText": "\"Flower arranging is silent poetry, three-dimensional painting.\" Try adding a bit of eucalyptus to today's work to add a natural breath."
+        }
+    },
+    "settings": {
+        "title": "Settings & Credits",
+        "subtitle": "Manage store membership, recharge credits and configure shop alerts",
+        "subscription": {
+            "title": "Subscription & Credits",
+            "subtitle": "Powered by Cloudflare Global Edge and Waffo unified payments for high-speed AI generation and 4K renders",
+            "creditsBalance": "Available Credits",
+            "points": "Credits",
+            "tier": "Membership Tier",
+            "free": "Free Tier",
+            "pro": "Pro Member",
+            "enterprise": "Enterprise",
+            "validUntil": "Valid Until",
+            "refresh": "Refresh Balance",
+            "rulesTitle": "Credit Consumption Rules",
+            "ruleText": "AI Design / Flower Identification: 1 Credit / request",
+            "ruleImage": "HD 4K Floral Rendering: 5 Credits / request",
+            "ruleEdge": "Cloudflare Global Edge direct connection",
+            "plansTitle": "Upgrade Plans & Credit Packs",
+            "popular": "Most Popular",
+            "subscribe": "Subscribe Now",
+            "buyPack": "Buy Pack",
+            "processing": "Opening checkout...",
+            "transactionsTitle": "Credit Transactions History",
+            "historyEmpty": "No credit transactions yet",
+            "openCheckout": "Opening Waffo Checkout...",
+            "paymentSuccessTip": "After completing payment, please click refresh to view updated credits"
+        },
+        "region": {
+            "title": "Data Storage Region",
+            "description": "Select data storage node, affects speed and compliance",
+            "tip": "💡 Mainland China users recommended 'China Node'; Overseas users 'Overseas Node'; Offline use 'Local Storage'.",
+            "current": "Current",
+            "switched": "Switched to {{name}}",
+            "refreshTip": "Effective after refresh",
+            "options": {
+                "cloudflare": {
+                    "name": "Cloudflare Edge",
+                    "desc": "Cloudflare Workers & D1 global edge, ultra-fast"
+                },
+                "local": {
+                    "name": "Local Storage",
+                    "desc": "Data stored locally in browser, offline"
+                },
+                "supabase": {
+                    "name": "Supabase Node",
+                    "desc": "Supabase Cloud Service"
+                },
+                "aliyun": {
+                    "name": "China Node",
+                    "desc": "Aliyun Service, for mainland China users"
+                }
+            }
+        },
+        "api": {
+            "title": "API Configuration",
+            "description": "Configure OpenAI-compatible text-to-image interface info",
+            "provider": "Service Provider",
+            "endpoint": "API Endpoint (Base URL)",
+            "apiKey": "API Key",
+            "textModel": "Text Reasoning Model",
+            "textModelDesc": "For generating logic, flower language and steps (Need Strong Reasoning)",
+            "visionModel": "Visual Analysis Model",
+            "visionModelDesc": "For [Visual Muse], analyzing color and style (Need Vision Capability)",
+            "imageModel": "Image Generation Model",
+            "imageModelDesc": "For generating final rendering (Supports wanx/dall-e/gemini)",
+            "manualInput": "Manual input...",
+            "selectPlaceholder": "Select..."
+        },
+        "save": {
+            "button": "Save All Config",
+            "saving": "Saving...",
+            "success": "Configuration saved",
+            "error": "Save failed"
+        },
+        "budget": {
+            "title": "Budget Control",
+            "total": "Total Budget",
+            "threshold": "Alert Threshold"
+        },
+        "stock": {
+            "title": "Stock Alert",
+            "threshold": "Low Stock Threshold",
+            "unit": "stems",
+            "desc": "Show <1>Red Alert</1> when below this value"
+        },
+        "usage": {
+            "overview": "Usage Overview",
+            "approaching": "Near Budget",
+            "used": "Used: {{val}}",
+            "remaining": "Remaining: {{val}}",
+            "chartTitle": "Last 7 Days Usage",
+            "reportTitle": "Daily Usage Report",
+            "export": "Export",
+            "date": "Date",
+            "count": "Count",
+            "token": "Token",
+            "noRecords": "No Records"
+        }
+    },
+    "design": {
+        "title": "Custom Design Wizard",
+        "subtitle": "Just three steps to generate your exclusive flower arrangement plan",
+        "tabs": {
+            "quick": "Quick Mode",
+            "quickDesc": "Gift/Decor",
+            "pro": "Pro Mode",
+            "proDesc": "Creation"
+        },
+        "steps": {
+            "scene": "Select Occasion",
+            "target": "Recipient/Style",
+            "confirm": "Confirm"
+        },
+        "scene": {
+            "title": "What is the occasion?",
+            "muse": "Inspiration",
+            "visual": "Visual Muse",
+            "uploadTitle": "Upload Reference Image",
+            "uploadDesc": "Photo of dress, wedding venue, painting, or any vibe you want to replicate",
+            "uploadBtn": "Click or drag to upload",
+            "uploadHint": "Support JPG, PNG (Max 5MB)",
+            "options": {
+                "birthday": {
+                    "label": "Birthday",
+                    "desc": "Bright and joyful"
+                },
+                "wedding": {
+                    "label": "Wedding/Anniversary",
+                    "desc": "Romantic and beautiful"
+                },
+                "comfort": {
+                    "label": "Comfort/Get Well",
+                    "desc": "Peaceful and soothing"
+                },
+                "home": {
+                    "label": "Home Decor",
+                    "desc": "Warm and natural"
+                },
+                "graduation": {
+                    "label": "Graduation",
+                    "desc": "Congratulations on success"
+                },
+                "opening": {
+                    "label": "Opening",
+                    "desc": "Prosperity and Business"
+                },
+                "valentine": {
+                    "label": "Valentine's",
+                    "desc": "Full of love"
+                },
+                "mother_day": {
+                    "label": "Mother's Day",
+                    "desc": "Gratitude and warmth"
+                }
+            }
+        },
+        "recipient": {
+            "title": "Who is it for?",
+            "options": {
+                "partner": "Partner/Spouse",
+                "parent": "Parents",
+                "friend": "Friend",
+                "elder": "Elder/Teacher",
+                "self": "Self",
+                "colleague": "Colleague",
+                "child": "Child"
+            }
+        },
+        "style": {
+            "title": "Preferred Style?",
+            "options": {
+                "romantic": "Romantic",
+                "fresh": "Fresh & Natural",
+                "vintage": "Vintage Oil Painting",
+                "passionate": "Passionate",
+                "minimalist": "Minimalist",
+                "wild": "Wild & Free",
+                "elegant": "Elegant"
+            }
+        },
+        "color": {
+            "title": "Preferred Tone?",
+            "options": {
+                "warm": "Warm",
+                "cool": "Cool",
+                "pastel": "Pastel",
+                "vibrant": "Vibrant",
+                "monochrome": "Monochrome",
+                "auto": "AI Decides"
+            }
+        },
+        "format": {
+            "title": "Format?",
+            "options": {
+                "bouquet": "Bouquet",
+                "vase": "Vase Arrangement",
+                "box": "Flower Box",
+                "basket": "Basket"
+            }
+        },
+        "requirements": {
+            "title": "Special Requirements (Optional)",
+            "placeholder": "e.g., No lilies, more greenery..."
+        },
+        "budget": {
+            "title": "Budget Range (CNY)",
+            "level": {
+                "low": "Simple",
+                "mid": "Standard",
+                "high": "Luxury"
+            },
+            "lowRisk": "Budget Insufficient",
+            "exhausted": "Budget Exhausted, please contact admin",
+            "alert": "Budget Balance Low ({{val}}%), please control usage"
+        },
+        "generate": {
+            "ready": "Ready to Generate",
+            "cost": "Generating your exclusive plan, estimated 150 Tokens",
+            "button": "Generate Now",
+            "back": "Back to Edit",
+            "loading": "AI Designer is working...",
+            "noBudget": "Insufficient Budget",
+            "steps": {
+                "analyze": "Analyzing requirements...",
+                "stock": "Checking inventory...",
+                "vision": "Visual engine parsing image...",
+                "construct": "Constructing color & structure...",
+                "render": "Rendering final image & meaning..."
+            }
+        },
+        "pro": {
+            "tabs": {
+                "manual": "Select School",
+                "image": "Visual Muse (Pro)"
+            },
+            "school": {
+                "title": "Select Floral School",
+                "filter": {
+                    "all": "All",
+                    "japanese": "🇯🇵 JP",
+                    "chinese": "🇨🇳 CN",
+                    "western": "🇪🇺 EU"
+                },
+                "options": {
+                    "japanese_ikenobo": {
+                        "name": "Ikenobo",
+                        "desc": "Oldest Japanese Ikebana"
+                    },
+                    "japanese_ohara": {
+                        "name": "Ohara",
+                        "desc": "Moribana style, water landscapes"
+                    },
+                    "japanese_sogetsu": {
+                        "name": "Sogetsu",
+                        "desc": "Modern, avant-garde, free expression"
+                    },
+                    "chinese_literati": {
+                        "name": "Literati",
+                        "desc": "Poetic, Plum/Orchid/Bamboo/Chrysanthemum"
+                    },
+                    "chinese_zen": {
+                        "name": "Zen",
+                        "desc": "Minimalist, one flower one world"
+                    },
+                    "western_biedermeier": {
+                        "name": "Biedermeier",
+                        "desc": "Classic round, dense and full"
+                    },
+                    "western_english": {
+                        "name": "English Garden",
+                        "desc": "Natural romantic, cottage style"
+                    },
+                    "fusion": {
+                        "name": "Fusion",
+                        "desc": "Breaking boundaries, free creation"
+                    }
+                }
+            },
+            "technique": {
+                "title": "Select Technique",
+                "options": {
+                    "kenzan": {
+                        "name": "Kenzan",
+                        "desc": "Classic Ikebana"
+                    },
+                    "spiral_hand_tied": {
+                        "name": "Spiral Hand-tied",
+                        "desc": "European Bouquet"
+                    },
+                    "parallel": {
+                        "name": "Parallel",
+                        "desc": "Modern Minimalist"
+                    },
+                    "pave": {
+                        "name": "Pavé",
+                        "desc": "Flower Box / Table"
+                    },
+                    "cascade": {
+                        "name": "Cascade",
+                        "desc": "Elegant Trailing"
+                    },
+                    "oasis": {
+                        "name": "Floral Foam",
+                        "desc": "Free Styling"
+                    },
+                    "wiring": {
+                        "name": "Wiring",
+                        "desc": "Corsage / Boutonniere"
+                    }
+                }
+            },
+            "proportion": {
+                "title": "Proportion Rules",
+                "options": {
+                    "7_5_3": {
+                        "label": "Ikebana 7:5:3",
+                        "desc": "Shin・Soe・Tai"
+                    },
+                    "golden_ratio": {
+                        "label": "Golden Ratio",
+                        "desc": "1:1.618"
+                    },
+                    "free": {
+                        "label": "Free Style",
+                        "desc": "Designer's Choice"
+                    }
+                }
+            },
+            "season": {
+                "title": "Seasonal Aesthetics",
+                "options": {
+                    "spring": {
+                        "label": "🌸 Spring",
+                        "desc": "Rebirth"
+                    },
+                    "summer": {
+                        "label": "🌻 Summer",
+                        "desc": "Vibrant"
+                    },
+                    "autumn": {
+                        "label": "🍂 Autumn",
+                        "desc": "Mature"
+                    },
+                    "winter": {
+                        "label": "❄️ Winter",
+                        "desc": "Silence"
+                    },
+                    "all": {
+                        "label": "🌈 All Seasons",
+                        "desc": "Universal"
+                    }
+                }
+            },
+            "image": {
+                "title": "Upload Reference (Pro)",
+                "desc": "AI will deeply analyze structure, scale, and mood to generate a professional plan",
+                "advanced": {
+                    "title": "Advanced Analysis Parameters",
+                    "hint": "(Optional, optimizes AI recognition)",
+                    "scale": "Scale Preference",
+                    "mood": "Mood/Atmosphere",
+                    "form": "Form/Structure",
+                    "background": "Background Style",
+                    "scaleOptions": {
+                        "auto": "🔮 Auto Detect",
+                        "micro": "🌸 Micro",
+                        "small": "💐 Small",
+                        "medium": "🏵️ Medium",
+                        "large": "🌺 Large",
+                        "monumental": "🏛️ Monumental"
+                    },
+                    "moodOptions": {
+                        "serene": "🕊️ Serene",
+                        "romantic": "💕 Romantic",
+                        "dramatic": "🎭 Dramatic",
+                        "whimsical": "🎪 Whimsical",
+                        "luxurious": "👑 Luxurious"
+                    },
+                    "formOptions": {
+                        "auto": "Auto",
+                        "vertical": "Vertical",
+                        "horizontal": "Horizontal",
+                        "radial": "Radial",
+                        "cascade": "Cascade",
+                        "organic": "Organic"
+                    },
+                    "backgroundOptions": {
+                        "minimal": "Minimal",
+                        "environmental": "Environmental",
+                        "luxe": "Luxurious",
+                        "rustic": "Rustic",
+                        "zen": "Zen"
+                    }
+                }
+            },
+            "cultureContext": {
+                "title": "Cultural Context (Optional)",
+                "placeholder": "e.g., Tea ceremony, Zen space, Wedding design, Exhibition work..."
+            },
+            "confirm": {
+                "title": "Design Confirmation",
+                "school": "School",
+                "technique": "Technique",
+                "proportion": "Proportion",
+                "budget": "Budget",
+                "generate": "🎨 Generate Pro Plan"
+            },
+            "loading": {
+                "title": "Master Florist is Creating...",
+                "steps": {
+                    "analyze": "Analyzing aesthetics and culture...",
+                    "technique": "Applying professional techniques...",
+                    "match": "Matching inventory and symbols...",
+                    "generate": "Generating naming and steps..."
+                }
+            },
+            "steps": {
+                "next": "Next Step",
+                "prev": "Previous Step"
+            }
+        }
+    },
+    "inventory": {
+        "title": "Inventory Management",
+        "subtitle": "Manage existing flower types and stock",
+        "add": "Add New Stock",
+        "edit": "Edit Flower",
+        "form": {
+            "name": "Name",
+            "namePlaceholder": "e.g., Red Rose",
+            "category": "Category",
+            "culture": "Culture",
+            "stock": "Current Stock (Remaining)",
+            "cost": "Cost (CNY)",
+            "retail": "Retail (CNY)",
+            "color": "Color/Desc",
+            "colorPlaceholder": "e.g., Dark Red, Velvet texture",
+            "meaning": "Meaning",
+            "meaningPlaceholder": "e.g., Passionate Love",
+            "submit": "Confirm Entry",
+            "save": "Save Changes",
+            "cancel": "Cancel",
+            "cultureOptions": {
+                "western": "Western",
+                "chinese": "Chinese",
+                "japanese": "Japanese",
+                "universal": "Universal"
+            },
+            "categories": {
+                "main": "Main",
+                "filler": "Filler",
+                "foliage": "Foliage"
+            }
+        },
+        "list": {
+            "title": "Current Inventory",
+            "search": "Search...",
+            "export": "Export Excel",
+            "headers": {
+                "name": "Name",
+                "category": "Category/Culture",
+                "price": "Cost/Retail",
+                "cost": "In",
+                "out": "Out",
+                "margin": "Margin",
+                "initial": "Initial (Stems)",
+                "used": "Used (Stems)",
+                "remaining": "Remaining",
+                "actions": "Actions"
+            },
+            "empty": {
+                "title": "Inventory Empty",
+                "desc": "Enter your first batch of flowers on the left"
+            },
+            "lowStock": "Low Stock",
+            "unit": "stems"
+        },
+        "messages": {
+            "noData": "No inventory data to export",
+            "exportSuccess": "Export Successful",
+            "enterName": "Please enter flower name",
+            "updateSuccess": "Flower updated",
+            "addSuccess": "Flower added",
+            "editing": "Editing: {{name}}",
+            "cancelEdit": "Edit Cancelled"
+        }
+    },
+    "history": {
+        "title": "Design History",
+        "subtitle": "Review, search and manage past designs ({{count}})",
+        "search": "Search plans...",
+        "empty": {
+            "title": "No History",
+            "desc": "Your creative journey hasn't started yet. Use the Design Assistant to create beautiful arrangements in just a few steps.",
+            "create": "Create One"
+        },
+        "unknownTime": "Unknown Time",
+        "deleteConfirm": "Are you sure you want to delete this design? This cannot be undone.",
+        "cost": "Cost"
+    },
+    "designDetail": {
+        "notFound": "Design Not Found",
+        "savedEval": "Evaluation Saved",
+        "confirmExec": "Confirm execution? This will deduct flower stock.",
+        "execSuccess": "Plan executed, stock deducted",
+        "usageUpdated": "Usage updated",
+        "exportSuccess": "Export Successful",
+        "exportFail": "Export Failed",
+        "back": "Back to History",
+        "print": "Print",
+        "pdf": "PDF",
+        "executed": "Executed",
+        "pending": "Pending",
+        "meaning": "Flower Meaning",
+        "requirements": "Special Requirements",
+        "flowerList": "Flower List",
+        "save": "Save",
+        "adjustUsage": "Adjust Usage",
+        "instructions": "Instructions",
+        "analysis": {
+            "title": "Cost & Profit Analysis",
+            "cost": "Est. Cost",
+            "profit": "Est. Profit",
+            "margin": "Margin"
+        },
+        "status": {
+            "title": "Plan Status",
+            "executedAt": "Executed at {{time}}",
+            "deducted": "Stock Deducted",
+            "notExecutedDesc": "Plan not executed yet, stock remains unchanged.",
+            "confirmBtn": "Confirm Execution",
+            "confirmHint": "Stock will be deducted automatically"
+        },
+        "evaluation": {
+            "title": "Evaluation",
+            "rating": "Rating",
+            "feedback": "Feedback / Notes",
+            "placeholder": "Record client feedback or design notes...",
+            "saveBtn": "Save Evaluation"
+        }
+    },
+    "auth": {
+        "title": "FloraBoard SaaS",
+        "subtitle": "Professional Floral Design Platform",
+        "configMissingTitle": "Configuration Missing",
+        "configMissingDesc": "Please create a .env file with your Supabase credentials:",
+        "tabs": {
+            "signIn": "Sign In",
+            "signUp": "Register"
+        },
+        "fields": {
+            "email": "Email",
+            "password": "Password",
+            "shopName": "Shop Name (e.g. My Flora)"
+        },
+        "buttons": {
+            "signIn": "Sign In",
+            "signUp": "Create Account & Workspace"
+        },
+        "terms": "By continuing, you agree to our Terms of Service",
+        "messages": {
+            "welcomeBack": "Welcome back!",
+            "signInFailed": "Failed to sign in",
+            "accountCreated": "Account created! Please check your email/login.",
+            "signUpFailed": "Failed to sign up",
+            "missingConfig": "Supabase client not initialized. Please check your .env file."
+        }
+    }
+}

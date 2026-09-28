@@ -1,0 +1,583 @@
+{
+    "app": {
+        "title": "FloraBoard",
+        "nav": {
+            "dashboard": "Tableau de bord",
+            "design": "Design Floral",
+            "history": "Historique",
+            "inventory": "Inventaire",
+            "settings": "Paramètres"
+        }
+    },
+    "home": {
+        "greeting": "Bonjour, {{name}}",
+        "subtitle": "Nous sommes le {{date}}. Prêt à créer de la beauté ?",
+        "startDesign": "Nouveau Design",
+        "stats": {
+            "inventoryOverview": "Aperçu du Stock",
+            "flowerCount": "{{count}} Variétés",
+            "totalStock": "Stock Total {{count}}",
+            "stockAlert": "Alerte Stock",
+            "alertItems": "{{count}} Articles",
+            "alertDesc": "Moins de 10 unités",
+            "revenue": "Revenu Cumulé",
+            "designCount": "Total {{count}} Designs"
+        },
+        "recentDesigns": {
+            "title": "Designs Récents",
+            "viewAll": "Tout voir",
+            "empty": "Aucun historique de design",
+            "createOne": "En créer un",
+            "profit": "Profit"
+        },
+        "quickActions": {
+            "title": "Actions Rapides",
+            "addInventory": "Ajout Stock",
+            "addInventoryDesc": "Enregistrer nouvel arrivage",
+            "smartDesign": "Design Intelligent",
+            "smartDesignDesc": "Générer offre client",
+            "inspirationTitle": "Inspiration du Jour",
+            "inspirationText": "« L'ikebana est une poésie silencieuse, une peinture vivante. » Essayez d'ajouter une touche d'eucalyptus à votre création d'aujourd'hui pour y apporter un souffle naturel."
+        }
+    },
+    "settings": {
+        "title": "Paramètres Système",
+        "subtitle": "Gérer l'accès API, le budget de jetons et la surveillance de l'utilisation",
+        "region": {
+            "title": "Région de Stockage",
+            "description": "Choisissez le nœud de stockage des données (impacte la vitesse et la conformité)",
+            "tip": "💡 Chine continentale : 'Nœud Chine' ; International : 'Nœud Étranger' ; Hors ligne : 'Stockage Local'.",
+            "current": "Actuel",
+            "switched": "Basculé vers {{name}}",
+            "refreshTip": "Effectif après actualisation",
+            "options": {
+                "local": {
+                    "name": "Stockage Local",
+                    "desc": "Stocké dans le navigateur, pas de réseau requis"
+                },
+                "supabase": {
+                    "name": "Nœud Étranger",
+                    "desc": "Service Cloud Supabase (Utilisateurs internationaux)"
+                },
+                "aliyun": {
+                    "name": "Nœud Chine",
+                    "desc": "Service Alibaba Cloud (Utilisateurs Chine continentale)"
+                }
+            }
+        },
+        "api": {
+            "title": "Configuration API",
+            "description": "Configurer les informations de l'interface texte-vers-image compatible OpenAI",
+            "provider": "Fournisseur de Service (Provider)",
+            "endpoint": "Point de terminaison API (Base URL)",
+            "apiKey": "Clé API",
+            "textModel": "Modèle de Raisonnement Texte (Reasoning)",
+            "textModelDesc": "Utilisé pour la logique, le langage des fleurs et les étapes (Need Strong Reasoning)",
+            "visionModel": "Modèle d'Analyse Visuelle (Vision)",
+            "visionModelDesc": "Pour la fonction 'Images vers Fleurs', analyse les tons et le style (Need Vision Capability)",
+            "imageModel": "Modèle de Génération d'Image (Image Gen)",
+            "imageModelDesc": "Utilisé pour générer le rendu final (Supports wanx/dall-e/gemini)",
+            "manualInput": "Saisie manuelle...",
+            "selectPlaceholder": "Sélectionner..."
+        },
+        "save": {
+            "button": "Enregistrer la configuration",
+            "saving": "Enregistrement...",
+            "success": "Configuration sauvegardée",
+            "error": "Échec de l'enregistrement"
+        },
+        "budget": {
+            "title": "Contrôle Budgétaire",
+            "total": "Budget Total",
+            "threshold": "Seuil d'Alerte"
+        },
+        "stock": {
+            "title": "Alerte de Stock",
+            "threshold": "Seuil de Stock Bas",
+            "unit": "Tiges",
+            "desc": "Afficher une <1>Alerte Rouge</1> si le stock est inférieur à cette valeur"
+        },
+        "usage": {
+            "overview": "Aperçu de la Consommation",
+            "approaching": "Approche de la limite",
+            "used": "Utilisé: {{val}}",
+            "remaining": "Restant: {{val}}",
+            "chartTitle": "Tendance 7 derniers jours",
+            "reportTitle": "Rapport de Consommation",
+            "export": "Exporter",
+            "date": "Date",
+            "count": "Nombre",
+            "token": "Jetons (Tokens)",
+            "noRecords": "Aucun enregistrement"
+        }
+    },
+    "design": {
+        "title": "Assistant de Design",
+        "subtitle": "Créez votre plan d'arrangement floral unique en seulement 3 étapes",
+        "tabs": {
+            "quick": "Mode Rapide",
+            "quickDesc": "Cadeau/Déco",
+            "pro": "Mode Pro",
+            "proDesc": "Création Artistique"
+        },
+        "steps": {
+            "scene": "Scène",
+            "target": "Cible & Style",
+            "confirm": "Confirmer"
+        },
+        "scene": {
+            "title": "Quelle est l'occasion principale ?",
+            "muse": "Inspiration de Scène",
+            "visual": "D'Image à Fleur (Visual Muse)",
+            "uploadTitle": "Télécharger une Image d'Inspiration",
+            "uploadDesc": "Photo de robe, lieu de mariage, peinture à l'huile ou toute ambiance à recréer",
+            "uploadBtn": "Cliquez ou glissez pour télécharger",
+            "uploadHint": "Formats: JPG, PNG (Max 5MB)",
+            "options": {
+                "birthday": {
+                    "label": "Anniversaire",
+                    "desc": "Vif et joyeux"
+                },
+                "wedding": {
+                    "label": "Mariage/Anniversaire",
+                    "desc": "Romantique et beau"
+                },
+                "comfort": {
+                    "label": "Condoléances/Visite",
+                    "desc": "Calme et élégant"
+                },
+                "home": {
+                    "label": "Décoration Maison",
+                    "desc": "Chaleureux et naturel"
+                },
+                "graduation": {
+                    "label": "Remise de Diplôme",
+                    "desc": "Célébration du succès"
+                },
+                "opening": {
+                    "label": "Ouverture/Inauguration",
+                    "desc": "Prospérité et succès"
+                },
+                "valentine": {
+                    "label": "Saint-Valentin",
+                    "desc": "Amour et romance"
+                },
+                "mother_day": {
+                    "label": "Fête des Mères",
+                    "desc": "Gratitude et chaleur"
+                }
+            }
+        },
+        "recipient": {
+            "title": "À qui offrez-vous cela ?",
+            "options": {
+                "partner": "Partenaire/Époux",
+                "parent": "Parents",
+                "friend": "Ami(e)",
+                "elder": "Aîné/Professeur",
+                "self": "Soi-même",
+                "colleague": "Collègue",
+                "child": "Enfant"
+            }
+        },
+        "style": {
+            "title": "Style préféré ?",
+            "options": {
+                "romantic": "Romantique",
+                "fresh": "Naturel & Frais",
+                "vintage": "Vintage/Huile",
+                "passionate": "Passionné",
+                "minimalist": "Minimaliste",
+                "wild": "Sauvage/Nature",
+                "elegant": "Élégant"
+            }
+        },
+        "color": {
+            "title": "Tons de couleur préférés ?",
+            "options": {
+                "warm": "Chauds",
+                "cool": "Froids",
+                "pastel": "Pastel",
+                "vibrant": "Vifs",
+                "monochrome": "Monochrome",
+                "auto": "Laisser l'IA décider"
+            }
+        },
+        "format": {
+            "title": "Forme de la composition ?",
+            "options": {
+                "bouquet": "Bouquet",
+                "vase": "Arrangement en Vase",
+                "box": "Boîte à Fleurs",
+                "basket": "Panier"
+            }
+        },
+        "requirements": {
+            "title": "Demandes spéciales (Optionnel)",
+            "placeholder": "Ex: Pas de lys, beaucoup de feuillage..."
+        },
+        "budget": {
+            "title": "Budget (CNY)",
+            "level": {
+                "low": "Simple",
+                "mid": "Standard",
+                "high": "Premium"
+            },
+            "lowRisk": "Solde budgétaire faible",
+            "exhausted": "Budget épuisé. Contactez l'administrateur.",
+            "alert": "Le solde budgétaire est inférieur à {{val}}%. Attention à la consommation."
+        },
+        "generate": {
+            "ready": "Prêt à générer le plan",
+            "cost": "Génération de votre plan de design unique. Coût estimé: 150 Jetons",
+            "button": "Générer Maintenant",
+            "back": "Retour",
+            "loading": "Le designer IA travaille...",
+            "noBudget": "Budget Insuffisant",
+            "steps": {
+                "analyze": "Analyse de vos exigences et préférences...",
+                "stock": "Vérification du stock et des coûts...",
+                "vision": "Analyse de l'image de référence...",
+                "construct": "Construction de la palette et de la structure...",
+                "render": "Génération de l'image finale et des significations..."
+            }
+        },
+        "pro": {
+            "tabs": {
+                "manual": "Sélection d'École",
+                "image": "D'Image à Fleur (Pro)"
+            },
+            "school": {
+                "title": "Choisir une École Florale",
+                "filter": {
+                    "all": "Tout",
+                    "japanese": "🇯🇵 Japon",
+                    "chinese": "🇨🇳 Chine",
+                    "western": "🇪🇺 Europe"
+                },
+                "options": {
+                    "japanese_ikenobo": {
+                        "name": "Ikenobo",
+                        "desc": "Le plus ancien, Ciel-Terre-Homme"
+                    },
+                    "japanese_ohara": {
+                        "name": "Ohara",
+                        "desc": "Beauté du paysage, Moribana"
+                    },
+                    "japanese_sogetsu": {
+                        "name": "Sogetsu",
+                        "desc": "Moderne, expression libre"
+                    },
+                    "chinese_literati": {
+                        "name": "Fleur de Lettré",
+                        "desc": "Poétique, Prunier/Orchidée/Bambou/Chrysanthème"
+                    },
+                    "chinese_zen": {
+                        "name": "Fleur Zen",
+                        "desc": "Un monde dans une fleur, minimalisme"
+                    },
+                    "western_biedermeier": {
+                        "name": "Biedermeier",
+                        "desc": "Circulaire classique, dense"
+                    },
+                    "western_english": {
+                        "name": "Jardin Anglais",
+                        "desc": "Naturel, romantique, style champêtre"
+                    },
+                    "fusion": {
+                        "name": "Fusion",
+                        "desc": "Création libre sans frontières"
+                    }
+                }
+            },
+            "technique": {
+                "title": "Choisir une Technique",
+                "options": {
+                    "kenzan": {
+                        "name": "Kenzan (Pique-fleurs)",
+                        "desc": "Classique Ikebana"
+                    },
+                    "spiral_hand_tied": {
+                        "name": "Spirale (Bouquet rond)",
+                        "desc": "Base du bouquet européen"
+                    },
+                    "parallel": {
+                        "name": "Parallèle",
+                        "desc": "Moderne et simple"
+                    },
+                    "pave": {
+                        "name": "Pavé",
+                        "desc": "Boîte à fleurs, décoration de table"
+                    },
+                    "cascade": {
+                        "name": "Cascade",
+                        "desc": "Élégance retombante"
+                    },
+                    "oasis": {
+                        "name": "Mousse Florale",
+                        "desc": "Forme libre"
+                    },
+                    "wiring": {
+                        "name": "Montage sur Fil",
+                        "desc": "Corsage, coiffure"
+                    }
+                }
+            },
+            "proportion": {
+                "title": "Règle de Proportion",
+                "options": {
+                    "7_5_3": {
+                        "label": "Ikebana 7:5:3",
+                        "desc": "Shin・Soe・Hikae"
+                    },
+                    "golden_ratio": {
+                        "label": "Nombre d'Or",
+                        "desc": "1:1.618"
+                    },
+                    "free": {
+                        "label": "Style Libre",
+                        "desc": "Choix du designer"
+                    }
+                }
+            },
+            "season": {
+                "title": "Esthétique Saisonnière",
+                "options": {
+                    "spring": {
+                        "label": "🌸 Printemps",
+                        "desc": "Renouveau"
+                    },
+                    "summer": {
+                        "label": "🌻 Été",
+                        "desc": "Passion"
+                    },
+                    "autumn": {
+                        "label": "🍂 Automne",
+                        "desc": "Maturité"
+                    },
+                    "winter": {
+                        "label": "❄️ Hiver",
+                        "desc": "Silence"
+                    },
+                    "all": {
+                        "label": "🌈 4 Saisons",
+                        "desc": "Toute l'année"
+                    }
+                }
+            },
+            "image": {
+                "title": "Image de Référence (Pro)",
+                "desc": "L'IA analysera la structure, la taille et l'ambiance pour générer un plan professionnel",
+                "advanced": {
+                    "title": "Paramètres d'Analyse Avancés",
+                    "hint": "(Optionnel, optimise l'IA)",
+                    "scale": "Échelle",
+                    "mood": "Ambiance",
+                    "form": "Forme",
+                    "background": "Style d'Arrière-plan",
+                    "scaleOptions": {
+                        "auto": "🔮 Détection Auto",
+                        "micro": "🌸 Micro",
+                        "small": "💐 Petit",
+                        "medium": "🏵️ Moyen",
+                        "large": "🌺 Grand",
+                        "monumental": "🏛️ Monumental"
+                    },
+                    "moodOptions": {
+                        "serene": "🕊️ Serein",
+                        "romantic": "💕 Romantique",
+                        "dramatic": "🎭 Dramatique",
+                        "whimsical": "🎪 Fantaisiste",
+                        "luxurious": "👑 Luxueux"
+                    },
+                    "formOptions": {
+                        "auto": "Auto",
+                        "vertical": "Vertical",
+                        "horizontal": "Horizontal",
+                        "radial": "Radial",
+                        "cascade": "Cascade",
+                        "organic": "Organique"
+                    },
+                    "backgroundOptions": {
+                        "minimal": "Minimaliste",
+                        "environmental": "Environnemental",
+                        "luxe": "Luxe",
+                        "rustic": "Rustique",
+                        "zen": "Zen"
+                    }
+                }
+            },
+            "cultureContext": {
+                "title": "Contexte Culturel (Optionnel)",
+                "placeholder": "Ex: Cérémonie du thé, Espace Zen, Mariage..."
+            },
+            "confirm": {
+                "title": "Confirmation du Design",
+                "school": "École",
+                "technique": "Technique",
+                "proportion": "Proportion",
+                "budget": "Budget",
+                "generate": "🎨 Générer Plan Pro"
+            },
+            "loading": {
+                "title": "Création par le Maître Fleuriste...",
+                "steps": {
+                    "analyze": "Analyse de l'esthétique et de la culture...",
+                    "technique": "Application des techniques et règles...",
+                    "match": "Correspondance stock et symboles...",
+                    "generate": "Génération du titre et des instructions..."
+                }
+            },
+            "steps": {
+                "next": "Suivant",
+                "prev": "Précédent"
+            }
+        }
+    },
+    "inventory": {
+        "title": "Inventaire Fleurs",
+        "subtitle": "Gérer les types et quantités de fleurs",
+        "add": "Nouveau Stock",
+        "edit": "Modifier Fleur",
+        "form": {
+            "name": "Nom",
+            "namePlaceholder": "Ex: Rose Rouge",
+            "category": "Catégorie",
+            "culture": "Attribut Culturel",
+            "stock": "Stock Actuel (Restant)",
+            "cost": "Coût (CNY)",
+            "retail": "Vente (CNY)",
+            "color": "Couleur/Desc",
+            "colorPlaceholder": "Ex: Pourpre, velouté",
+            "meaning": "Signification",
+            "meaningPlaceholder": "Ex: Amour passionné",
+            "submit": "Confirmer l'ajout",
+            "save": "Sauvegarder",
+            "cancel": "Annuler",
+            "cultureOptions": {
+                "western": "Occidental",
+                "chinese": "Chinois",
+                "japanese": "Japonais",
+                "universal": "Universel"
+            },
+            "categories": {
+                "main": "Principale",
+                "filler": "Remplissage",
+                "foliage": "Feuillage"
+            }
+        },
+        "list": {
+            "title": "Inventaire Actuel",
+            "search": "Rechercher...",
+            "export": "Exporter Excel",
+            "headers": {
+                "name": "Nom",
+                "category": "Type/Culture",
+                "price": "Coût/Vente",
+                "cost": "In",
+                "out": "Out",
+                "margin": "Marge",
+                "initial": "Stock Initial",
+                "used": "Utilisé (Tiges)",
+                "remaining": "Restant",
+                "actions": "Actions"
+            },
+            "empty": {
+                "title": "Inventaire Vide",
+                "desc": "Enregistrez vos premières fleurs via le formulaire"
+            },
+            "lowStock": "Stock Faible",
+            "unit": "Tiges"
+        },
+        "messages": {
+            "noData": "Aucune donnée à exporter",
+            "exportSuccess": "Export réussi",
+            "enterName": "Veuillez entrer un nom",
+            "updateSuccess": "Info mise à jour",
+            "addSuccess": "Fleur ajoutée",
+            "editing": "Édition: {{name}}",
+            "cancelEdit": "Édition annulée"
+        }
+    },
+    "history": {
+        "title": "Historique des Designs",
+        "subtitle": "Voir et gérer les créations passées ({{count}})",
+        "search": "Rechercher...",
+        "empty": {
+            "title": "Aucun historique",
+            "desc": "Votre voyage créatif n'a pas encore commencé. Utilisez l'assistant pour créer de beaux plans.",
+            "create": "Créer maintenant"
+        },
+        "unknownTime": "Heure inconnue",
+        "deleteConfirm": "Voulez-vous vraiment supprimer ce plan ? Cette action est irréversible.",
+        "cost": "Coût"
+    },
+    "designDetail": {
+        "notFound": "Plan introuvable",
+        "savedEval": "Évaluation enregistrée",
+        "confirmExec": "Confirmer l'exécution de ce plan ? Le stock correspondant sera déduit.",
+        "execSuccess": "Plan exécuté, stock mis à jour",
+        "usageUpdated": "Quantité mise à jour",
+        "exportSuccess": "Export réussi",
+        "exportFail": "Échec de l'export",
+        "back": "Retour à la liste",
+        "print": "Imprimer",
+        "pdf": "PDF",
+        "executed": "Exécuté",
+        "pending": "En attente",
+        "meaning": "Signification",
+        "requirements": "Exigences spéciales",
+        "flowerList": "Liste des fleurs",
+        "save": "Enregistrer",
+        "adjustUsage": "Ajuster qté",
+        "instructions": "Instructions",
+        "analysis": {
+            "title": "Analyse Coût/Profit",
+            "cost": "Coût Est.",
+            "profit": "Profit Est.",
+            "margin": "Marge"
+        },
+        "status": {
+            "title": "Statut du Plan",
+            "executedAt": "Exécuté le {{time}}",
+            "deducted": "Stock déduit",
+            "notExecutedDesc": "Ce plan n'a pas encore été exécuté. Le stock n'a pas été déduit.",
+            "confirmBtn": "Confirmer l'exécution",
+            "confirmHint": "Cliquez pour déduire automatiquement du stock"
+        },
+        "evaluation": {
+            "title": "Évaluation",
+            "rating": "Note",
+            "feedback": "Notes / Retour Client",
+            "placeholder": "Enregistrez la réaction du client ou vos notes...",
+            "saveBtn": "Sauvegarder"
+        }
+    },
+    "auth": {
+        "title": "FloraBoard SaaS",
+        "subtitle": "Plateforme professionnelle de design floral",
+        "configMissingTitle": "Configuration manquante",
+        "configMissingDesc": "Veuillez créer un fichier .env avec vos identifiants Supabase :",
+        "tabs": {
+            "signIn": "Connexion",
+            "signUp": "S'inscrire"
+        },
+        "fields": {
+            "email": "E-mail",
+            "password": "Mot de passe",
+            "shopName": "Nom de la boutique (ex: My Flora)"
+        },
+        "buttons": {
+            "signIn": "Se connecter",
+            "signUp": "Créer un compte & espace de travail"
+        },
+        "terms": "En continuant, vous acceptez nos conditions d'utilisation",
+        "messages": {
+            "welcomeBack": "Bon retour parmi nous !",
+            "signInFailed": "Échec de la connexion",
+            "accountCreated": "Compte créé ! Veuillez vérifier votre e-mail ou vous connecter.",
+            "signUpFailed": "Échec de l'inscription",
+            "missingConfig": "Client Supabase non initialisé. Veuillez vérifier votre fichier .env."
+        }
+    }
+}

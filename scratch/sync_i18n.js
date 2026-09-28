@@ -256,6 +256,209 @@ const IOS_TRANSLATIONS = {
     'ko': '나중에 하기',
     'fr': 'Plus tard'
   },
+  'paywall.currentCredits': {
+    'zh-Hans': '当前剩余点数:',
+    'en': 'Current Credits:',
+    'ja': '現在の残高:',
+    'ko': '현재 보유 크레딧:',
+    'fr': 'Crédits restants :'
+  },
+  'paywall.proBadge': {
+    'zh-Hans': 'PRO 会员',
+    'en': 'PRO Member',
+    'ja': 'PRO 会員',
+    'ko': 'PRO 멤버',
+    'fr': 'Membre PRO'
+  },
+  'paywall.later': {
+    'zh-Hans': '稍后再说',
+    'en': 'Maybe Later',
+    'ja': '後で',
+    'ko': '나중에 하기',
+    'fr': 'Plus tard'
+  },
+  'paywall.proYearly': {
+    'zh-Hans': 'Pro 专业版年卡',
+    'en': 'Pro Annual Membership',
+    'ja': 'Pro 年間メンバーシップ',
+    'ko': 'Pro 연간 멤버십',
+    'fr': 'Abonnement Annuel Pro'
+  },
+  'paywall.save25': {
+    'zh-Hans': '立省 25%',
+    'en': 'Save 25%',
+    'ja': '25%お得',
+    'ko': '25% 절약',
+    'fr': '-25% Économie'
+  },
+  'paywall.proYearlyDesc': {
+    'zh-Hans': '全年 4000 点数，折合 $7.4/月，点数跨周期滚动',
+    'en': '4,000 credits/yr ($7.4/mo), rollover unused credits',
+    'ja': '年間4000クレジット（月額換算$7.4）、繰り越し可能',
+    'ko': '연간 4000 크레딧(월 $7.4 상당), 미사용 크레딧 이월',
+    'fr': '4 000 crédits/an (soit 7,4 $/mois), report des crédits non utilisés'
+  },
+  'paywall.proMonthly': {
+    'zh-Hans': 'Pro 专业版月卡',
+    'en': 'Pro Monthly Membership',
+    'ja': 'Pro 月額メンバーシップ',
+    'ko': 'Pro 월간 멤버십',
+    'fr': 'Abonnement Mensuel Pro'
+  },
+  'paywall.popular': {
+    'zh-Hans': '热门推荐',
+    'en': 'Popular',
+    'ja': '人気',
+    'ko': '인기 추천',
+    'fr': 'Populaire'
+  },
+  'paywall.proMonthlyDesc': {
+    'zh-Hans': '每月自动注入 300 点数，解锁高峰期优先生成',
+    'en': '300 credits injected monthly, priority peak generation',
+    'ja': '毎月300クレジット自動付与、混雑時も優先生成',
+    'ko': '매월 300 크레딧 자동 지급, 피크 시간대 우선 생성',
+    'fr': '300 crédits injectés par mois, génération prioritaire en période de pointe'
+  },
+  'paywall.pack100': {
+    'zh-Hans': '100 点数加油包',
+    'en': '100 Credits Booster Pack',
+    'ja': '100 クレジットパック',
+    'ko': '100 크레딧 부스터팩',
+    'fr': 'Pack Booster 100 Crédits'
+  },
+  'paywall.pack100Desc': {
+    'zh-Hans': '100 点永久有效，支持约 100 套方案生成',
+    'en': 'Never expires, yields ~100 design generations',
+    'ja': '有効期限なし、約100回のデザイン生成に対応',
+    'ko': '유효기간 없음, 약 100회 디자인 생성 지원',
+    'fr': 'Valable à vie, permet environ 100 générations'
+  },
+  'paywall.pack300': {
+    'zh-Hans': '300 点数进阶包',
+    'en': '300 Credits Growth Pack',
+    'ja': '300 クレジットパック',
+    'ko': '300 크레딧 성장팩',
+    'fr': 'Pack Évolution 300 Crédits'
+  },
+  'paywall.bestValue': {
+    'zh-Hans': '超值首选',
+    'en': 'Best Value',
+    'ja': '一番お得',
+    'ko': '최고의 가치',
+    'fr': 'Meilleure Offre'
+  },
+  'paywall.pack300Desc': {
+    'zh-Hans': '300 点永久有效，高频设计与旺季首选',
+    'en': 'Never expires, ideal for peak season & frequent designs',
+    'ja': '有効期限なし、繁忙期や高頻度デザインに最適',
+    'ko': '유효기간 없음, 성수기 및 빈번한 디자인에 최적',
+    'fr': 'Valable à vie, idéal pour les périodes d\'activité intense'
+  },
+  'paywall.creditsBadge': {
+    'zh-Hans': '+{{count}} 点数',
+    'en': '+{{count}} Credits',
+    'ja': '+{{count}} クレジット',
+    'ko': '+{{count}} 크레딧',
+    'fr': '+{{count}} Crédits'
+  },
+  'paywall.priceYearly': {
+    'zh-Hans': '$89.00/年',
+    'en': '$89.00/yr',
+    'ja': '$89.00/年',
+    'ko': '$89.00/년',
+    'fr': '89,00 $/an'
+  },
+  'paywall.priceMonthly': {
+    'zh-Hans': '$9.90/月',
+    'en': '$9.90/mo',
+    'ja': '$9.90/月',
+    'ko': '$9.90/월',
+    'fr': '9,90 $/mois'
+  },
+  'paywall.status.uncompleted': {
+    'zh-Hans': '购买未完成: {{error}}',
+    'en': 'Purchase not completed: {{error}}',
+    'ja': '購入が完了していません: {{error}}',
+    'ko': '구매가 완료되지 않았습니다: {{error}}',
+    'fr': 'Achat non finalisé : {{error}}'
+  },
+  'paywall.status.failed': {
+    'zh-Hans': '处理失败: {{error}}',
+    'en': 'Processing failed: {{error}}',
+    'ja': '処理に失敗しました: {{error}}',
+    'ko': '처리에 실패했습니다: {{error}}',
+    'fr': 'Échec du traitement : {{error}}'
+  },
+  'home.stats.stockUnit': {
+    'zh-Hans': '枝在库',
+    'en': 'stems in stock',
+    'ja': '本在庫',
+    'ko': '송이 재고',
+    'fr': 'tiges en stock'
+  },
+  'home.stats.shortageUnit': {
+    'zh-Hans': '种紧缺',
+    'en': 'low stock',
+    'ja': '種不足',
+    'ko': '종 부족',
+    'fr': 'en rupture'
+  },
+  'home.stats.revenueTitle': {
+    'zh-Hans': '总营收',
+    'en': 'Revenue',
+    'ja': '総売上',
+    'ko': '총매출',
+    'fr': 'Chiffre d\'affaires'
+  },
+  'home.stats.stemsSelected': {
+    'zh-Hans': '{{count}} 枝精选',
+    'en': '{{count}} stems selected',
+    'ja': '{{count}} 本厳選',
+    'ko': '{{count}} 송이 엄선',
+    'fr': '{{count}} tiges sélectionnées'
+  },
+  'design.costBadge': {
+    'zh-Hans': '({{points}}点)',
+    'en': '({{points}} pt)',
+    'ja': '({{points}}pt)',
+    'ko': '({{points}}크레딧)',
+    'fr': '({{points}} pt)'
+  },
+  'inventory.category.primary': {
+    'zh-Hans': '主花',
+    'en': 'Main Flower',
+    'ja': '主花',
+    'ko': '주요 꽃',
+    'fr': 'Fleur principale'
+  },
+  'inventory.category.secondary': {
+    'zh-Hans': '配花',
+    'en': 'Secondary Flower',
+    'ja': '配花',
+    'ko': '보조 꽃',
+    'fr': 'Fleur secondaire'
+  },
+  'inventory.category.foliage': {
+    'zh-Hans': '叶材',
+    'en': 'Foliage',
+    'ja': '葉材',
+    'ko': '소재(잎)',
+    'fr': 'Feuillage'
+  },
+  'order.originalImage': {
+    'zh-Hans': '原图',
+    'en': 'Original Image',
+    'ja': '元画像',
+    'ko': '원본 이미지',
+    'fr': 'Image originale'
+  },
+  'order.customFloral': {
+    'zh-Hans': '定制花艺',
+    'en': 'Custom Floral',
+    'ja': 'オーダーメイド花芸',
+    'ko': '맞춤 플로럴',
+    'fr': 'Art floral personnalisé'
+  },
   'paywall.feature1.title': {
     'zh-Hans': 'AI 花艺大师方案',
     'en': 'AI Floral Design',

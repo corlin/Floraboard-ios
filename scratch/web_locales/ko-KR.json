@@ -1,0 +1,583 @@
+{
+    "app": {
+        "title": "FloraBoard",
+        "nav": {
+            "dashboard": "대시보드",
+            "design": "꽃꽂이 디자인",
+            "history": "기록",
+            "inventory": "재고 관리",
+            "settings": "설정"
+        }
+    },
+    "home": {
+        "greeting": "안녕하세요, {{name}}님",
+        "subtitle": "오늘은 {{date}}입니다. 아름다운 작품을 만들 준비가 되셨나요?",
+        "startDesign": "새 디자인 시작",
+        "stats": {
+            "inventoryOverview": "재고 현황",
+            "flowerCount": "{{count}}종의 꽃",
+            "totalStock": "총 재고 {{count}}송이",
+            "stockAlert": "재고 경고",
+            "alertItems": "{{count}}개 항목",
+            "alertDesc": "재고 10송이 미만",
+            "revenue": "누적 수익",
+            "designCount": "총 {{count}}개 디자인"
+        },
+        "recentDesigns": {
+            "title": "최근 디자인",
+            "viewAll": "모두 보기",
+            "empty": "디자인 기록이 없습니다",
+            "createOne": "만들러 가기",
+            "profit": "이익"
+        },
+        "quickActions": {
+            "title": "빠른 작업",
+            "addInventory": "재고 입고",
+            "addInventoryDesc": "새로운 꽃 입고 기록",
+            "smartDesign": "스마트 디자인",
+            "smartDesignDesc": "고객 맞춤형 제안 생성",
+            "inspirationTitle": "오늘의 영감",
+            "inspirationText": "“꽃꽂이는 무언의 시이자 입체적인 그림입니다.” 오늘 작품에 유칼립투스를 조금 더해 자연스러운 호흡을 불어넣어 보는 건 어떨까요?"
+        }
+    },
+    "settings": {
+        "title": "시스템 설정",
+        "subtitle": "이미지 생성 API 접근, 토큰 예산 관리 및 모니터링",
+        "region": {
+            "title": "데이터 저장 지역",
+            "description": "속도 및 규정 준수에 영향을 미치는 데이터 저장 노드 선택",
+            "tip": "💡 중국 본토 사용자는 '중국 노드', 해외 사용자는 '해외 노드', 오프라인 사용 시 '로컬 저장'을 권장합니다.",
+            "current": "현재",
+            "switched": "{{name}}로 전환되었습니다",
+            "refreshTip": "페이지 새로고침 후 적용",
+            "options": {
+                "local": {
+                    "name": "로컬 저장",
+                    "desc": "브라우저 로컬 저장, 네트워크 불필요"
+                },
+                "supabase": {
+                    "name": "해외 노드",
+                    "desc": "Supabase 클라우드 서비스 (해외 사용자용)"
+                },
+                "aliyun": {
+                    "name": "중국 노드",
+                    "desc": "Alibaba Cloud 서비스 (중국 본토 사용자용)"
+                }
+            }
+        },
+        "api": {
+            "title": "API 연결 구성",
+            "description": "OpenAI 호환 텍스트-이미지 인터페이스 정보 설정",
+            "provider": "서비스 제공자 (Provider)",
+            "endpoint": "API 엔드포인트 (Base URL)",
+            "apiKey": "API 키",
+            "textModel": "텍스트 추론 모델 (Reasoning)",
+            "textModelDesc": "논리, 꽃말, 단계 생성에 사용 (Need Strong Reasoning)",
+            "visionModel": "시각 분석 모델 (Vision)",
+            "visionModelDesc": "'이미지로 꽃 만들기' 기능에서 이미지의 색조와 스타일 분석 (Need Vision Capability)",
+            "imageModel": "이미지 생성 모델 (Image Gen)",
+            "imageModelDesc": "최종 예상도 생성에 사용 (Supports wanx/dall-e/gemini)",
+            "manualInput": "직접 입력...",
+            "selectPlaceholder": "선택하세요..."
+        },
+        "save": {
+            "button": "설정 저장",
+            "saving": "저장 중...",
+            "success": "설정이 저장되었습니다",
+            "error": "저장 실패"
+        },
+        "budget": {
+            "title": "예산 관리",
+            "total": "총 예산",
+            "threshold": "경고 임계값"
+        },
+        "stock": {
+            "title": "재고 경고",
+            "threshold": "재고 부족 임계값",
+            "unit": "송이",
+            "desc": "재고가 이 값보다 낮으면 <1>빨간색 경고</1>를 표시합니다"
+        },
+        "usage": {
+            "overview": "사용량 개요",
+            "approaching": "예산 한도 접근",
+            "used": "사용됨: {{val}}",
+            "remaining": "남음: {{val}}",
+            "chartTitle": "최근 7일 사용 추이",
+            "reportTitle": "사용 보고서",
+            "export": "내보내기",
+            "date": "날짜",
+            "count": "횟수",
+            "token": "토큰",
+            "noRecords": "기록 없음"
+        }
+    },
+    "design": {
+        "title": "맞춤 디자인 마법사",
+        "subtitle": "단 3단계로 나만의 꽃꽂이 플랜 생성",
+        "tabs": {
+            "quick": "퀵 모드",
+            "quickDesc": "선물/장식",
+            "pro": "프로 모드",
+            "proDesc": "예술 창작"
+        },
+        "steps": {
+            "scene": "상황 선택",
+            "target": "대상 및 스타일",
+            "confirm": "생성 확인"
+        },
+        "scene": {
+            "title": "주요 선물 상황은?",
+            "muse": "상황 영감",
+            "visual": "이미지로 꽃 만들기 (Visual Muse)",
+            "uploadTitle": "영감 이미지 업로드",
+            "uploadDesc": "드레스 사진, 결혼식장, 유화 또는 재현하고 싶은 분위기의 이미지",
+            "uploadBtn": "클릭하거나 드래그하여 업로드",
+            "uploadHint": "지원 형식: JPG, PNG (최대 5MB)",
+            "options": {
+                "birthday": {
+                    "label": "생일 축하",
+                    "desc": "생기 넘치고 밝은, 기쁨을 전하는"
+                },
+                "wedding": {
+                    "label": "결혼/기념일",
+                    "desc": "로맨틱하고 아름다운, 사랑의 증표"
+                },
+                "comfort": {
+                    "label": "위로/문병",
+                    "desc": "차분하고 우아한, 마음을 달래는"
+                },
+                "home": {
+                    "label": "홈 데코",
+                    "desc": "아늑하고 자연스러운, 생활의 포인트"
+                },
+                "graduation": {
+                    "label": "졸업식",
+                    "desc": "학업 성취를 축하하는"
+                },
+                "opening": {
+                    "label": "개업 축하",
+                    "desc": "번영과 사업 성공 기원"
+                },
+                "valentine": {
+                    "label": "발렌타인데이",
+                    "desc": "사랑 가득, 로맨틱한 고백"
+                },
+                "mother_day": {
+                    "label": "어버이날",
+                    "desc": "감사와 따뜻한 마음 전달"
+                }
+            }
+        },
+        "recipient": {
+            "title": "받는 분은?",
+            "options": {
+                "partner": "연인/배우자",
+                "parent": "부모님",
+                "friend": "친구",
+                "elder": "어르신/스승",
+                "self": "자신",
+                "colleague": "동료/협력사",
+                "child": "아이"
+            }
+        },
+        "style": {
+            "title": "선호하는 스타일?",
+            "options": {
+                "romantic": "로맨틱",
+                "fresh": "내추럴/프레시",
+                "vintage": "빈티지/유화풍",
+                "passionate": "열정적/화려함",
+                "minimalist": "미니멀리스트",
+                "wild": "와일드/자연",
+                "elegant": "엘레강스/고상함"
+            }
+        },
+        "color": {
+            "title": "선호하는 색조?",
+            "options": {
+                "warm": "따뜻한 색",
+                "cool": "시원한 색",
+                "pastel": "파스텔 톤",
+                "vibrant": "비비드 컬러",
+                "monochrome": "모노크롬",
+                "auto": "AI 추천"
+            }
+        },
+        "format": {
+            "title": "작품 형태?",
+            "options": {
+                "bouquet": "꽃다발",
+                "vase": "화병 꽂이",
+                "box": "플라워 박스",
+                "basket": "꽃바구니"
+            }
+        },
+        "requirements": {
+            "title": "특별 요청 (선택)",
+            "placeholder": "예: 백합 향 싫음, 잎사귀 많이..."
+        },
+        "budget": {
+            "title": "예산 범위 (원)",
+            "level": {
+                "low": "심플",
+                "mid": "스탠다드",
+                "high": "프리미엄"
+            },
+            "lowRisk": "예산 잔액 부족",
+            "exhausted": "예산이 소진되었습니다. 관리자에게 충전을 요청하세요.",
+            "alert": "예산 잔액이 {{val}}% 이하입니다. 소모량에 주의하세요."
+        },
+        "generate": {
+            "ready": "플랜 생성 준비 완료",
+            "cost": "나만의 디자인 플랜을 생성합니다. 예상 소모: 150 토큰",
+            "button": "지금 생성",
+            "back": "돌아가서 수정",
+            "loading": "AI 디자이너가 작업 중입니다...",
+            "noBudget": "예산 부족",
+            "steps": {
+                "analyze": "디자인 요구사항 및 선호도 분석 중...",
+                "stock": "현재 재고 및 비용 검색 중...",
+                "vision": "비주얼 엔진이 참고 이미지 분석 중...",
+                "construct": "색상 배합 및 공간 구조 구성 중...",
+                "render": "최종 이미지 및 꽃말 생성 중..."
+            }
+        },
+        "pro": {
+            "tabs": {
+                "manual": "유파 선택",
+                "image": "이미지로 꽃 만들기 (Pro)"
+            },
+            "school": {
+                "title": "꽃꽂이 유파 선택",
+                "filter": {
+                    "all": "전체",
+                    "japanese": "🇯🇵 일본",
+                    "chinese": "🇨🇳 중국",
+                    "western": "🇪🇺 유럽"
+                },
+                "options": {
+                    "japanese_ikenobo": {
+                        "name": "이케노보 (입화)",
+                        "desc": "가장 오래된 꽃꽂이, 천지인의 삼주지"
+                    },
+                    "japanese_ohara": {
+                        "name": "오하라류",
+                        "desc": "수반에 펼쳐지는 풍경, 성화(盛花)"
+                    },
+                    "japanese_sogetsu": {
+                        "name": "소게츠류",
+                        "desc": "현대적이고 전위적인 자유 표현"
+                    },
+                    "chinese_literati": {
+                        "name": "문인화",
+                        "desc": "시정화의, 매란국죽"
+                    },
+                    "chinese_zen": {
+                        "name": "선화 (禪花)",
+                        "desc": "일화일세계, 극도의 선(禪) 사상"
+                    },
+                    "western_biedermeier": {
+                        "name": "비더마이어",
+                        "desc": "고전적인 원형, 밀집된 형태"
+                    },
+                    "western_english": {
+                        "name": "잉글리시 가든",
+                        "desc": "자연스럽고 로맨틱한 컨트리 스타일"
+                    },
+                    "fusion": {
+                        "name": "퓨전",
+                        "desc": "경계를 허무는 자유 창작"
+                    }
+                }
+            },
+            "technique": {
+                "title": "기법 선택",
+                "options": {
+                    "kenzan": {
+                        "name": "침봉",
+                        "desc": "일본 꽃꽂이의 정석"
+                    },
+                    "spiral_hand_tied": {
+                        "name": "스파이럴 (핸드타이드)",
+                        "desc": "유럽식 꽃다발 기본"
+                    },
+                    "parallel": {
+                        "name": "파라렐 (평행)",
+                        "desc": "모던하고 심플함"
+                    },
+                    "pave": {
+                        "name": "파붸 (깔기)",
+                        "desc": "꽃상자, 테이블 장식"
+                    },
+                    "cascade": {
+                        "name": "캐스케이드",
+                        "desc": "흘러내리는 우아함"
+                    },
+                    "oasis": {
+                        "name": "플로럴 폼",
+                        "desc": "자유로운 조형"
+                    },
+                    "wiring": {
+                        "name": "와이어링",
+                        "desc": "코사지, 헤어 장식"
+                    }
+                }
+            },
+            "proportion": {
+                "title": "비례 규칙",
+                "options": {
+                    "7_5_3": {
+                        "label": "꽃꽂이 7:5:3",
+                        "desc": "진·부·체 (신·소·히카에)"
+                    },
+                    "golden_ratio": {
+                        "label": "황금비",
+                        "desc": "1:1.618"
+                    },
+                    "free": {
+                        "label": "프리스타일",
+                        "desc": "디자이너 결정"
+                    }
+                }
+            },
+            "season": {
+                "title": "계절 미학",
+                "options": {
+                    "spring": {
+                        "label": "🌸 봄",
+                        "desc": "신생"
+                    },
+                    "summer": {
+                        "label": "🌻 여름",
+                        "desc": "열정"
+                    },
+                    "autumn": {
+                        "label": "🍂 가을",
+                        "desc": "성숙"
+                    },
+                    "winter": {
+                        "label": "❄️ 겨울",
+                        "desc": "정적"
+                    },
+                    "all": {
+                        "label": "🌈 사계절",
+                        "desc": "통년"
+                    }
+                }
+            },
+            "image": {
+                "title": "참고 이미지 업로드 (Pro)",
+                "desc": "AI가 이미지의 구조, 크기, 분위기를 심층 분석하여 전문가 수준의 꽃꽂이 플랜을 생성합니다",
+                "advanced": {
+                    "title": "고급 분석 매개변수",
+                    "hint": "(선택사항, AI 인식 최적화)",
+                    "scale": "크기 설정",
+                    "mood": "무드/분위기",
+                    "form": "형태/구조",
+                    "background": "배경 스타일",
+                    "scaleOptions": {
+                        "auto": "🔮 자동 감지",
+                        "micro": "🌸 초소형",
+                        "small": "💐 소형",
+                        "medium": "🏵️ 중형",
+                        "large": "🌺 대형",
+                        "monumental": "🏛️ 초대형"
+                    },
+                    "moodOptions": {
+                        "serene": "🕊️ 평온",
+                        "romantic": "💕 로맨틱",
+                        "dramatic": "🎭 드라마틱",
+                        "whimsical": "🎪 환상적",
+                        "luxurious": "👑 럭셔리"
+                    },
+                    "formOptions": {
+                        "auto": "자동",
+                        "vertical": "수직",
+                        "horizontal": "수평",
+                        "radial": "방사형",
+                        "cascade": "캐스케이드",
+                        "organic": "유기적"
+                    },
+                    "backgroundOptions": {
+                        "minimal": "미니멀",
+                        "environmental": "환경",
+                        "luxe": "럭셔리",
+                        "rustic": "러스틱",
+                        "zen": "젠 스타일"
+                    }
+                }
+            },
+            "cultureContext": {
+                "title": "문화적 맥락 (선택)",
+                "placeholder": "예: 다도, 선(禪) 공간, 웨딩, 전시 작품..."
+            },
+            "confirm": {
+                "title": "디자인 확인",
+                "school": "유파",
+                "technique": "기법",
+                "proportion": "비례",
+                "budget": "예산",
+                "generate": "🎨 프로 플랜 생성"
+            },
+            "loading": {
+                "title": "마이스터가 창작 중입니다...",
+                "steps": {
+                    "analyze": "유파의 미학과 문화적 의미 분석 중...",
+                    "technique": "전문 기법 및 비례 규칙 적용 중...",
+                    "match": "재고 꽃재료와 문화적 상징 매칭 중...",
+                    "generate": "예술적 제목 및 단계별 지침 작성 중..."
+                }
+            },
+            "steps": {
+                "next": "다음",
+                "prev": "이전"
+            }
+        }
+    },
+    "inventory": {
+        "title": "꽃 재고",
+        "subtitle": "매장 내 꽃 종류 및 수량 관리",
+        "add": "신규 입고",
+        "edit": "꽃 정보 수정",
+        "form": {
+            "name": "명칭",
+            "namePlaceholder": "예: 빨간 장미",
+            "category": "카테고리",
+            "culture": "문화 속성",
+            "stock": "현재 재고 (잔여)",
+            "cost": "원가 (원)",
+            "retail": "판매가 (원)",
+            "color": "색상/설명",
+            "colorPlaceholder": "예: 진홍색, 벨벳 질감",
+            "meaning": "꽃말",
+            "meaningPlaceholder": "예: 열정적인 사랑",
+            "submit": "입고 확정",
+            "save": "변경사항 저장",
+            "cancel": "취소",
+            "cultureOptions": {
+                "western": "서양식",
+                "chinese": "중국식",
+                "japanese": "일본식",
+                "universal": "공통"
+            },
+            "categories": {
+                "main": "메인",
+                "filler": "필러",
+                "foliage": "소재(잎)"
+            }
+        },
+        "list": {
+            "title": "현재 재고 목록",
+            "search": "검색...",
+            "export": "Excel 내보내기",
+            "headers": {
+                "name": "명칭",
+                "category": "분류/문화",
+                "price": "원가/판매",
+                "cost": "입",
+                "out": "출",
+                "margin": "마진율",
+                "initial": "기초 재고",
+                "used": "총 소모 (송이)",
+                "remaining": "잔여 재고",
+                "actions": "작업"
+            },
+            "empty": {
+                "title": "재고가 없습니다",
+                "desc": "좌측 양식에서 첫 번째 꽃을 등록해보세요"
+            },
+            "lowStock": "재고 부족",
+            "unit": "송이"
+        },
+        "messages": {
+            "noData": "내보낼 재고 데이터가 없습니다",
+            "exportSuccess": "내보내기 성공",
+            "enterName": "꽃 이름을 입력해주세요",
+            "updateSuccess": "정보가 업데이트되었습니다",
+            "addSuccess": "꽃이 추가되었습니다",
+            "editing": "수정 중: {{name}}",
+            "cancelEdit": "수정 취소됨"
+        }
+    },
+    "history": {
+        "title": "디자인 이력",
+        "subtitle": "과거 디자인 작품 확인 및 관리 ({{count}})",
+        "search": "플랜 검색...",
+        "empty": {
+            "title": "기록이 없습니다",
+            "desc": "아직 디자인이 생성되지 않았습니다. 디자인 어시스턴트를 사용하여 멋진 플랜을 만들어보세요.",
+            "create": "만들러 가기"
+        },
+        "unknownTime": "시간 미상",
+        "deleteConfirm": "이 플랜을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+        "cost": "비용"
+    },
+    "designDetail": {
+        "notFound": "플랜을 찾을 수 없습니다",
+        "savedEval": "평가가 저장되었습니다",
+        "confirmExec": "이 플랜을 실행하시겠습니까? 해당 재고가 차감됩니다.",
+        "execSuccess": "플랜 실행됨. 재고 업데이트 완료",
+        "usageUpdated": "꽃 사용량 업데이트됨",
+        "exportSuccess": "내보내기 성공",
+        "exportFail": "내보내기 실패",
+        "back": "목록으로 돌아가기",
+        "print": "인쇄",
+        "pdf": "PDF",
+        "executed": "실행됨",
+        "pending": "대기 중",
+        "meaning": "꽃말/의미",
+        "requirements": "특별 요구사항",
+        "flowerList": "꽃 목록",
+        "save": "저장",
+        "adjustUsage": "사용량 조정",
+        "instructions": "제작 가이드",
+        "analysis": {
+            "title": "비용 및 이익 분석",
+            "cost": "예상 비용",
+            "profit": "예상 이익",
+            "margin": "이익률"
+        },
+        "status": {
+            "title": "플랜 상태",
+            "executedAt": "{{time}}에 실행됨",
+            "deducted": "재고 차감 완료",
+            "notExecutedDesc": "이 플랜은 아직 실행되지 않았으며, 재고가 차감되지 않았습니다.",
+            "confirmBtn": "플랜 실행 확정",
+            "confirmHint": "클릭 시 재고에서 자동 차감됩니다"
+        },
+        "evaluation": {
+            "title": "플랜 평가",
+            "rating": "평점",
+            "feedback": "메모 / 고객 피드백",
+            "placeholder": "고객 반응이나 디자인 과정의 메모를 기록하세요...",
+            "saveBtn": "평가 저장"
+        }
+    },
+    "auth": {
+        "title": "FloraBoard SaaS",
+        "subtitle": "전문 플로럴 디자인 플랫폼",
+        "configMissingTitle": "구성 누락",
+        "configMissingDesc": "Supabase 자격 증명이 포함된 .env 파일을 생성해 주세요:",
+        "tabs": {
+            "signIn": "로그인",
+            "signUp": "회원가입"
+        },
+        "fields": {
+            "email": "이메일",
+            "password": "비밀번호",
+            "shopName": "매장 이름 (예: 마이 플로라)"
+        },
+        "buttons": {
+            "signIn": "로그인",
+            "signUp": "계정 및 워크스페이스 생성"
+        },
+        "terms": "계속 진행하면 서비스 이용약관에 동의하는 것으로 간주됩니다",
+        "messages": {
+            "welcomeBack": "환영합니다!",
+            "signInFailed": "로그인 실패",
+            "accountCreated": "계정이 생성되었습니다! 이메일을 확인하거나 로그인해 주세요.",
+            "signUpFailed": "회원가입 실패",
+            "missingConfig": "Supabase 클라이언트가 초기화되지 않았습니다. .env 파일을 확인해 주세요."
+        }
+    }
+}
