@@ -60,17 +60,26 @@ class AIService: ObservableObject {
   func testConnection(using candidateConfig: ApiConfig) async throws {
     _ = candidateConfig
     let health = try await makeProxyClient().health()
-    guard health.ok else { throw AIError.apiError(statusCode: 503) }
+    guard health.status == "ok" || health.service != nil else { throw AIError.apiError(statusCode: 503) }
   }
 
-  func fetchQuota() async throws -> AIProxyQuotaResponse {
+  func fetchCredits() async throws -> CreditsData {
     let tenantId = await currentTenantId()
-    return try await makeProxyClient().fetchUserQuota(tenantId: tenantId)
+    return try await makeProxyClient().fetchCredits(tenantId: tenantId)
   }
 
-  func verifyIAP(transactionId: String) async throws -> AIProxyQuotaResponse {
+  func verifyApplePurchase(transactionId: String, productId: String) async throws -> AppleVerifyResponse {
     let tenantId = await currentTenantId()
-    return try await makeProxyClient().verifyIAP(tenantId: tenantId, transactionId: transactionId)
+    return try await makeProxyClient().verifyAppleIAP(
+      tenantId: tenantId,
+      transactionId: transactionId,
+      productId: productId
+    )
+  }
+
+  func generateFloralImage(prompt: String) async throws -> String {
+    let tenantId = await currentTenantId()
+    return try await makeProxyClient().generateFloralImage(tenantId: tenantId, prompt: prompt)
   }
 
   /// Generates a floral design plan based on user request
@@ -85,8 +94,16 @@ class AIService: ObservableObject {
         request: request,
         inventory: inventory
       )
+    } catch let proxyErr as AIProxyError {
+      switch proxyErr {
+      case .insufficientCredits, .insufficientQuota:
+        throw proxyErr
+      default:
+        AppLogger.ai.warning("Proxy server error: \(proxyErr.localizedDescription). Falling back to local intelligent generator.")
+        return generateLocalFallbackPlan(request: request, inventory: inventory)
+      }
     } catch {
-      AppLogger.ai.warning("Proxy server error: \(error.localizedDescription). Falling back to local intelligent generator.")
+      AppLogger.ai.warning("General error: \(error.localizedDescription). Falling back to local intelligent generator.")
       return generateLocalFallbackPlan(request: request, inventory: inventory)
     }
   }
@@ -140,45 +157,35 @@ class AIService: ObservableObject {
   func generateDesignFromImage(image: UIImage, request: DesignRequest, inventory: [FlowerType])
     async throws -> DesignResult
   {
-    guard let imageData = image.jpegData(compressionQuality: 0.82) else {
-      throw AIError.imageEncodingFailed
-    }
-
     let client = try makeProxyClient()
     let tenantId = await currentTenantId()
-    
+
     do {
-      let slot = try await client.createReferenceImageUpload(
-        tenantId: tenantId,
-        contentType: "image/jpeg",
-        byteCount: imageData.count
-      )
-      try await client.uploadReferenceImage(slot: slot, data: imageData, contentType: "image/jpeg")
-      let initialJob = try await client.submitVisualDesign(
+      return try await client.submitVisualDesign(
         tenantId: tenantId,
         language: LocalizationManager.shared.currentLanguage,
         request: request,
         inventory: inventory,
-        imageUploadId: slot.uploadId
+        image: image
       )
-
-      let job = try await waitForCompletedJob(client: client, initialJob: initialJob)
-      if let result = job.result {
-        return result.toDesignResult(localRequestId: request.id, inventory: inventory)
+    } catch let proxyErr as AIProxyError {
+      switch proxyErr {
+      case .insufficientCredits, .insufficientQuota:
+        throw proxyErr
+      default:
+        AppLogger.ai.warning("Visual design failed, falling back to text. Error: \(proxyErr.localizedDescription)")
+        var fallbackRequest = request
+        fallbackRequest.requirements = (fallbackRequest.requirements ?? "") + " [Visual Muse Fallback]"
+        return try await generateFlowerPlan(request: fallbackRequest, inventory: inventory)
       }
-      if let error = job.error {
-        throw AIProxyError.rejected(error)
-      }
-      throw AIError.apiError(statusCode: 202)
     } catch {
-      AppLogger.ai.warning("Visual design failed or disabled, falling back to text generation. Error: \(error.localizedDescription)")
       var fallbackRequest = request
       fallbackRequest.requirements = (fallbackRequest.requirements ?? "") + " [Visual Muse Fallback]"
       return try await generateFlowerPlan(request: fallbackRequest, inventory: inventory)
     }
   }
 
-  private func makeProxyClient() throws -> AIProxyClient {
+  func makeProxyClient() throws -> AIProxyClient {
     guard let baseURL = URL(string: aiProxyBaseURL) else {
       throw AIError.invalidURL
     }
@@ -253,52 +260,11 @@ class AIService: ObservableObject {
     }
   }
 
-  private func waitForCompletedJob(
-    client: AIProxyClient,
-    initialJob: AIProxyJobStatus,
-    maxAttempts: Int = 45
-  ) async throws -> AIProxyJobStatus {
-    var job = initialJob
-
-    for _ in 0..<maxAttempts {
-      switch job.status {
-      case .succeeded, .failed:
-        return job
-      case .queued, .running:
-        let delay = UInt64(job.pollAfterSeconds ?? 2) * 1_000_000_000
-        try await Task.sleep(nanoseconds: delay)
-        job = try await client.jobStatus(jobId: job.jobId)
-      }
-    }
-
-    throw AIError.apiError(statusCode: 202)
-  }
-
   /// Generates an image through the managed backend and returns the URL string.
   func generateImage(prompt: String, requestId: String) async throws -> String {
-    let client = try makeProxyClient()
     let tenantId = await currentTenantId()
-    let initialJob = try await client.requestImageGeneration(
-      tenantId: tenantId,
-      requestId: requestId,
-      prompt: prompt
-    )
-
-    let job = try await waitForCompletedJob(client: client, initialJob: initialJob)
-    switch job.status {
-    case .succeeded:
-      if let imageUrl = job.imageUrl {
-        return imageUrl.absoluteString
-      }
-      throw AIError.imageEncodingFailed
-    case .failed:
-      if let error = job.error {
-        throw AIProxyError.rejected(error)
-      }
-      throw AIError.apiError(statusCode: 500)
-    case .queued, .running:
-      throw AIError.apiError(statusCode: 202)
-    }
+    let client = try makeProxyClient()
+    return try await client.generateFloralImage(tenantId: tenantId, prompt: prompt)
   }
 
 }

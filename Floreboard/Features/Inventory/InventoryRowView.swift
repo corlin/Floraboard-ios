@@ -63,11 +63,46 @@ struct FlowerRow: View {
       Spacer()
 
       // Stock + price & usage
-      VStack(alignment: .trailing, spacing: 4) {
-        Text("\(flower.quantity)")
-          .font(AppTheme.sansFont(size: 20, weight: .bold))
-          .foregroundColor(stockLevel.color)
-          .contentTransition(.numericText())
+      VStack(alignment: .trailing, spacing: 6) {
+        HStack(spacing: 8) {
+          // -1 Loss / Wilting Button
+          Button {
+            HapticManager.shared.impact(style: .rigid)
+            withAnimation(AppTheme.interactiveSpring) {
+              InventoryService.shared.adjustStock(flowerId: flower.id, delta: -1)
+            }
+          } label: {
+            Image(systemName: "minus")
+              .font(.system(size: 11, weight: .bold))
+              .foregroundColor(AppTheme.danger)
+              .frame(width: 24, height: 24)
+              .background(AppTheme.danger.opacity(0.12))
+              .clipShape(Circle())
+          }
+          .buttonStyle(.plain)
+
+          Text("\(flower.quantity)")
+            .font(AppTheme.sansFont(size: 19, weight: .bold))
+            .foregroundColor(stockLevel.color)
+            .contentTransition(.numericText())
+            .frame(minWidth: 24, alignment: .center)
+
+          // +10 Restock Bundle Button
+          Button {
+            HapticManager.shared.impact(style: .light)
+            withAnimation(AppTheme.interactiveSpring) {
+              InventoryService.shared.adjustStock(flowerId: flower.id, delta: 10)
+            }
+          } label: {
+            Image(systemName: "plus")
+              .font(.system(size: 11, weight: .bold))
+              .foregroundColor(AppTheme.primary)
+              .frame(width: 24, height: 24)
+              .background(AppTheme.primary.opacity(0.12))
+              .clipShape(Circle())
+          }
+          .buttonStyle(.plain)
+        }
 
         HStack(spacing: 6) {
           Text(CurrencyFormat.compact(flower.retailPrice))

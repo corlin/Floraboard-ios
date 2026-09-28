@@ -7,6 +7,7 @@ struct SettingsView: View {
   @StateObject private var viewModel = SettingsViewModel()
   @FocusState private var isEditingText: Bool
   @State private var isShowingLogoutConfirmation = false
+  @State private var isShowingPaywall = false
   @State private var appeared = false
 
   var body: some View {
@@ -37,17 +38,24 @@ struct SettingsView: View {
                 ZStack {
                   Circle()
                     .fill(AppTheme.primary.opacity(0.12))
-                    .frame(width: 48, height: 48)
+                    .frame(width: 52, height: 52)
                   Text(String((auth.currentTenant?.name ?? "U").prefix(1)).uppercased())
-                    .font(AppTheme.serifFont(size: 22, weight: .bold))
+                    .font(AppTheme.serifFont(size: 24, weight: .bold))
                     .foregroundColor(AppTheme.primary)
                 }
 
                 VStack(alignment: .leading, spacing: 3) {
-                  Text(auth.currentTenant?.name ?? "Unknown")
-                    .font(AppTheme.sansFont(size: 17, weight: .semibold))
+                  Text(auth.currentTenant?.name ?? "花店空间")
+                    .font(AppTheme.sansFont(size: 18, weight: .bold))
                     .foregroundColor(AppTheme.foreground)
-                  Text(auth.currentTenant?.id ?? "")
+
+                  if let email = auth.currentUser?.email, !email.isEmpty {
+                    Text(email)
+                      .font(AppTheme.sansFont(size: 13))
+                      .foregroundColor(AppTheme.mutedText)
+                  }
+
+                  Text("ID: \(auth.currentTenant?.id ?? "")")
                     .font(AppTheme.caption)
                     .foregroundColor(AppTheme.mutedText)
                     .lineLimit(1)
@@ -59,61 +67,96 @@ struct SettingsView: View {
             .glassmorphic()
             .padding(.horizontal, 24)
 
-            // Quota Card
+            // Member Tier & Credits Center
             VStack(alignment: .leading, spacing: 16) {
-              SectionHeader(title: localizationManager.t("settings.quota"), icon: "sparkles")
+              SectionHeader(title: "会员与点数中心", icon: "sparkles")
 
-              if let quota = viewModel.userQuota {
-                VStack(spacing: 16) {
-                  // Balance display
-                  HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                      Text(localizationManager.t("settings.quota_balance"))
-                        .font(AppTheme.labelMedium)
-                        .foregroundColor(AppTheme.mutedText)
-                      Text("\(quota.balance)")
-                        .font(AppTheme.sansFont(size: 28, weight: .bold))
+              VStack(spacing: 16) {
+                HStack(alignment: .center) {
+                  VStack(alignment: .leading, spacing: 4) {
+                    Text("当前剩余点数")
+                      .font(AppTheme.labelMedium)
+                      .foregroundColor(AppTheme.mutedText)
+
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                      Text("\(currentCredits)")
+                        .font(AppTheme.sansFont(size: 32, weight: .bold))
                         .foregroundColor(AppTheme.foreground)
+                      Text("点")
+                        .font(AppTheme.sansFont(size: 14, weight: .medium))
+                        .foregroundColor(AppTheme.mutedText)
                     }
-                    Spacer()
-                    // Tier Badge
-                    Text(quota.tier.uppercased())
-                      .font(AppTheme.sansFont(size: 12, weight: .bold))
-                      .padding(.horizontal, 12)
-                      .padding(.vertical, 6)
-                      .foregroundColor(quota.tier == "pro" ? AppTheme.accent : AppTheme.mutedText)
-                      .background(
-                        (quota.tier == "pro" ? AppTheme.accent : AppTheme.mutedText).opacity(0.12)
-                      )
-                      .clipShape(Capsule())
                   }
 
-                  // Progress bar
-                  GeometryReader { geo in
-                    let ratio = min(Double(quota.balance) / 100000.0, 1.0)
-                    ZStack(alignment: .leading) {
-                      Capsule()
-                        .fill(AppTheme.primary.opacity(0.12))
-                        .frame(height: 8)
-                      Capsule()
-                        .fill(
-                          LinearGradient(
-                            colors: [AppTheme.primary, AppTheme.secondary],
-                            startPoint: .leading, endPoint: .trailing
-                          )
-                        )
-                        .frame(width: geo.size.width * ratio, height: 8)
+                  Spacer()
+
+                  VStack(alignment: .trailing, spacing: 6) {
+                    HStack(spacing: 4) {
+                      Image(systemName: isProTier ? "crown.fill" : "person.fill")
+                        .font(.system(size: 11))
+                      Text(isProTier ? "PRO 专业版" : "免费体验")
+                        .font(AppTheme.sansFont(size: 13, weight: .bold))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .foregroundColor(isProTier ? .white : AppTheme.mutedText)
+                    .background(isProTier ? AppTheme.creative : AppTheme.surfaceElevated)
+                    .clipShape(Capsule())
+
+                    if let exp = viewModel.creditsData?.subscriptionExpiresAt {
+                      Text("到期: \(formatExpirationDate(exp))")
+                        .font(AppTheme.captionSmall)
+                        .foregroundColor(AppTheme.mutedText)
                     }
                   }
-                  .frame(height: 8)
                 }
-              } else {
-                HStack {
-                  Text(localizationManager.t("settings.fetching_quota"))
-                    .font(AppTheme.bodySmall)
-                    .foregroundColor(AppTheme.mutedText)
-                  Spacer()
-                  ProgressView()
+
+                Button {
+                  isShowingPaywall = true
+                } label: {
+                  HStack {
+                    Image(systemName: "plus.circle.fill")
+                    Text("充值点数 / 升级会员")
+                      .font(AppTheme.sansFont(size: 15, weight: .semibold))
+                  }
+                  .frame(maxWidth: .infinity)
+                  .padding(.vertical, 12)
+                }
+                .buttonStyle(PrimaryButtonStyle())
+
+                // Recent Transactions List
+                if let txs = viewModel.creditsData?.transactions, !txs.isEmpty {
+                  VStack(alignment: .leading, spacing: 10) {
+                    Text("近期账单明细")
+                      .font(AppTheme.sansFont(size: 13, weight: .semibold))
+                      .foregroundColor(AppTheme.mutedText)
+                      .padding(.top, 4)
+
+                    ForEach(txs.prefix(5)) { tx in
+                      HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                          Text(tx.description ?? (tx.amount > 0 ? "充值到账" : "点数消耗"))
+                            .font(AppTheme.sansFont(size: 13, weight: .medium))
+                            .foregroundColor(AppTheme.foreground)
+
+                          Text(formatTxDate(tx.createdAt))
+                            .font(AppTheme.captionSmall)
+                            .foregroundColor(AppTheme.mutedText)
+                        }
+
+                        Spacer()
+
+                        Text(tx.amount > 0 ? "+\(tx.amount)" : "\(tx.amount)")
+                          .font(AppTheme.sansFont(size: 14, weight: .bold))
+                          .foregroundColor(tx.amount > 0 ? AppTheme.success : AppTheme.foreground)
+                      }
+                      .padding(.vertical, 4)
+
+                      if tx.id != txs.prefix(5).last?.id {
+                        Divider().foregroundColor(AppTheme.hairline)
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -261,6 +304,11 @@ struct SettingsView: View {
         }
         .scrollDismissesKeyboard(.interactively)
       }
+      .sheet(isPresented: $isShowingPaywall) {
+        PaywallView(onPurchaseSuccess: {
+          viewModel.fetchCredits()
+        })
+      }
       .toolbar(.hidden, for: .navigationBar)
       .toolbar {
         ToolbarItemGroup(placement: .keyboard) {
@@ -289,5 +337,34 @@ struct SettingsView: View {
         }
       }
     }
+  }
+
+  private var currentCredits: Int {
+    viewModel.creditsData?.credits ?? auth.currentTenant?.credits ?? 30
+  }
+
+  private var isProTier: Bool {
+    let tier = viewModel.creditsData?.tier ?? auth.currentTenant?.tier ?? "free"
+    return tier.lowercased() == "pro"
+  }
+
+  private func formatExpirationDate(_ dateString: String) -> String {
+    let formatter = ISO8601DateFormatter()
+    if let date = formatter.date(from: dateString) {
+      let df = DateFormatter()
+      df.dateFormat = "yyyy-MM-dd"
+      return df.string(from: date)
+    }
+    return String(dateString.prefix(10))
+  }
+
+  private func formatTxDate(_ dateString: String) -> String {
+    let formatter = ISO8601DateFormatter()
+    if let date = formatter.date(from: dateString) {
+      let df = DateFormatter()
+      df.dateFormat = "MM-dd HH:mm"
+      return df.string(from: date)
+    }
+    return String(dateString.prefix(16))
   }
 }

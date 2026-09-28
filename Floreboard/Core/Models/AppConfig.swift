@@ -52,4 +52,78 @@ struct UsageRecord: Codable, Identifiable {
 struct Tenant: Codable, Identifiable {
   var id: String
   var name: String
+  var ownerId: String?
+  var credits: Int?
+  var tier: String?
+  var subscriptionExpiresAt: String?
+
+  enum CodingKeys: String, CodingKey {
+    case id
+    case name
+    case ownerId = "owner_id"
+    case credits
+    case tier
+    case subscriptionExpiresAt = "subscription_expires_at"
+  }
+}
+
+// MARK: - Credits & Payment Models
+
+struct CreditTransaction: Codable, Identifiable, Hashable {
+  var id: String
+  var tenantId: String?
+  var type: String
+  var amount: Int
+  var balanceAfter: Int
+  var description: String?
+  var referenceId: String?
+  var createdAt: String
+
+  enum CodingKeys: String, CodingKey {
+    case id
+    case tenantId
+    case type
+    case amount
+    case balanceAfter
+    case description
+    case referenceId
+    case createdAt
+  }
+}
+
+struct CreditsData: Codable {
+  var tenantId: String?
+  var credits: Int
+  var tier: String
+  var subscriptionExpiresAt: String?
+  var activePlanId: String?
+  var transactions: [CreditTransaction]
+}
+
+struct PaymentPlanItem: Codable, Identifiable, Hashable {
+  var id: String
+  var name: String
+  var type: String // "subscription" | "credit_pack"
+  var credits: Int
+  var price: String
+  var currency: String
+  var billingCycle: String?
+  var badge: String?
+  var description: String
+  var features: [String]?
+  var recommended: Bool?
+}
+
+struct AppleVerifyResponse: Codable {
+  var success: Bool
+  var message: String?
+  var data: AppleVerifyData?
+
+  struct AppleVerifyData: Codable {
+    var tenantId: String?
+    var credits: Int
+    var tier: String
+    var subscriptionExpiresAt: String?
+    var creditsAdded: Int?
+  }
 }

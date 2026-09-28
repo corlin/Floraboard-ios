@@ -2,7 +2,7 @@
 //  InventoryService.swift
 //  Floreboard
 //
-//  Migrated from UserDefaults to SwiftData.
+//  Cloud-First with local SwiftData cache inventory service.
 //
 
 import Combine
@@ -12,6 +12,7 @@ import SwiftData
 @MainActor
 class InventoryService: ObservableObject {
   @Published var flowers: [FlowerType] = []
+  @Published var isSyncing: Bool = false
 
   static let shared = InventoryService()
 
@@ -23,15 +24,23 @@ class InventoryService: ObservableObject {
     var id: String { flowerName }
   }
 
+  struct DeductionItem: Identifiable, Hashable {
+    let flowerId: String
+    let amount: Int
+
+    var id: String { flowerId }
+  }
+
   var modelContext: ModelContext?
 
-  private init() {
-    // Do not load here; wait for configure(with:)
-  }
+  private init() {}
 
   func configure(with context: ModelContext) {
     self.modelContext = context
     loadInventory()
+    Task {
+      await syncWithCloud()
+    }
   }
 
   func loadInventory() {
@@ -46,21 +55,61 @@ class InventoryService: ObservableObject {
     do {
       let records = try context.fetch(descriptor)
       if records.isEmpty {
-        // Seed with initial data
         let initialFlowers = FlowerType.initialData
         for flower in initialFlowers {
           let record = FlowerRecord(from: flower)
           record.tenantId = tenantId
           context.insert(record)
         }
-        try context.save()
+        try? context.save()
         self.flowers = initialFlowers
       } else {
         self.flowers = records.map { $0.toFlowerType() }
       }
     } catch {
-      print("Failed to load inventory: \(error)")
+      print("Failed to load inventory from SwiftData: \(error)")
       self.flowers = FlowerType.initialData
+    }
+  }
+
+  func syncWithCloud() async {
+    guard let tenantId = AuthService.shared.currentTenant?.id,
+          let context = modelContext else { return }
+
+    isSyncing = true
+    defer { isSyncing = false }
+
+    do {
+      let client = try AIService.shared.makeProxyClient()
+      let cloudFlowers = try await client.fetchInventory(tenantId: tenantId)
+
+      if !cloudFlowers.isEmpty {
+        // Cloud has records: replace local cache with cloud records
+        let descriptor = FetchDescriptor<FlowerRecord>(
+          predicate: #Predicate { $0.tenantId == tenantId }
+        )
+        let oldRecords = (try? context.fetch(descriptor)) ?? []
+        for r in oldRecords {
+          context.delete(r)
+        }
+
+        for f in cloudFlowers {
+          let rec = FlowerRecord(from: f)
+          rec.tenantId = tenantId
+          context.insert(rec)
+        }
+        try? context.save()
+        self.flowers = cloudFlowers
+      } else if AuthService.shared.isNewlyRegistered {
+        // New store registered: initialize cloud inventory with default flowers
+        let initial = FlowerType.initialData
+        for f in initial {
+          _ = try? await client.createFlower(tenantId: tenantId, flower: f)
+        }
+        AuthService.shared.isNewlyRegistered = false
+      }
+    } catch {
+      print("[InventoryService] Cloud sync skipped or failed: \(error.localizedDescription)")
     }
   }
 
@@ -72,6 +121,12 @@ class InventoryService: ObservableObject {
     record.tenantId = tenantId
     context.insert(record)
     try? context.save()
+
+    Task {
+      if let client = try? AIService.shared.makeProxyClient() {
+        _ = try? await client.createFlower(tenantId: tenantId, flower: flower)
+      }
+    }
   }
 
   func updateFlower(_ flower: FlowerType) {
@@ -80,7 +135,6 @@ class InventoryService: ObservableObject {
     if let index = flowers.firstIndex(where: { $0.id == flower.id }) {
       flowers[index] = flower
 
-      // Update existing record or insert new one
       let flowerID = flower.id
       var descriptor = FetchDescriptor<FlowerRecord>(
         predicate: #Predicate { $0.id == flowerID }
@@ -96,11 +150,17 @@ class InventoryService: ObservableObject {
         context.insert(record)
       }
       try? context.save()
+
+      Task {
+        if let client = try? AIService.shared.makeProxyClient() {
+          _ = try? await client.updateFlower(tenantId: tenantId, flower: flower)
+        }
+      }
     }
   }
 
   func deleteFlower(_ id: String) {
-    guard let context = modelContext else { return }
+    guard let context = modelContext, let tenantId = AuthService.shared.currentTenant?.id else { return }
 
     flowers.removeAll { $0.id == id }
 
@@ -114,132 +174,72 @@ class InventoryService: ObservableObject {
       context.delete(existing)
       try? context.save()
     }
+
+    Task {
+      if let client = try? AIService.shared.makeProxyClient() {
+        try? await client.deleteFlower(tenantId: tenantId, flowerId: id)
+      }
+    }
   }
 
   func deductStock(flowerId: String, amount: Int) {
+    adjustStock(flowerId: flowerId, delta: -amount)
+  }
+
+  func adjustStock(flowerId: String, delta: Int) {
     if let index = flowers.firstIndex(where: { $0.id == flowerId }) {
       var updated = flowers[index]
-      updated.quantity = max(0, updated.quantity - amount)
-      updated.totalUsed = (updated.totalUsed ?? 0) + amount
+      updated.quantity = max(0, updated.quantity + delta)
+      if delta < 0 {
+        updated.totalUsed = (updated.totalUsed ?? 0) + abs(delta)
+      }
       updateFlower(updated)
     }
   }
 
-  private func saveInventory() {
-    guard let context = modelContext, let tenantId = AuthService.shared.currentTenant?.id else { return }
+  func deductInventory(for flowerItems: [DesignFlowerItem]) -> [StockShortage] {
+    var shortages: [StockShortage] = []
 
-    // Sync all in-memory flowers to persistent records
-    let descriptor = FetchDescriptor<FlowerRecord>(
-      predicate: #Predicate { $0.tenantId == tenantId }
-    )
-    let existingRecords = (try? context.fetch(descriptor)) ?? []
-    let existingMap = Dictionary(uniqueKeysWithValues: existingRecords.map { ($0.id, $0) })
-
-    var processedIDs = Set<String>()
-    for flower in flowers {
-      if let record = existingMap[flower.id] {
-        record.update(from: flower)
-        record.tenantId = tenantId
+    for item in flowerItems {
+      if let index = flowers.firstIndex(where: {
+        $0.name.localizedCaseInsensitiveCompare(item.flowerName) == .orderedSame
+      }) {
+        let available = flowers[index].quantity
+        if available < item.count {
+          shortages.append(
+            StockShortage(
+              flowerName: item.flowerName,
+              requested: item.count,
+              available: available
+            )
+          )
+          var updated = flowers[index]
+          updated.quantity = 0
+          updated.totalUsed = (updated.totalUsed ?? 0) + available
+          updateFlower(updated)
+        } else {
+          var updated = flowers[index]
+          updated.quantity -= item.count
+          updated.totalUsed = (updated.totalUsed ?? 0) + item.count
+          updateFlower(updated)
+        }
       } else {
-        let newRecord = FlowerRecord(from: flower)
-        newRecord.tenantId = tenantId
-        context.insert(newRecord)
+        shortages.append(
+          StockShortage(
+            flowerName: item.flowerName,
+            requested: item.count,
+            available: 0
+          )
+        )
       }
-      processedIDs.insert(flower.id)
     }
 
-    // Remove records that are no longer in the flowers array
-    for record in existingRecords where !processedIDs.contains(record.id) {
-      context.delete(record)
-    }
-
-    try? context.save()
-  }
-
-  // Helper to get formatted string for AI prompt
-  func getInventoryListString(lowStockThreshold: Int = 10) -> String {
-    return flowers.map { flower in
-      let isLowStock = flower.quantity <= lowStockThreshold
-      let stockMarker = isLowStock ? " (LOW STOCK!)" : ""
-      return
-        "- \(flower.name) (Color: \(flower.color), Qty: \(flower.quantity)\(stockMarker), Cost: \(CurrencyFormat.compact(flower.unitCost))/stem, Category: \(flower.category.rawValue))"
-    }.joined(separator: "\n")
-  }
-
-  struct DeductionItem {
-    let flowerId: String
-    let amount: Int
+    return shortages
   }
 
   func deductInventoryExact(items: [DeductionItem]) {
-    var changed = false
-    var currentFlowers = self.flowers
-
     for item in items {
-      if let index = currentFlowers.firstIndex(where: { $0.id == item.flowerId }) {
-        var flower = currentFlowers[index]
-        flower.quantity = max(0, flower.quantity - item.amount)
-        flower.totalUsed = (flower.totalUsed ?? 0) + item.amount
-        flower.updatedAt = Date().timeIntervalSince1970
-        currentFlowers[index] = flower
-        changed = true
-      }
-    }
-
-    if changed {
-      self.flowers = currentFlowers
-      saveInventory()
-    }
-  }
-
-  // Legacy method for fallback/compatibility if needed
-  func deductInventory(for items: [DesignFlowerItem]) -> [FlowerType] {
-    var changedFlowers: [FlowerType] = []
-    var currentFlowers = self.flowers
-
-    for item in items {
-      if let index = currentFlowers.firstIndex(where: {
-        $0.name.localizedCaseInsensitiveCompare(item.flowerName) == .orderedSame
-          || $0.name.localizedCaseInsensitiveContains(item.flowerName)
-          || item.flowerName.localizedCaseInsensitiveContains($0.name)
-      }) {
-        var flower = currentFlowers[index]
-        flower.quantity = max(0, flower.quantity - item.count)
-        flower.totalUsed = (flower.totalUsed ?? 0) + item.count
-        flower.updatedAt = Date().timeIntervalSince1970
-        currentFlowers[index] = flower
-        changedFlowers.append(flower)
-      }
-    }
-
-    if !changedFlowers.isEmpty {
-      self.flowers = currentFlowers
-      saveInventory()
-    }
-    return changedFlowers
-  }
-
-  func stockShortages(for items: [DesignFlowerItem]) -> [StockShortage] {
-    items.compactMap { item in
-      guard let flower = findFlower(named: item.flowerName, in: flowers),
-        item.count > flower.quantity
-      else {
-        return nil
-      }
-
-      return StockShortage(
-        flowerName: item.flowerName,
-        requested: item.count,
-        available: flower.quantity
-      )
-    }
-  }
-
-  private func findFlower(named name: String, in flowerList: [FlowerType]) -> FlowerType? {
-    flowerList.first {
-      $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame
-        || $0.name.localizedCaseInsensitiveContains(name)
-        || name.localizedCaseInsensitiveContains($0.name)
+      adjustStock(flowerId: item.flowerId, delta: -item.amount)
     }
   }
 }

@@ -11,7 +11,13 @@ class StoreKitManager: ObservableObject {
 
   private let productIDs = [
     "com.floreboard.pro.monthly",
-    "com.floreboard.credits.500k"
+    "com.floreboard.pro.yearly",
+    "com.floreboard.credits.100",
+    "com.floreboard.credits.300",
+    "pro_monthly",
+    "pro_yearly",
+    "credit_pack_100",
+    "credit_pack_300"
   ]
 
   private var updatesTask: Task<Void, Never>? = nil
@@ -82,10 +88,14 @@ class StoreKitManager: ObservableObject {
   @MainActor
   private func handleVerifiedTransaction(_ transaction: Transaction) async {
     purchasedProductIDs.insert(transaction.productID)
-    
+
     do {
-      let _ = try await AIService.shared.verifyIAP(transactionId: String(transaction.id))
-      print("Transaction verified with backend successfully.")
+      let res = try await AIService.shared.verifyApplePurchase(
+        transactionId: String(transaction.id),
+        productId: transaction.productID
+      )
+      print("Transaction verified with backend successfully: \(res)")
+      NotificationCenter.default.post(name: NSNotification.Name("FloreboardCreditsUpdated"), object: nil)
     } catch {
       print("Failed to verify transaction with backend: \(error)")
     }

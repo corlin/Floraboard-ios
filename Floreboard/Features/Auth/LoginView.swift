@@ -2,8 +2,9 @@ import SwiftUI
 
 struct LoginView: View {
   @EnvironmentObject var auth: AuthService
-  @State private var storeName = ""
+  @State private var email = ""
   @State private var password = ""
+  @State private var shopName = ""
   @State private var isRegistering = false
 
   var body: some View {
@@ -25,7 +26,16 @@ struct LoginView: View {
           .foregroundColor(AppTheme.foreground)
 
         VStack(spacing: 16) {
-          TextField(Tx.t("login.storeName"), text: $storeName)
+          if isRegistering {
+            TextField(Tx.t("login.storeName"), text: $shopName)
+              .padding()
+              .background(AppTheme.surfaceElevated)
+              .cornerRadius(AppTheme.controlRadius)
+              .overlay(RoundedRectangle(cornerRadius: AppTheme.controlRadius).stroke(AppTheme.hairline, lineWidth: 1))
+              .autocapitalization(.words)
+          }
+
+          TextField(Tx.t("login.email"), text: $email)
             .padding()
             .background(AppTheme.surfaceElevated)
             .cornerRadius(AppTheme.controlRadius)
@@ -49,8 +59,8 @@ struct LoginView: View {
             }
           }
           .buttonStyle(PrimaryButtonStyle())
-          .disabled(storeName.isEmpty || password.isEmpty || auth.isLoading)
-          
+          .disabled(email.isEmpty || password.isEmpty || (isRegistering && shopName.isEmpty) || auth.isLoading)
+
           Button(action: {
             withAnimation {
               isRegistering.toggle()
@@ -82,11 +92,12 @@ struct LoginView: View {
   }
 
   func submit() {
+    hideKeyboard()
     Task {
       if isRegistering {
-        _ = await auth.register(storeName: storeName, password: password)
+        _ = await auth.register(email: email, password: password, shopName: shopName)
       } else {
-        _ = await auth.login(storeName: storeName, password: password)
+        _ = await auth.login(email: email, password: password)
       }
     }
   }

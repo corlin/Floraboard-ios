@@ -10,32 +10,43 @@ class SettingsViewModel: ObservableObject {
   @Published var statusMessage: String?
   @Published var isStatusError = false
   @Published var isTestingConnection = false
-  @Published var userQuota: AIProxyQuotaResponse?
+  @Published var creditsData: CreditsData?
+  @Published var isLoadingCredits = false
 
   private var aiService: AIService?
+  private var cancellables = Set<AnyCancellable>()
 
   init() {
-    // Initial config is empty, will be set in setup
     self.config = ApiConfig.default
+    NotificationCenter.default.publisher(for: NSNotification.Name("FloreboardCreditsUpdated"))
+      .sink { [weak self] _ in
+        self?.fetchCredits()
+      }
+      .store(in: &cancellables)
   }
 
   func setup(with service: AIService) {
     guard self.aiService == nil else { return }
     self.aiService = service
     self.config = service.currentConfig
-    fetchQuota()
+    fetchCredits()
   }
 
-  func fetchQuota() {
+  func fetchCredits() {
     guard let service = aiService else { return }
+    isLoadingCredits = true
     Task {
       do {
-        let quota = try await service.fetchQuota()
+        let credits = try await service.fetchCredits()
         await MainActor.run {
-          self.userQuota = quota
+          self.creditsData = credits
+          self.isLoadingCredits = false
         }
       } catch {
-        AppLogger.ai.warning("Failed to fetch quota: \(error.localizedDescription)")
+        await MainActor.run {
+          self.isLoadingCredits = false
+        }
+        AppLogger.ai.warning("Failed to fetch credits: \(error.localizedDescription)")
       }
     }
   }

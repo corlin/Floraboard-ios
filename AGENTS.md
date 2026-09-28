@@ -6,9 +6,9 @@
 <!-- SPECKIT START -->
 ## Active Feature Context
 
-- **Active Spec**: [spec.md](file:///Users/corlin/2026/Floraboard-ios/specs/002-business-llm-ux-enhancements/spec.md)
-- **Active Implementation Plan**: [plan.md](file:///Users/corlin/2026/Floraboard-ios/specs/002-business-llm-ux-enhancements/plan.md)
-- **Tasks Breakdown**: [tasks.md](file:///Users/corlin/2026/Floraboard-ios/specs/002-business-llm-ux-enhancements/tasks.md)
+- **Active Spec**: [spec.md](file:///Users/corlin/2026/Floraboard-ios/specs/003-florist-craft-ux-elevation/spec.md)
+- **Active Implementation Plan**: [plan.md](file:///Users/corlin/2026/Floraboard-ios/specs/003-florist-craft-ux-elevation/plan.md)
+- **Tasks Breakdown**: [tasks.md](file:///Users/corlin/2026/Floraboard-ios/specs/003-florist-craft-ux-elevation/tasks.md)
 - **Constitution**: [constitution.md](file:///Users/corlin/2026/Floraboard-ios/.specify/memory/constitution.md)
 <!-- SPECKIT END -->
 

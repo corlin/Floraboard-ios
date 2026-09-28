@@ -121,6 +121,7 @@ struct InventoryView: View {
           }
           .padding(.top)
         }
+        .scrollAwareTabBar()
       }
       .scrollDismissesKeyboard(.interactively)
       .navigationTitle(Tx.t("inventory.title"))

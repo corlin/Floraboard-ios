@@ -11,6 +11,7 @@ struct OrderDetailView: View {
   @EnvironmentObject var orderService: OrderService
   @Environment(\.dismiss) var dismiss
   let order: OrderRecord
+  @State private var showWorkbench = false
 
   var body: some View {
     ZStack {
@@ -18,6 +19,36 @@ struct OrderDetailView: View {
 
       ScrollView {
         VStack(spacing: 20) {
+          // Workbench Mode Launch Card
+          if order.status == .inProduction || order.status == .confirmed {
+            Button {
+              showWorkbench = true
+            } label: {
+              HStack(spacing: 10) {
+                Image(systemName: "wand.and.stars")
+                  .font(.system(size: 18, weight: .bold))
+                Text(Tx.t("workbench.enter_button"))
+                  .font(AppTheme.sansFont(size: 16, weight: .bold))
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                  .font(.system(size: 14, weight: .semibold))
+              }
+              .padding(.horizontal, 20)
+              .padding(.vertical, 16)
+              .background(
+                LinearGradient(
+                  colors: [AppTheme.primary, AppTheme.secondary],
+                  startPoint: .leading,
+                  endPoint: .trailing
+                )
+              )
+              .foregroundColor(Color.white)
+              .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius, style: .continuous))
+              .shadow(color: AppTheme.primary.opacity(0.3), radius: 8, x: 0, y: 4)
+            }
+            .buttonStyle(.plain)
+          }
+
           // Order Header
           VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -112,5 +143,8 @@ struct OrderDetailView: View {
     }
     .navigationTitle(Tx.t("order.detail.title"))
     .navigationBarTitleDisplayMode(.inline)
+    .fullScreenCover(isPresented: $showWorkbench) {
+      FloristWorkbenchView(order: order)
+    }
   }
 }

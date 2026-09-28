@@ -14,6 +14,7 @@ struct TabBarItem: Identifiable {
 
 struct FloatingTabBar: View {
     @Binding var selection: Int
+    var isHidden: Bool = false
     @EnvironmentObject var loc: LocalizationManager
     @Namespace private var indicatorNamespace
 
@@ -21,18 +22,18 @@ struct FloatingTabBar: View {
         TabBarItem(id: 0, iconDefault: "square.grid.2x2", iconSelected: "square.grid.2x2.fill", localizationKey: "app.nav.dashboard"),
         TabBarItem(id: 1, iconDefault: "leaf", iconSelected: "leaf.fill", localizationKey: "app.nav.inventory"),
         TabBarItem(id: 2, iconDefault: "wand.and.stars", iconSelected: "wand.and.stars", localizationKey: "app.nav.design"),
-        TabBarItem(id: 3, iconDefault: "clock.arrow.circlepath", iconSelected: "clock.arrow.circlepath", localizationKey: "app.nav.history"),
+        TabBarItem(id: 3, iconDefault: "shippingbox", iconSelected: "shippingbox.fill", localizationKey: "app.nav.orders_hub"),
         TabBarItem(id: 4, iconDefault: "gearshape", iconSelected: "gearshape.fill", localizationKey: "app.nav.settings"),
     ]
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 4) {
             ForEach(items) { item in
                 tabItemView(item)
             }
         }
-        .frame(height: 60)
-        .padding(.horizontal, 4)
+        .frame(height: 62)
+        .padding(.horizontal, 6)
         .background(
             Capsule(style: .continuous)
                 .fill(.ultraThinMaterial)
@@ -52,8 +53,11 @@ struct FloatingTabBar: View {
             x: 0,
             y: AppTheme.elevation3.y
         )
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 20)
         .padding(.bottom, 8)
+        .offset(y: isHidden ? 100 : 0)
+        .opacity(isHidden ? 0 : 1)
+        .animation(AppTheme.interactiveSpring, value: isHidden)
     }
 
     // MARK: - Single Tab Item
@@ -74,27 +78,38 @@ struct FloatingTabBar: View {
                 selection = item.id
             }
         } label: {
-            VStack(spacing: 3) {
-                Image(systemName: iconName)
-                    .font(.system(size: 20, weight: .medium))
-                    .scaleEffect(isSelected ? 1.08 : 1.0)
-                    .animation(AppTheme.interactiveSpring, value: selection)
-
-                Text(loc.t(item.localizationKey))
-                    .font(AppTheme.captionSmall)
-                    .lineLimit(1)
-
-                // Indicator dot
+            ZStack {
+                // Elastic gliding pill background for selected tab
                 if isSelected {
-                    Circle()
-                        .fill(AppTheme.primary)
-                        .frame(width: 6, height: 6)
-                        .matchedGeometryEffect(id: "tab_indicator", in: indicatorNamespace)
-                } else {
-                    Circle()
-                        .fill(Color.clear)
-                        .frame(width: 6, height: 6)
+                    Capsule(style: .continuous)
+                        .fill(AppTheme.primary.opacity(0.12))
+                        .matchedGeometryEffect(id: "tab_pill", in: indicatorNamespace)
                 }
+
+                VStack(spacing: 3) {
+                    Image(systemName: iconName)
+                        .font(.system(size: 20, weight: .medium))
+                        .scaleEffect(isSelected ? 1.10 : 1.0)
+                        .animation(AppTheme.interactiveSpring, value: selection)
+
+                    Text(loc.t(item.localizationKey))
+                        .font(AppTheme.captionSmall)
+                        .fontWeight(isSelected ? .semibold : .regular)
+                        .lineLimit(1)
+
+                    // Indicator dot
+                    if isSelected {
+                        Circle()
+                            .fill(AppTheme.primary)
+                            .frame(width: 4, height: 4)
+                            .matchedGeometryEffect(id: "tab_indicator", in: indicatorNamespace)
+                    } else {
+                        Circle()
+                            .fill(Color.clear)
+                            .frame(width: 4, height: 4)
+                    }
+                }
+                .padding(.vertical, 6)
             }
             .foregroundColor(tintColor)
             .frame(maxWidth: .infinity)

@@ -32,6 +32,7 @@ enum RecipientType: String, Codable, CaseIterable, Identifiable {
   case colleague, child
 
   var id: String { self.rawValue }
+  var displayName: String { Tx.t("enum.recipient.\(rawValue)") }
 }
 
 enum StyleType: String, Codable, CaseIterable, Identifiable {

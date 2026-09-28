@@ -42,7 +42,7 @@ enum AppError: LocalizedError {
       case .rejected(let resp):
         // If the backend returned a specific error message, we display it directly
         self = .server(resp.message)
-      case .insufficientQuota:
+      case .insufficientQuota, .insufficientCredits:
         self = .quotaExceeded
       }
     } else {

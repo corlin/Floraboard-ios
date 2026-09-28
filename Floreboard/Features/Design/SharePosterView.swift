@@ -3,6 +3,7 @@ import SwiftUI
 struct SharePosterView: View {
   let design: DesignResult
   let image: UIImage?
+  var isClientMode: Bool = true
 
   var body: some View {
     VStack(spacing: 0) {
@@ -11,7 +12,7 @@ struct SharePosterView: View {
         Image(systemName: "leaf.fill")
           .foregroundColor(AppTheme.primary)
           .font(.system(size: 24))
-        Text("Floraboard")
+        Text(isClientMode ? "Petal & Bloom Atelier" : "Floraboard BOM")
           .font(AppTheme.serifFont(size: 24, weight: .bold))
           .foregroundColor(AppTheme.primary)
       }
@@ -42,71 +43,107 @@ struct SharePosterView: View {
 
       // Details
       VStack(alignment: .leading, spacing: 16) {
-        Text(design.title)
-          .font(AppTheme.serifFont(size: 28, weight: .bold))
-          .foregroundColor(AppTheme.foreground)
+        HStack(alignment: .top) {
+          VStack(alignment: .leading, spacing: 6) {
+            Text(design.title)
+              .font(AppTheme.serifFont(size: 26, weight: .bold))
+              .foregroundColor(AppTheme.foreground)
 
-        if !design.meaningText.isEmpty {
-          Text(design.meaningText)
-            .font(AppTheme.serifFont(size: 16).italic())
-            .foregroundColor(AppTheme.primary)
+            if !design.meaningText.isEmpty {
+              Text(design.meaningText)
+                .font(AppTheme.serifFont(size: 15).italic())
+                .foregroundColor(AppTheme.primary)
+            }
+          }
+
+          Spacer()
+
+          // Client Presentation Badge
+          if isClientMode {
+            VStack(alignment: .trailing, spacing: 2) {
+              Text(Tx.t("poster.client.retail_price"))
+                .font(AppTheme.captionSmall)
+                .foregroundColor(AppTheme.mutedText)
+              Text("¥\(String(format: "%.2f", design.totalCost))")
+                .font(AppTheme.serifFont(size: 20, weight: .bold))
+                .foregroundColor(AppTheme.primary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(AppTheme.primary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+          }
         }
 
         Text(design.description)
-          .font(AppTheme.sansFont(size: 15))
+          .font(AppTheme.sansFont(size: 14))
           .foregroundColor(AppTheme.mutedText)
           .lineSpacing(4)
           .fixedSize(horizontal: false, vertical: true)
 
         Divider()
-          .padding(.vertical, 8)
+          .padding(.vertical, 4)
 
-        // BOM
-        VStack(alignment: .leading, spacing: 12) {
-          Label(Tx.t("result.bom.title"), systemImage: "leaf.fill")
-            .font(AppTheme.sansFont(size: 16, weight: .bold))
-            .foregroundColor(AppTheme.foreground)
+        if isClientMode {
+          // Client Floral Palette Highlights
+          VStack(alignment: .leading, spacing: 8) {
+            Label(Tx.t("poster.client.aesthetic"), systemImage: "sparkles")
+              .font(AppTheme.sansFont(size: 14, weight: .bold))
+              .foregroundColor(AppTheme.primary)
 
-          ForEach(design.flowerList.prefix(5)) { item in
-            HStack {
-              Text(item.flowerName)
-                .font(AppTheme.serifFont(size: 14))
-                .foregroundColor(AppTheme.foreground)
-              Spacer()
-              Text("x\(item.count)")
-                .font(AppTheme.sansFont(size: 14, weight: .bold))
-                .foregroundColor(AppTheme.foreground)
+            HStack(spacing: 8) {
+              ForEach(design.flowerList.prefix(4)) { item in
+                Text(item.flowerName)
+                  .font(AppTheme.sansFont(size: 12, weight: .medium))
+                  .foregroundColor(AppTheme.foreground)
+                  .padding(.horizontal, 8)
+                  .padding(.vertical, 4)
+                  .background(AppTheme.surfaceGlass, in: Capsule())
+              }
             }
           }
-          if design.flowerList.count > 5 {
-            Text("...")
-              .font(AppTheme.sansFont(size: 14, weight: .bold))
-              .foregroundColor(AppTheme.mutedText)
-          }
-        }
-
-        if !design.steps.isEmpty {
-          Divider()
-            .padding(.vertical, 8)
-
-          // Steps
-          VStack(alignment: .leading, spacing: 12) {
-            Label(Tx.t("result.steps.title"), systemImage: "list.number")
-              .font(AppTheme.sansFont(size: 16, weight: .bold))
+        } else {
+          // Full BOM for Florist
+          VStack(alignment: .leading, spacing: 10) {
+            Label(Tx.t("result.bom.title"), systemImage: "leaf.fill")
+              .font(AppTheme.sansFont(size: 15, weight: .bold))
               .foregroundColor(AppTheme.foreground)
 
-            ForEach(Array(design.steps.enumerated()), id: \.offset) { index, step in
-              HStack(alignment: .top, spacing: 12) {
-                Text("\(index + 1)")
-                  .font(AppTheme.sansFont(size: 12, weight: .bold))
-                  .foregroundColor(AppTheme.iconOnAccent)
-                  .frame(width: 20, height: 20)
-                  .background(Circle().fill(AppTheme.primary.opacity(0.8)))
-
-                Text(step)
-                  .font(AppTheme.sansFont(size: 14))
+            ForEach(design.flowerList.prefix(6)) { item in
+              HStack {
+                Text(item.flowerName)
+                  .font(AppTheme.serifFont(size: 14))
                   .foregroundColor(AppTheme.foreground)
-                  .fixedSize(horizontal: false, vertical: true)
+                Spacer()
+                Text("x\(item.count)")
+                  .font(AppTheme.sansFont(size: 14, weight: .bold))
+                  .foregroundColor(AppTheme.foreground)
+              }
+            }
+          }
+
+          if !design.steps.isEmpty {
+            Divider()
+              .padding(.vertical, 4)
+
+            // Steps
+            VStack(alignment: .leading, spacing: 10) {
+              Label(Tx.t("result.steps.title"), systemImage: "list.number")
+                .font(AppTheme.sansFont(size: 15, weight: .bold))
+                .foregroundColor(AppTheme.foreground)
+
+              ForEach(Array(design.steps.prefix(4).enumerated()), id: \.offset) { index, step in
+                HStack(alignment: .top, spacing: 10) {
+                  Text("\(index + 1)")
+                    .font(AppTheme.sansFont(size: 11, weight: .bold))
+                    .foregroundColor(AppTheme.iconOnAccent)
+                    .frame(width: 18, height: 18)
+                    .background(Circle().fill(AppTheme.primary.opacity(0.8)))
+
+                  Text(step)
+                    .font(AppTheme.sansFont(size: 13))
+                    .foregroundColor(AppTheme.foreground)
+                    .fixedSize(horizontal: false, vertical: true)
+                }
               }
             }
           }
@@ -119,13 +156,13 @@ struct SharePosterView: View {
       .padding(.top, -20)
       .zIndex(1)
 
-      Spacer(minLength: 32)
+      Spacer(minLength: 28)
 
       // Footer Slogan
-      Text("Created with Floraboard")
+      Text(isClientMode ? "Petal & Bloom · Bespoke Floral Concept" : "Floraboard Production Specification")
         .font(AppTheme.sansFont(size: 12, weight: .medium))
         .foregroundColor(AppTheme.mutedText)
-        .padding(.bottom, 32)
+        .padding(.bottom, 28)
     }
     .frame(width: 380)
     .background(AppTheme.premiumGradient)

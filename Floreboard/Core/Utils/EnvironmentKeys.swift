@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 // MARK: - AIService Environment Key
 
@@ -38,3 +39,56 @@ extension EnvironmentValues {
         set { self[HapticManagerKey.self] = newValue }
     }
 }
+
+// MARK: - TabBarVisibility Environment Key
+
+class TabBarVisibilityManager: ObservableObject {
+    static let shared = TabBarVisibilityManager()
+    @Published var isHidden: Bool = false
+}
+
+private struct TabBarVisibilityKey: EnvironmentKey {
+    static let defaultValue = TabBarVisibilityManager.shared
+}
+
+extension EnvironmentValues {
+    var tabBarVisibility: TabBarVisibilityManager {
+        get { self[TabBarVisibilityKey.self] }
+        set { self[TabBarVisibilityKey.self] = newValue }
+    }
+}
+
+// MARK: - Scroll Aware TabBar Modifier
+
+struct ScrollAwareTabBarModifier: ViewModifier {
+    @Environment(\.tabBarVisibility) var tabBarVisibility
+
+    func body(content: Content) -> some View {
+        content
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 25)
+                    .onChanged { value in
+                        if value.translation.height < -20 {
+                            if !tabBarVisibility.isHidden {
+                                withAnimation(AppTheme.interactiveSpring) {
+                                    tabBarVisibility.isHidden = true
+                                }
+                            }
+                        } else if value.translation.height > 20 {
+                            if tabBarVisibility.isHidden {
+                                withAnimation(AppTheme.interactiveSpring) {
+                                    tabBarVisibility.isHidden = false
+                                }
+                            }
+                        }
+                    }
+            )
+    }
+}
+
+extension View {
+    func scrollAwareTabBar() -> some View {
+        modifier(ScrollAwareTabBarModifier())
+    }
+}
+
