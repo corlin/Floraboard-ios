@@ -226,7 +226,26 @@ struct AIProxyClient {
   // MARK: - Prompt Builders
 
   private func buildSystemPrompt(language: Language, request: DesignRequest, inventory: [FlowerType]) -> String {
-    let langName = language == .zh ? "Simplified Chinese (简体中文)" : "English"
+    let langName: String
+    let langRule: String
+    switch language {
+    case .zh:
+      langName = "Simplified Chinese (简体中文)"
+      langRule = "所有文本（标题 title、设计理念 description、花语寓意 meaningText、制作步骤 steps、选花理由 reason）必须全部使用规范的简体中文输出。"
+    case .en:
+      langName = "English"
+      langRule = "All text fields (title, description, meaningText, steps, reason) must be written in fluent, elegant English."
+    case .ja:
+      langName = "Japanese (日本語)"
+      langRule = "すべてのテキスト（タイトル title、コンセプト説明 description、花言葉 meaningText、制作手順 steps、選定理由 reason）を必ず自然で洗練された日本語で出力してください。"
+    case .ko:
+      langName = "Korean (한국어)"
+      langRule = "모든 텍스트(제목 title, 디자인 설명 description, 꽃말/의미 meaningText, 제작 단계 steps, 선택 이유 reason)를 반드시 자연스럽고 품격 있는 한국어로 출력하십시오."
+    case .fr:
+      langName = "French (Français)"
+      langRule = "Tous les champs textuels (title, description, meaningText, steps, reason) doivent être rédigés en français élégant et naturel."
+    }
+
     let invList = inventory.map { "- \($0.name) (\($0.color)): \($0.quantity) stems, cost ¥\($0.unitCost)" }.joined(separator: "\n")
     let budget = request.budget ?? 500
 
@@ -236,10 +255,10 @@ struct AIProxyClient {
       Design a masterwork arrangement based on the inventory.
 
       CRITICAL MULTILINGUAL INSTRUCTION:
-      The response must be in \(langName).
-      Write title, description, meaningText, reasoning, steps, and reasons in \(langName).
-      Keep imagePrompt in English.
-      Keep flowerName exactly matching the inventory names.
+      Output Language: \(langName)
+      \(langRule)
+      Keep imagePrompt strictly in English for high-fidelity diffusion rendering.
+      Keep flowerName strictly matching the available inventory names.
 
       Budget: ¥\(budget)
       Available Inventory:
@@ -264,10 +283,10 @@ struct AIProxyClient {
       You are an expert floral designer. Create an exquisite floral arrangement based on the inventory.
 
       CRITICAL MULTILINGUAL INSTRUCTION:
-      The response must be in \(langName).
-      Write title, description, meaningText, reasoning, steps, and reasons in \(langName).
-      Keep imagePrompt in English.
-      Keep flowerName matching the inventory names.
+      Output Language: \(langName)
+      \(langRule)
+      Keep imagePrompt strictly in English for high-fidelity diffusion rendering.
+      Keep flowerName strictly matching the available inventory names.
 
       Target Budget: ¥\(budget)
       Available Inventory:
