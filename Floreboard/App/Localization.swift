@@ -2,36 +2,59 @@
 //  Localization.swift
 //  Floreboard
 //
-//  Migrated to String Catalog (.xcstrings) backed localization.
+//  Migrated to String Catalog (.xcstrings) backed localization with multi-language cascading fallback.
 //
 
 import Combine
 import Foundation
 
 enum Language: String, CaseIterable, Identifiable {
-  case en = "en"
   case zh = "zh"
+  case en = "en"
+  case ja = "ja"
+  case ko = "ko"
+  case fr = "fr"
 
   var id: String { rawValue }
 
   var displayName: String {
     switch self {
-    case .en: return "English"
     case .zh: return "简体中文"
+    case .en: return "English"
+    case .ja: return "日本語"
+    case .ko: return "한국어"
+    case .fr: return "Français"
     }
   }
 
   /// The lproj directory name used by Apple localization
   var lprojName: String {
     switch self {
-    case .en: return "en"
     case .zh: return "zh-Hans"
+    case .en: return "en"
+    case .ja: return "ja"
+    case .ko: return "ko"
+    case .fr: return "fr"
     }
   }
 }
 
 private let bundleLock = NSLock()
-private var _currentBundle: Bundle = .main
+private var _sharedLanguage: Language = .zh
+private var _sharedBundle: Bundle = .main
+private var _sharedEnBundle: Bundle? = loadLprojBundle(for: Language.en.lprojName)
+private var _sharedZhBundle: Bundle? = loadLprojBundle(for: Language.zh.lprojName)
+
+private func loadLprojBundle(for lprojName: String) -> Bundle? {
+  if let path = Bundle.main.path(forResource: lprojName, ofType: "lproj") {
+    return Bundle(path: path)
+  }
+  let bundle = Bundle(for: LocalizationManager.self)
+  if let path = bundle.path(forResource: lprojName, ofType: "lproj") {
+    return Bundle(path: path)
+  }
+  return nil
+}
 
 @MainActor
 class LocalizationManager: ObservableObject {
@@ -45,6 +68,8 @@ class LocalizationManager: ObservableObject {
   }
 
   private(set) var localizedBundle: Bundle = .main
+  private(set) var enBundle: Bundle? = nil
+  private(set) var zhBundle: Bundle? = nil
 
   private init() {
     if let saved = UserDefaults.standard.string(forKey: "app_language"),
@@ -53,22 +78,44 @@ class LocalizationManager: ObservableObject {
       self.currentLanguage = lang
     } else {
       let deviceLang = Locale.current.language.languageCode?.identifier ?? "en"
-      self.currentLanguage = deviceLang.contains("zh") ? .zh : .en
+      if deviceLang.hasPrefix("zh") {
+        self.currentLanguage = .zh
+      } else if deviceLang.hasPrefix("ja") {
+        self.currentLanguage = .ja
+      } else if deviceLang.hasPrefix("ko") {
+        self.currentLanguage = .ko
+      } else if deviceLang.hasPrefix("fr") {
+        self.currentLanguage = .fr
+      } else {
+        self.currentLanguage = .en
+      }
     }
+
+    let en = _sharedEnBundle ?? loadLprojBundle(for: Language.en.lprojName)
+    let zh = _sharedZhBundle ?? loadLprojBundle(for: Language.zh.lprojName)
+    self.enBundle = en
+    self.zhBundle = zh
+
+    bundleLock.lock()
+    _sharedEnBundle = en
+    _sharedZhBundle = zh
+    bundleLock.unlock()
+
     updateBundle()
   }
 
   private func updateBundle() {
-    if let path = Bundle.main.path(forResource: currentLanguage.lprojName, ofType: "lproj"),
-      let bundle = Bundle(path: path)
-    {
+    if let bundle = loadLprojBundle(for: currentLanguage.lprojName) {
       localizedBundle = bundle
     } else {
       localizedBundle = .main
     }
-    
+
     bundleLock.lock()
-    _currentBundle = localizedBundle
+    _sharedLanguage = currentLanguage
+    _sharedBundle = localizedBundle
+    _sharedEnBundle = enBundle
+    _sharedZhBundle = zhBundle
     bundleLock.unlock()
   }
 
@@ -82,14 +129,38 @@ class LocalizationManager: ObservableObject {
 struct Tx {
   static func t(_ key: String, _ args: [String: String] = [:]) -> String {
     bundleLock.lock()
-    let bundle = _currentBundle
+    let currentLanguage = _sharedLanguage
+    let currentBundle = _sharedBundle
+    let enBundle = _sharedEnBundle
+    let zhBundle = _sharedZhBundle
     bundleLock.unlock()
 
-    var value = bundle.localizedString(forKey: key, value: key, table: nil)
+    // 1. Query current bundle
+    var value = currentBundle.localizedString(forKey: key, value: "__NOT_FOUND__", table: nil)
+
+    // 2. If not found and current language is not English, fallback to en bundle
+    if value == "__NOT_FOUND__" && currentLanguage != .en {
+      if let en = enBundle {
+        value = en.localizedString(forKey: key, value: "__NOT_FOUND__", table: nil)
+      }
+    }
+
+    // 3. If still not found and current language is not Chinese, fallback to zh-Hans bundle
+    if value == "__NOT_FOUND__" && currentLanguage != .zh {
+      if let zh = zhBundle {
+        value = zh.localizedString(forKey: key, value: "__NOT_FOUND__", table: nil)
+      }
+    }
+
+    // 4. If still not found, fallback to key itself
+    if value == "__NOT_FOUND__" {
+      value = key
+    }
+
+    // Parameter interpolation
     for (k, v) in args {
       value = value.replacingOccurrences(of: "{{\(k)}}", with: v)
     }
     return value
   }
 }
-
