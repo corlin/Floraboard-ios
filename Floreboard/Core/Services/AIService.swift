@@ -15,7 +15,7 @@ class AIService: ObservableObject {
   static let shared = AIService()
 
   private enum ManagedAIConfig {
-    static let defaultProxyBaseURL = "https://floreboard-ai-proxy.cybercorlin.workers.dev"
+    static let defaultProxyBaseURL = "https://api.floreboard.com"
     static let proxyBaseURLInfoKey = "FLOREBOARD_AI_PROXY_BASE_URL"
     static let proxyBaseURLDefaultsKey = "ai_proxy_base_url"
     static let proxyTokenInfoKey = "FLOREBOARD_AI_PROXY_SESSION_TOKEN"
@@ -198,6 +198,9 @@ class AIService: ObservableObject {
       if !cleanValue.hasPrefix("http") {
         cleanValue = "https://" + cleanValue
       }
+      if cleanValue.contains("workers.dev") {
+        return ManagedAIConfig.defaultProxyBaseURL
+      }
       return cleanValue
     }
 
@@ -208,10 +211,14 @@ class AIService: ObservableObject {
       if !cleanValue.hasPrefix("http") {
         cleanValue = "https://" + cleanValue
       }
+      if cleanValue.contains("workers.dev") {
+        UserDefaults.standard.set(ManagedAIConfig.defaultProxyBaseURL, forKey: "ai_proxy_base_url")
+        return ManagedAIConfig.defaultProxyBaseURL
+      }
       return cleanValue
     }
 
-    return "https://floreboard-ai-proxy.cybercorlin.workers.dev"
+    return ManagedAIConfig.defaultProxyBaseURL
   }
 
   private func configuredProxyToken() -> String? {

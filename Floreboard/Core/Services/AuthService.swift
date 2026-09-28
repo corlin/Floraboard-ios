@@ -59,6 +59,9 @@ class AuthService: ObservableObject {
             if !cleanValue.hasPrefix("http") {
                 cleanValue = "https://" + cleanValue
             }
+            if cleanValue.contains("workers.dev") {
+                return "https://api.floreboard.com"
+            }
             return cleanValue
         }
 
@@ -69,10 +72,14 @@ class AuthService: ObservableObject {
             if !cleanValue.hasPrefix("http") {
                 cleanValue = "https://" + cleanValue
             }
+            if cleanValue.contains("workers.dev") {
+                UserDefaults.standard.set("https://api.floreboard.com", forKey: "ai_proxy_base_url")
+                return "https://api.floreboard.com"
+            }
             return cleanValue
         }
 
-        return "https://floreboard-ai-proxy.cybercorlin.workers.dev"
+        return "https://api.floreboard.com"
     }
 
     private init() {

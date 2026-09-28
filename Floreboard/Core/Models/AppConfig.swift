@@ -15,7 +15,7 @@ struct ApiConfig: Codable, Identifiable {
 
   static let `default` = ApiConfig(
     apiKey: "",
-    endpoint: "https://floreboard-ai-proxy.cybercorlin.workers.dev",
+    endpoint: "https://api.floreboard.com",
     textModel: "",
     visionModel: "",
     imageModel: "",
