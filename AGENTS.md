@@ -1,7 +1,7 @@
 # Agent Context & Workflow Guidelines
 
 ## Project Overview
-**Floraboard iOS** is a native SwiftUI app for florists built on iOS 17.0+ / Swift 5.9+ following MVVM architecture and centralized design tokens (`AppTheme.swift`).
+**Floreboard iOS** is a native SwiftUI app for florists built on iOS 17.0+ / Swift 5.9+ following MVVM architecture and centralized design tokens (`AppTheme.swift`).
 
 <!-- SPECKIT START -->
 ## Active Feature Context

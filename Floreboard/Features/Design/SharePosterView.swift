@@ -12,7 +12,7 @@ struct SharePosterView: View {
         Image(systemName: "leaf.fill")
           .foregroundColor(AppTheme.primary)
           .font(.system(size: 24))
-        Text(isClientMode ? "Petal & Bloom Atelier" : "Floraboard BOM")
+        Text(isClientMode ? "Petal & Bloom Atelier" : "Floreboard BOM")
           .font(AppTheme.serifFont(size: 24, weight: .bold))
           .foregroundColor(AppTheme.primary)
       }
@@ -159,7 +159,7 @@ struct SharePosterView: View {
       Spacer(minLength: 28)
 
       // Footer Slogan
-      Text(isClientMode ? "Petal & Bloom · Bespoke Floral Concept" : "Floraboard Production Specification")
+      Text(isClientMode ? "Petal & Bloom · Bespoke Floral Concept" : "Floreboard Production Specification")
         .font(AppTheme.sansFont(size: 12, weight: .medium))
         .foregroundColor(AppTheme.mutedText)
         .padding(.bottom, 28)

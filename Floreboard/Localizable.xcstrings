@@ -297,36 +297,36 @@
         }
       }
     },
-    "Created with Floraboard": {
+    "Created with Floreboard": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Created with Floraboard"
+            "value": "Created with Floreboard"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Créé avec Floraboard"
+            "value": "Créé avec Floreboard"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard で作成"
+            "value": "Floreboard で作成"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard로 제작됨"
+            "value": "Floreboard로 제작됨"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "由 Floraboard 创作"
+            "value": "由 Floreboard 创作"
           }
         }
       }
@@ -399,36 +399,36 @@
         }
       }
     },
-    "Floraboard": {
+    "Floreboard": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard"
+            "value": "Floreboard"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard"
+            "value": "Floreboard"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard"
+            "value": "Floreboard"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard"
+            "value": "Floreboard"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard"
+            "value": "Floreboard"
           }
         }
       }
@@ -1275,31 +1275,31 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "FloraBoard"
+            "value": "Floreboard"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "FloraBoard"
+            "value": "Floreboard"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "FloraBoard"
+            "value": "Floreboard"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "FloraBoard"
+            "value": "Floreboard"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "FloraBoard"
+            "value": "Floreboard"
           }
         }
       }
@@ -1870,31 +1870,31 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "FloraBoard SaaS"
+            "value": "Floreboard SaaS"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "FloraBoard SaaS"
+            "value": "Floreboard SaaS"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "FloraBoard SaaS"
+            "value": "Floreboard SaaS"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "FloraBoard SaaS"
+            "value": "Floreboard SaaS"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "FloraBoard SaaS"
+            "value": "Floreboard SaaS"
           }
         }
       }
@@ -19125,31 +19125,31 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard Studio"
+            "value": "Floreboard Studio"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard Studio Floral"
+            "value": "Floreboard Studio Floral"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard アトリエ"
+            "value": "Floreboard アトリエ"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard 플라워 아틀리에"
+            "value": "Floreboard 플라워 아틀리에"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "Floraboard 鲜花工坊"
+            "value": "Floreboard 鲜花工坊"
           }
         }
       }
