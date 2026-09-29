@@ -12,6 +12,12 @@ struct AIProxyClient {
   let baseURL: URL
   var sessionToken: String?
   var urlSession: URLSession = .shared
+  var imageURLSession: URLSession = {
+    let config = URLSessionConfiguration.default
+    config.timeoutIntervalForRequest = 90
+    config.timeoutIntervalForResource = 120
+    return URLSession(configuration: config)
+  }()
 
   // MARK: - AI Generation via /api/v1/proxy
 
@@ -92,7 +98,12 @@ struct AIProxyClient {
       ]
     ]
 
-    let responseData = try await postRaw("api/v1/proxy", jsonObject: body, tenantId: tenantId)
+    let responseData = try await postRaw(
+      "api/v1/proxy",
+      jsonObject: body,
+      tenantId: tenantId,
+      customSession: imageURLSession
+    )
 
     // Check if immediate URL is returned
     if let json = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
@@ -108,9 +119,13 @@ struct AIProxyClient {
           return url
         }
       }
-      if let items = dataObj["data"] as? [[String: Any]],
-         let url = items.first?["url"] as? String {
-        return url
+      if let items = dataObj["data"] as? [[String: Any]] {
+        if let url = items.first?["url"] as? String, !url.isEmpty {
+          return url
+        }
+        if let b64 = items.first?["b64_json"] as? String, !b64.isEmpty {
+          return b64.hasPrefix("data:") ? b64 : "data:image/jpeg;base64,\(b64)"
+        }
       }
     }
 
@@ -362,10 +377,15 @@ struct AIProxyClient {
 
   // MARK: - Networking Core
 
-  private func postRaw(_ path: String, jsonObject: [String: Any], tenantId: String? = nil) async throws -> Data {
+  private func postRaw(
+    _ path: String,
+    jsonObject: [String: Any],
+    tenantId: String? = nil,
+    customSession: URLSession? = nil
+  ) async throws -> Data {
     var req = try makeRequest(path: path, method: "POST", tenantId: tenantId)
     req.httpBody = try JSONSerialization.data(withJSONObject: jsonObject)
-    return try await performRaw(req)
+    return try await performRaw(req, session: customSession)
   }
 
   private func post<Body: Encodable, Response: Decodable>(
@@ -398,13 +418,18 @@ struct AIProxyClient {
     return request
   }
 
-  private func performRaw(_ request: URLRequest, maxRetries: Int = 2) async throws -> Data {
+  private func performRaw(
+    _ request: URLRequest,
+    session: URLSession? = nil,
+    maxRetries: Int = 2
+  ) async throws -> Data {
+    let activeSession = session ?? urlSession
     var attempt = 0
     var lastError: Error?
 
     while attempt <= maxRetries {
       do {
-        let (data, response) = try await urlSession.data(for: request)
+        let (data, response) = try await activeSession.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse else {
           throw AIProxyError.invalidResponse
         }

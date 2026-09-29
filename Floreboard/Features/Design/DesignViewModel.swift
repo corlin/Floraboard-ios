@@ -15,6 +15,7 @@ class DesignViewModel: ObservableObject {
   @Published var generatedResult: DesignResult?
   @Published var showResult = false
   @Published var showPaywall = false
+  @Published var isRegeneratingImage = false
 
   // UX State
   @Published var cultureFilter: CultureFilter = .all
@@ -185,6 +186,50 @@ class DesignViewModel: ObservableObject {
           }
           self.isLoading = false
         }
+      }
+    }
+  }
+
+  func retryImageGeneration() {
+    guard var result = generatedResult,
+          let prompt = result.imagePrompt, !prompt.isEmpty,
+          let aiService = aiService,
+          let imagePersistence = imagePersistence,
+          let historyService = historyService,
+          !isRegeneratingImage else { return }
+
+    isRegeneratingImage = true
+    result.imageError = nil
+    self.generatedResult = result
+
+    Task {
+      do {
+        let imageUrlString = try await aiService.generateImage(
+          prompt: prompt,
+          requestId: result.syncId ?? result.requestId
+        )
+        let image = try await resolveGeneratedImage(from: imageUrlString)
+
+        if let validImage = image {
+          if let filename = imagePersistence.saveImage(validImage, name: result.id) {
+            result.imageUrl = filename
+            result.imageError = nil
+          } else {
+            result.imageError = localizationManager?.t("error.saveImage")
+          }
+        } else {
+          result.imageError = localizationManager?.t("error.invalidImageData")
+        }
+      } catch {
+        AppLogger.ai.error("Image retry failed: \(error)")
+        result.imageError = AppError(from: error).localizedDescription
+      }
+
+      let updatedResult = result
+      await MainActor.run {
+        self.generatedResult = updatedResult
+        self.isRegeneratingImage = false
+        historyService.saveDesign(updatedResult)
       }
     }
   }

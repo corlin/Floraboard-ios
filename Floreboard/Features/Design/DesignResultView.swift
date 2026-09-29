@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ResultView: View {
   let result: DesignResult
+  var onRetryImage: (() -> Void)? = nil
+  var isRetryingImage: Bool = false
   @Environment(\.dismiss) private var dismiss
   @EnvironmentObject var historyService: HistoryService
   @EnvironmentObject var inventoryService: InventoryService
@@ -41,10 +43,33 @@ struct ResultView: View {
             } else {
               // Placeholder or missing
               if let imageError = result.imageError, !imageError.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                  Label(Tx.t("result.imageError.title"), systemImage: "photo.badge.exclamationmark")
-                    .font(AppTheme.sansFont(size: 14, weight: .bold))
-                    .foregroundColor(AppTheme.primary)
+                VStack(alignment: .leading, spacing: 10) {
+                  HStack {
+                    Label(Tx.t("result.imageError.title"), systemImage: "photo.badge.exclamationmark")
+                      .font(AppTheme.sansFont(size: 14, weight: .bold))
+                      .foregroundColor(AppTheme.primary)
+                    Spacer()
+                    if let onRetryImage = onRetryImage {
+                      Button(action: onRetryImage) {
+                        HStack(spacing: 4) {
+                          if isRetryingImage {
+                            ProgressView()
+                              .scaleEffect(0.75)
+                          } else {
+                            Image(systemName: "arrow.clockwise")
+                          }
+                          Text(isRetryingImage ? Tx.t("design.loading.dreaming") : Tx.t("general.retry"))
+                            .font(AppTheme.sansFont(size: 12, weight: .semibold))
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(AppTheme.primary.opacity(0.12))
+                        .foregroundColor(AppTheme.primary)
+                        .clipShape(Capsule())
+                      }
+                      .disabled(isRetryingImage)
+                    }
+                  }
                   Text(imageError)
                     .font(AppTheme.sansFont(size: 13))
                     .foregroundColor(AppTheme.mutedText)
@@ -227,7 +252,7 @@ struct ResultView: View {
           }
         }
       }
-      .task {
+      .task(id: result.imageUrl) {
         await loadDetailImageAsync()
       }
     }
@@ -244,12 +269,17 @@ struct ResultView: View {
   }
 
   private func loadDetailImageAsync() async {
-    if let path = result.imageUrl, !path.hasPrefix("http") {
-      self.designImage = imagePersistence.loadImage(named: path)
-    }
-    
-    await MainActor.run {
-      generatePoster()
+    if let path = result.imageUrl {
+      let img = await imagePersistence.loadImageAsync(namedOrURL: path)
+      await MainActor.run {
+        self.designImage = img
+        generatePoster()
+      }
+    } else {
+      await MainActor.run {
+        self.designImage = nil
+        generatePoster()
+      }
     }
   }
 

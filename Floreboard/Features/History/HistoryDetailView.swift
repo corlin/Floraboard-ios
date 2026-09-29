@@ -248,12 +248,17 @@ struct DesignDetailView: View {
   }
 
   private func loadDetailImageAsync() async {
-    if let path = design.imageUrl, !path.hasPrefix("http") {
-      self.designImage = imagePersistence.loadImage(named: path)
-    }
-    
-    await MainActor.run {
-      generatePoster()
+    if let path = design.imageUrl {
+      let img = await imagePersistence.loadImageAsync(namedOrURL: path)
+      await MainActor.run {
+        self.designImage = img
+        generatePoster()
+      }
+    } else {
+      await MainActor.run {
+        self.designImage = nil
+        generatePoster()
+      }
     }
   }
 

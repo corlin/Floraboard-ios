@@ -48,6 +48,20 @@ class ImagePersistence {
       return cachedImage
     }
 
+    // Check remote URL disk cache if applicable
+    if fileName.hasPrefix("http://") || fileName.hasPrefix("https://") {
+      let sanitizedKey = fileName.replacingOccurrences(of: "[^a-zA-Z0-9_.-]", with: "_", options: .regularExpression)
+      let diskFileName = "cached_\(sanitizedKey.suffix(40)).jpg"
+      let fileURL = documentsDirectory.appendingPathComponent(diskFileName)
+      if fileManager.fileExists(atPath: fileURL.path),
+         let diskData = try? Data(contentsOf: fileURL),
+         let diskImage = UIImage(data: diskData) {
+        cache.setObject(diskImage, forKey: fileName as NSString)
+        return diskImage
+      }
+      return nil
+    }
+
     let fileURL = documentsDirectory.appendingPathComponent(fileName)
     guard fileManager.fileExists(atPath: fileURL.path) else { return nil }
 
@@ -63,6 +77,48 @@ class ImagePersistence {
       AppLogger.image.error("Error loading image: \(error)")
       return nil
     }
+  }
+
+  /// Loads an image asynchronously by local filename or remote HTTP/HTTPS URL with disk & memory cache.
+  func loadImageAsync(namedOrURL path: String) async -> UIImage? {
+    // 1. Check memory cache first
+    if let cachedImage = cache.object(forKey: path as NSString) {
+      return cachedImage
+    }
+
+    // 2. Handle remote URL (e.g. Cloudflare R2 / CDN)
+    if path.hasPrefix("http://") || path.hasPrefix("https://") {
+      guard let url = URL(string: path) else { return nil }
+
+      let sanitizedKey = path.replacingOccurrences(of: "[^a-zA-Z0-9_.-]", with: "_", options: .regularExpression)
+      let diskFileName = "cached_\(sanitizedKey.suffix(40)).jpg"
+      let fileURL = documentsDirectory.appendingPathComponent(diskFileName)
+
+      // Check disk cache
+      if fileManager.fileExists(atPath: fileURL.path),
+         let diskData = try? Data(contentsOf: fileURL),
+         let diskImage = UIImage(data: diskData) {
+        cache.setObject(diskImage, forKey: path as NSString)
+        return diskImage
+      }
+
+      // Download from remote URL
+      do {
+        let (data, response) = try await URLSession.shared.data(from: url)
+        if let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode),
+           let image = UIImage(data: data) {
+          try? data.write(to: fileURL)
+          cache.setObject(image, forKey: path as NSString)
+          return image
+        }
+      } catch {
+        AppLogger.image.error("Error downloading remote image \(path): \(error)")
+      }
+      return nil
+    }
+
+    // 3. Fallback to local synchronous loader
+    return loadImage(named: path)
   }
 
   func deleteImage(named fileName: String) {

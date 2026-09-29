@@ -122,7 +122,11 @@ struct DesignMainView: View {
       }
       .sheet(isPresented: $viewModel.showResult) {
         if let result = viewModel.generatedResult {
-          ResultView(result: result)
+          ResultView(
+            result: result,
+            onRetryImage: { viewModel.retryImageGeneration() },
+            isRetryingImage: viewModel.isRegeneratingImage
+          )
         }
       }
       .sheet(isPresented: $viewModel.showPaywall) {
