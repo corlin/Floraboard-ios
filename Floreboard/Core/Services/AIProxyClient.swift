@@ -6,12 +6,18 @@
 //
 
 import Foundation
+import OSLog
 import UIKit
 
 struct AIProxyClient {
   let baseURL: URL
   var sessionToken: String?
-  var urlSession: URLSession = .shared
+  var urlSession: URLSession = {
+    let config = URLSessionConfiguration.default
+    config.timeoutIntervalForRequest = 60
+    config.timeoutIntervalForResource = 90
+    return URLSession(configuration: config)
+  }()
   var imageURLSession: URLSession = {
     let config = URLSessionConfiguration.default
     config.timeoutIntervalForRequest = 90
@@ -57,7 +63,9 @@ struct AIProxyClient {
     inventory: [FlowerType],
     image: UIImage
   ) async throws -> DesignResult {
-    guard let jpegData = image.jpegData(compressionQuality: 0.82) else {
+    // Compress and scale down to 1280px max dimension to prevent network timeouts and gateway 413/OOM
+    guard let jpegData = ImageCompressor.compressImage(image, maxDimension: 1280, quality: 0.75)
+            ?? image.jpegData(compressionQuality: 0.8) else {
       throw AIError.imageEncodingFailed
     }
     let base64String = "data:image/jpeg;base64," + jpegData.base64EncodedString()
@@ -132,9 +140,14 @@ struct AIProxyClient {
     throw AIProxyError.invalidResponse
   }
 
-  private func pollImageTask(tenantId: String, taskId: String, maxAttempts: Int = 30) async throws -> String {
-    for _ in 0..<maxAttempts {
-      try await Task.sleep(nanoseconds: 2_000_000_000) // wait 2s
+  private func pollImageTask(tenantId: String, taskId: String, maxAttempts: Int = 40) async throws -> String {
+    var consecutiveTransientErrors = 0
+    let maxConsecutiveTransientErrors = 3
+
+    for attempt in 0..<maxAttempts {
+      // Progressive polling interval: 2.0s for first 10 cycles, 2.5s for remaining cycles (total ~95s window)
+      let waitSeconds = attempt < 10 ? 2.0 : 2.5
+      try await Task.sleep(nanoseconds: UInt64(waitSeconds * 1_000_000_000))
 
       let pollBody: [String: Any] = [
         "tenantId": tenantId,
@@ -142,7 +155,19 @@ struct AIProxyClient {
         "payload": ["taskId": taskId]
       ]
 
-      let resData = try await postRaw("api/v1/proxy", jsonObject: pollBody, tenantId: tenantId)
+      let resData: Data
+      do {
+        resData = try await postRaw("api/v1/proxy", jsonObject: pollBody, tenantId: tenantId)
+        consecutiveTransientErrors = 0
+      } catch {
+        consecutiveTransientErrors += 1
+        AppLogger.ai.warning("Polling task \(taskId) transient failure (\(consecutiveTransientErrors)/\(maxConsecutiveTransientErrors)): \(error.localizedDescription)")
+        if consecutiveTransientErrors >= maxConsecutiveTransientErrors {
+          throw error
+        }
+        continue
+      }
+
       guard let json = try? JSONSerialization.jsonObject(with: resData) as? [String: Any],
             let dataObj = json["data"] as? [String: Any],
             let output = dataObj["output"] as? [String: Any] else {
@@ -155,12 +180,45 @@ struct AIProxyClient {
            let url = results.first?["url"] as? String {
           return url
         }
+        if let directUrl = output["url"] as? String, !directUrl.isEmpty {
+          return directUrl
+        }
       } else if status == "FAILED" {
         let msg = output["message"] as? String ?? "Image rendering failed"
         throw AIProxyError.rejected(AIProxyErrorResponse(message: msg))
       }
     }
     throw AIProxyError.invalidResponse
+  }
+
+  /// Downloads an image from CDN/R2 with retry and exponential backoff
+  static func downloadImageWithRetry(from url: URL, maxRetries: Int = 2) async throws -> UIImage? {
+    var lastError: Error?
+    for attempt in 0...maxRetries {
+      do {
+        let (data, response) = try await URLSession.shared.data(from: url)
+        if let httpResponse = response as? HTTPURLResponse {
+          if (200...299).contains(httpResponse.statusCode), let image = UIImage(data: data) {
+            return image
+          }
+          if [401, 403, 404].contains(httpResponse.statusCode) {
+            throw AIError.apiError(statusCode: httpResponse.statusCode)
+          }
+        }
+      } catch {
+        lastError = error
+      }
+
+      if attempt < maxRetries {
+        let backoff = Double(attempt + 1) * 0.8 + Double.random(in: 0.1...0.25)
+        try? await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
+      }
+    }
+
+    if let error = lastError {
+      throw error
+    }
+    return nil
   }
 
   // MARK: - Payments & Credits
@@ -325,17 +383,32 @@ struct AIProxyClient {
   }
 
   private func buildUserPrompt(request: DesignRequest) -> String {
-    return """
-    Design Request:
-    - Occasion: \(request.occasion.displayName)
-    - Recipient: \(request.recipient.displayName)
-    - Style: \(request.style.displayName)
-    - Budget: ¥\(request.budget ?? 500)
-    - Special Notes: \(request.requirements ?? "None")
-    \(request.school != nil ? "- Floral School: \(request.school!)" : "")
-    \(request.technique != nil ? "- Technique: \(request.technique!)" : "")
-    \(request.seasonality != nil ? "- Season: \(request.seasonality!)" : "")
-    """
+    var parts: [String] = [
+      "Design Request:",
+      "- Occasion: \(request.occasion.displayName)",
+      "- Recipient: \(request.recipient.displayName)",
+      "- Style: \(request.style.displayName)",
+      "- Budget: ¥\(request.budget ?? 500)",
+      "- Special Notes: \(request.requirements ?? "None")"
+    ]
+
+    if let school = request.school, !school.isEmpty {
+      parts.append("- Floral School: \(school)")
+    }
+    if let technique = request.technique, !technique.isEmpty {
+      parts.append("- Technique: \(technique)")
+    }
+    if let seasonality = request.seasonality, !seasonality.isEmpty {
+      parts.append("- Season: \(seasonality)")
+    }
+    if let context = request.culturalContext, !context.isEmpty {
+      parts.append("- Space & Cultural Context (空间与文化语境): \(context)")
+    }
+    if let proportion = request.proportionRule, !proportion.isEmpty {
+      parts.append("- Proportion Rule (比例法则): \(proportion)")
+    }
+
+    return parts.joined(separator: "\n")
   }
 
   private func extractAssistantMessage(from data: Data) throws -> String {
@@ -344,6 +417,11 @@ struct AIProxyClient {
     }
     if let error = json["error"] as? String {
       throw AIProxyError.rejected(AIProxyErrorResponse(message: error))
+    }
+    if let errorObj = json["error"] as? [String: Any] {
+      let msg = errorObj["message"] as? String ?? errorObj["code"] as? String ?? "Unknown proxy error"
+      let code = errorObj["code"] as? String
+      throw AIProxyError.rejected(AIProxyErrorResponse(code: code, message: msg))
     }
     // Unwrap { success: true, data: { choices: [...] } }
     let root = (json["data"] as? [String: Any]) ?? json
@@ -357,19 +435,27 @@ struct AIProxyClient {
   }
 
   private func parseDesignResponse(from text: String) throws -> AIProxyDesignResponse {
-    var clean = text.trimmingCharacters(in: .whitespacesAndNewlines)
-    if clean.hasPrefix("```json") {
-      clean = clean.replacingOccurrences(of: "```json", with: "")
-    }
-    if clean.hasPrefix("```") {
-      clean = clean.replacingOccurrences(of: "```", with: "")
-    }
-    if clean.hasSuffix("```") {
-      clean = String(clean.dropLast(3))
-    }
-    clean = clean.trimmingCharacters(in: .whitespacesAndNewlines)
+    var raw = text.trimmingCharacters(in: .whitespacesAndNewlines)
 
-    guard let data = clean.data(using: .utf8) else {
+    // Robust extraction: find outer '{' and '}' bounds, ignoring preamble thoughts and postscript markdown
+    if let firstBrace = raw.firstIndex(of: "{"),
+       let lastBrace = raw.lastIndex(of: "}"),
+       firstBrace < lastBrace {
+      raw = String(raw[firstBrace...lastBrace])
+    } else {
+      if raw.hasPrefix("```json") {
+        raw = raw.replacingOccurrences(of: "```json", with: "")
+      }
+      if raw.hasPrefix("```") {
+        raw = raw.replacingOccurrences(of: "```", with: "")
+      }
+      if raw.hasSuffix("```") {
+        raw = String(raw.dropLast(3))
+      }
+      raw = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    guard let data = raw.data(using: .utf8) else {
       throw AIProxyError.invalidResponse
     }
     return try JSONDecoder().decode(AIProxyDesignResponse.self, from: data)
@@ -434,6 +520,7 @@ struct AIProxyClient {
           throw AIProxyError.invalidResponse
         }
 
+        // Fast-fail on non-retryable 402
         if httpResponse.statusCode == 402 {
           let errResp = try? JSONDecoder().decode(AIProxyErrorResponse.self, from: data)
           throw AIProxyError.insufficientCredits(
@@ -442,29 +529,64 @@ struct AIProxyClient {
           )
         }
 
-        guard (200..<300).contains(httpResponse.statusCode) else {
-          if let errResp = try? JSONDecoder().decode(AIProxyErrorResponse.self, from: data) {
-            if errResp.code == "INSUFFICIENT_CREDITS" {
-              throw AIProxyError.insufficientCredits(
-                required: errResp.requiredCredits ?? 1,
-                current: errResp.currentCredits ?? 0
-              )
-            }
-            throw AIProxyError.rejected(errResp)
-          }
-          throw AIProxyError.httpStatus(httpResponse.statusCode)
+        if (200..<300).contains(httpResponse.statusCode) {
+          return data
         }
 
-        return data
+        // Parse structured error payload if available
+        let errResp = try? JSONDecoder().decode(AIProxyErrorResponse.self, from: data)
+        if errResp?.code == "INSUFFICIENT_CREDITS" {
+          throw AIProxyError.insufficientCredits(
+            required: errResp?.requiredCredits ?? 1,
+            current: errResp?.currentCredits ?? 0
+          )
+        }
+
+        let statusCode = httpResponse.statusCode
+        // Fast-fail non-retryable 4xx client errors (except 429 rate limit)
+        if (400..<500).contains(statusCode) && statusCode != 429 {
+          if let errResp {
+            throw AIProxyError.rejected(errResp)
+          }
+          throw AIProxyError.httpStatus(statusCode)
+        }
+
+        // 429 or 5xx are retryable
+        let errorToRecord: Error
+        if let errResp {
+          errorToRecord = AIProxyError.rejected(errResp)
+        } else {
+          errorToRecord = AIProxyError.httpStatus(statusCode)
+        }
+        lastError = errorToRecord
+
       } catch let error as AIProxyError {
-        throw error
+        switch error {
+        case .insufficientCredits, .insufficientQuota, .invalidURL:
+          // Immediately rethrow non-retryable errors
+          throw error
+        case .rejected(let errResp):
+          if errResp.code == "INSUFFICIENT_CREDITS" {
+            throw error
+          }
+          lastError = error
+        case .httpStatus(let code):
+          if (400..<500).contains(code) && code != 429 {
+            throw error
+          }
+          lastError = error
+        case .invalidResponse:
+          lastError = error
+        }
       } catch {
         lastError = error
       }
 
       attempt += 1
       if attempt <= maxRetries {
-        try await Task.sleep(nanoseconds: 1_000_000_000)
+        // Exponential backoff with jitter (e.g., ~1.0s, ~2.0s, ~4.0s)
+        let backoff = min(pow(2.0, Double(attempt - 1)) * 1.0 + Double.random(in: 0.1...0.3), 5.0)
+        try await Task.sleep(nanoseconds: UInt64(backoff * 1_000_000_000))
       }
     }
 
@@ -503,6 +625,111 @@ struct AIProxyDesignResponse: Codable {
   var imagePrompt: String?
   var estimatedCost: Double?
   var flowerList: [AIProxyFlowerItem]
+
+  enum CodingKeys: String, CodingKey {
+    case title, name
+    case description, concept, desc, summary
+    case meaningText, meaning, flowerMeaning, significance
+    case reasoning, rationale, thought, analysis
+    case steps, instructions
+    case imagePrompt, image_prompt, visualPrompt, prompt
+    case estimatedCost, cost, totalCost, budget
+    case flowerList, flowers, materials, items
+  }
+
+  init(
+    title: String,
+    description: String,
+    meaningText: String,
+    reasoning: String? = nil,
+    steps: [String],
+    imagePrompt: String? = nil,
+    estimatedCost: Double? = nil,
+    flowerList: [AIProxyFlowerItem] = []
+  ) {
+    self.title = title
+    self.description = description
+    self.meaningText = meaningText
+    self.reasoning = reasoning
+    self.steps = steps
+    self.imagePrompt = imagePrompt
+    self.estimatedCost = estimatedCost
+    self.flowerList = flowerList
+  }
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+
+    self.title = (try? container.decodeIfPresent(String.self, forKey: .title))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .name))
+      ?? "专属花艺定制方案"
+
+    self.description = (try? container.decodeIfPresent(String.self, forKey: .description))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .concept))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .desc))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .summary))
+      ?? "精选花艺美学设计方案"
+
+    self.meaningText = (try? container.decodeIfPresent(String.self, forKey: .meaningText))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .meaning))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .flowerMeaning))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .significance))
+      ?? "花开向阳，美意延绵"
+
+    self.reasoning = (try? container.decodeIfPresent(String.self, forKey: .reasoning))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .rationale))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .thought))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .analysis))
+
+    self.imagePrompt = (try? container.decodeIfPresent(String.self, forKey: .imagePrompt))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .image_prompt))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .visualPrompt))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .prompt))
+
+    // Flexible cost decoding (Double, Int, or String like "¥500")
+    if let doubleCost = try? container.decodeIfPresent(Double.self, forKey: .estimatedCost) {
+      self.estimatedCost = doubleCost
+    } else if let intCost = try? container.decodeIfPresent(Int.self, forKey: .estimatedCost) {
+      self.estimatedCost = Double(intCost)
+    } else if let strCost = try? container.decodeIfPresent(String.self, forKey: .estimatedCost) {
+      let filtered = strCost.filter { "0123456789.".contains($0) }
+      self.estimatedCost = Double(filtered)
+    } else if let doubleCost = try? container.decodeIfPresent(Double.self, forKey: .cost) {
+      self.estimatedCost = doubleCost
+    } else if let doubleCost = try? container.decodeIfPresent(Double.self, forKey: .totalCost) {
+      self.estimatedCost = doubleCost
+    } else {
+      self.estimatedCost = nil
+    }
+
+    // Flexible steps decoding: [String], or [{"step": "..."}], or single string
+    if let stringSteps = try? container.decodeIfPresent([String].self, forKey: .steps) {
+      self.steps = stringSteps
+    } else if let stringSteps = try? container.decodeIfPresent([String].self, forKey: .instructions) {
+      self.steps = stringSteps
+    } else if let singleString = try? container.decodeIfPresent(String.self, forKey: .steps) {
+      self.steps = singleString.components(separatedBy: "\n").filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+    } else {
+      self.steps = [
+        "裁剪花材至高低错落结构",
+        "定位主花建立黄金视点",
+        "融入配花与绿叶丰富空间层次"
+      ]
+    }
+
+    // Flexible flowerList decoding
+    if let list = try? container.decodeIfPresent([AIProxyFlowerItem].self, forKey: .flowerList) {
+      self.flowerList = list
+    } else if let list = try? container.decodeIfPresent([AIProxyFlowerItem].self, forKey: .flowers) {
+      self.flowerList = list
+    } else if let list = try? container.decodeIfPresent([AIProxyFlowerItem].self, forKey: .materials) {
+      self.flowerList = list
+    } else if let list = try? container.decodeIfPresent([AIProxyFlowerItem].self, forKey: .items) {
+      self.flowerList = list
+    } else {
+      self.flowerList = []
+    }
+  }
 
   func toDesignResult(localRequestId: String, inventory: [FlowerType]) -> DesignResult {
     let items = flowerList.map { item in
@@ -549,6 +776,18 @@ struct AIProxyDesignResponse: Codable {
       executedAt: nil
     )
   }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(title, forKey: .title)
+    try container.encode(description, forKey: .description)
+    try container.encode(meaningText, forKey: .meaningText)
+    try container.encodeIfPresent(reasoning, forKey: .reasoning)
+    try container.encode(steps, forKey: .steps)
+    try container.encodeIfPresent(imagePrompt, forKey: .imagePrompt)
+    try container.encodeIfPresent(estimatedCost, forKey: .estimatedCost)
+    try container.encode(flowerList, forKey: .flowerList)
+  }
 }
 
 struct AIProxyFlowerItem: Codable {
@@ -556,6 +795,74 @@ struct AIProxyFlowerItem: Codable {
   var count: Int
   var unitCost: Double?
   var reason: String?
+
+  enum CodingKeys: String, CodingKey {
+    case flowerName, name, flower, title
+    case count, quantity, amount, stems
+    case unitCost, cost, price
+    case reason, explanation, desc
+  }
+
+  init(flowerName: String, count: Int, unitCost: Double? = nil, reason: String? = nil) {
+    self.flowerName = flowerName
+    self.count = count
+    self.unitCost = unitCost
+    self.reason = reason
+  }
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+
+    self.flowerName = (try? container.decodeIfPresent(String.self, forKey: .flowerName))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .name))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .flower))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .title))
+      ?? "精选花材"
+
+    // Flexible count decoding (Int, Double, or String like "3枝")
+    if let intCount = try? container.decodeIfPresent(Int.self, forKey: .count) {
+      self.count = intCount
+    } else if let intCount = try? container.decodeIfPresent(Int.self, forKey: .quantity) {
+      self.count = intCount
+    } else if let intCount = try? container.decodeIfPresent(Int.self, forKey: .amount) {
+      self.count = intCount
+    } else if let intCount = try? container.decodeIfPresent(Int.self, forKey: .stems) {
+      self.count = intCount
+    } else if let strCount = try? container.decodeIfPresent(String.self, forKey: .count) {
+      let digits = strCount.filter { "0123456789".contains($0) }
+      self.count = Int(digits) ?? 3
+    } else {
+      self.count = 3
+    }
+
+    // Flexible unitCost decoding
+    if let doubleCost = try? container.decodeIfPresent(Double.self, forKey: .unitCost) {
+      self.unitCost = doubleCost
+    } else if let intCost = try? container.decodeIfPresent(Int.self, forKey: .unitCost) {
+      self.unitCost = Double(intCost)
+    } else if let doubleCost = try? container.decodeIfPresent(Double.self, forKey: .cost) {
+      self.unitCost = doubleCost
+    } else if let doubleCost = try? container.decodeIfPresent(Double.self, forKey: .price) {
+      self.unitCost = doubleCost
+    } else if let strCost = try? container.decodeIfPresent(String.self, forKey: .unitCost) {
+      let filtered = strCost.filter { "0123456789.".contains($0) }
+      self.unitCost = Double(filtered) ?? 5.0
+    } else {
+      self.unitCost = 5.0
+    }
+
+    self.reason = (try? container.decodeIfPresent(String.self, forKey: .reason))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .explanation))
+      ?? (try? container.decodeIfPresent(String.self, forKey: .desc))
+  }
+
+  func encode(to encoder: Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(flowerName, forKey: .flowerName)
+    try container.encode(count, forKey: .count)
+    try container.encodeIfPresent(unitCost, forKey: .unitCost)
+    try container.encodeIfPresent(reason, forKey: .reason)
+  }
 }
 
 struct AIProxyHealthResponse: Codable {

@@ -3,6 +3,7 @@ import SwiftUI
 struct ResultView: View {
   let result: DesignResult
   var onRetryImage: (() -> Void)? = nil
+  var onUseReferenceImage: (() -> Void)? = nil
   var isRetryingImage: Bool = false
   @Environment(\.dismiss) private var dismiss
   @EnvironmentObject var historyService: HistoryService
@@ -43,12 +44,18 @@ struct ResultView: View {
             } else {
               // Placeholder or missing
               if let imageError = result.imageError, !imageError.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                   HStack {
                     Label(Tx.t("result.imageError.title"), systemImage: "photo.badge.exclamationmark")
                       .font(AppTheme.sansFont(size: 14, weight: .bold))
                       .foregroundColor(AppTheme.primary)
                     Spacer()
+                  }
+                  Text(imageError)
+                    .font(AppTheme.sansFont(size: 13))
+                    .foregroundColor(AppTheme.mutedText)
+
+                  HStack(spacing: 10) {
                     if let onRetryImage = onRetryImage {
                       Button(action: onRetryImage) {
                         HStack(spacing: 4) {
@@ -61,18 +68,31 @@ struct ResultView: View {
                           Text(isRetryingImage ? Tx.t("design.loading.dreaming") : Tx.t("general.retry"))
                             .font(AppTheme.sansFont(size: 12, weight: .semibold))
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
                         .background(AppTheme.primary.opacity(0.12))
                         .foregroundColor(AppTheme.primary)
                         .clipShape(Capsule())
                       }
                       .disabled(isRetryingImage)
                     }
+
+                    if result.referenceImageUrl != nil, let onUseReferenceImage = onUseReferenceImage {
+                      Button(action: onUseReferenceImage) {
+                        HStack(spacing: 4) {
+                          Image(systemName: "photo.on.rectangle.angled")
+                          Text(Tx.t("design.image.useReference"))
+                            .font(AppTheme.sansFont(size: 12, weight: .semibold))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(AppTheme.accent.opacity(0.12))
+                        .foregroundColor(AppTheme.accent)
+                        .clipShape(Capsule())
+                      }
+                      .disabled(isRetryingImage)
+                    }
                   }
-                  Text(imageError)
-                    .font(AppTheme.sansFont(size: 13))
-                    .foregroundColor(AppTheme.mutedText)
                 }
                 .padding()
                 .glassmorphic()

@@ -117,6 +117,10 @@ class DesignViewModel: ObservableObject {
           // Visual Muse Mode
           result = try await aiService.generateDesignFromImage(
             image: image, request: request, inventory: inventory)
+          // Persist the reference image so it can be restored or used as fallback later
+          if let refFilename = imagePersistence.saveImage(image, name: "ref_\(result.id)") {
+            result.referenceImageUrl = refFilename
+          }
         } else {
           // Standard Mode
           // Update request with professional mode flags
@@ -134,36 +138,57 @@ class DesignViewModel: ObservableObject {
             self.loadingStatus = localizationManager.t("design.loading.dreaming")  // "Dreaming up visual..."
           }
 
-          do {
-            // 1. Generate Image URL (or Base64)
-            let imageUrlString = try await aiService.generateImage(
-              prompt: prompt,
-              requestId: result.syncId ?? result.requestId
-            )
-            AppLogger.ai.debug("Received image string length: \(imageUrlString.count)")
+          // Double-layer resilience: 1 silent retry before surfacing error to user
+          var generatedImage: UIImage? = nil
+          var lastError: Error? = nil
 
-            let image = try await resolveGeneratedImage(from: imageUrlString)
+          for attempt in 1...2 {
+            do {
+              let imageUrlString = try await aiService.generateImage(
+                prompt: prompt,
+                requestId: result.syncId ?? result.requestId
+              )
+              AppLogger.ai.debug("Attempt \(attempt): Received image string length: \(imageUrlString.count)")
 
-            // 3. Save to Persistence
-            if let validImage = image {
-              if let filename = imagePersistence.saveImage(validImage, name: result.id) {
-                result.imageUrl = filename
-              } else {
-                AppLogger.image.error("Failed to save image to disk")
-                result.imageError = localizationManager.t("error.saveImage")
+              generatedImage = try await resolveGeneratedImage(from: imageUrlString)
+              if generatedImage != nil {
+                lastError = nil
+                break
               }
-            } else {
-              AppLogger.image.error("Failed to decode image from string: \(imageUrlString.prefix(100))...")
-              result.imageError = localizationManager.t("error.invalidImageData")
+            } catch {
+              lastError = error
+              AppLogger.ai.warning("Image generation attempt \(attempt) failed: \(error.localizedDescription)")
+              if attempt < 2 {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+              }
             }
-          } catch {
-            AppLogger.ai.error("Image generation failed: \(error)")
+          }
+
+          // Save generated image or record structured error
+          if let validImage = generatedImage {
+            if let filename = imagePersistence.saveImage(validImage, name: result.id) {
+              result.imageUrl = filename
+              result.imageStatus = .succeeded
+              result.imageError = nil
+            } else {
+              AppLogger.image.error("Failed to save image to disk")
+              result.imageError = localizationManager.t("error.saveImage")
+              result.imageStatus = .failed
+            }
+          } else if let error = lastError {
+            AppLogger.ai.error("Image generation completely failed after retries: \(error)")
             result.imageError = AppError(from: error).localizedDescription
+            result.imageStatus = .failed
+          } else {
+            AppLogger.image.error("Failed to decode image from response")
+            result.imageError = localizationManager.t("error.invalidImageData")
+            result.imageStatus = .failed
           }
         } else if let selectedImg = selectedImage {
-          // Visual Muse: Save input image as the design image
+          // Visual Muse: Fallback to input image if no imagePrompt returned
           if let filename = imagePersistence.saveImage(selectedImg, name: result.id) {
             result.imageUrl = filename
+            result.imageStatus = .succeeded
           }
         }
 
@@ -200,6 +225,7 @@ class DesignViewModel: ObservableObject {
 
     isRegeneratingImage = true
     result.imageError = nil
+    result.imageStatus = .generating
     self.generatedResult = result
 
     Task {
@@ -214,15 +240,19 @@ class DesignViewModel: ObservableObject {
           if let filename = imagePersistence.saveImage(validImage, name: result.id) {
             result.imageUrl = filename
             result.imageError = nil
+            result.imageStatus = .succeeded
           } else {
             result.imageError = localizationManager?.t("error.saveImage")
+            result.imageStatus = .failed
           }
         } else {
           result.imageError = localizationManager?.t("error.invalidImageData")
+          result.imageStatus = .failed
         }
       } catch {
         AppLogger.ai.error("Image retry failed: \(error)")
         result.imageError = AppError(from: error).localizedDescription
+        result.imageStatus = .failed
       }
 
       let updatedResult = result
@@ -230,6 +260,24 @@ class DesignViewModel: ObservableObject {
         self.generatedResult = updatedResult
         self.isRegeneratingImage = false
         historyService.saveDesign(updatedResult)
+      }
+    }
+  }
+
+  /// Adopts the uploaded reference image as the primary design visual
+  func useReferenceImageAsFinal() {
+    guard var result = generatedResult,
+          let refPath = result.referenceImageUrl,
+          let imagePersistence = imagePersistence,
+          let historyService = historyService else { return }
+
+    if let refImage = imagePersistence.loadImage(named: refPath) {
+      if let filename = imagePersistence.saveImage(refImage, name: result.id) {
+        result.imageUrl = filename
+        result.imageError = nil
+        result.imageStatus = .succeeded
+        self.generatedResult = result
+        historyService.saveDesign(result)
       }
     }
   }
@@ -244,18 +292,12 @@ class DesignViewModel: ObservableObject {
       return nil
     }
 
-    // Check for Standard URL
+    // Check for Standard URL with retry
     if let url = URL(string: imageString),
       let scheme = url.scheme?.lowercased(),
       scheme == "http" || scheme == "https"
     {
-      let (data, response) = try await URLSession.shared.data(from: url)
-      if let httpResponse = response as? HTTPURLResponse,
-        !(200...299).contains(httpResponse.statusCode)
-      {
-        throw AIError.apiError(statusCode: httpResponse.statusCode)
-      }
-      return UIImage(data: data)
+      return try await AIProxyClient.downloadImageWithRetry(from: url, maxRetries: 2)
     }
 
     // Try decoding raw base64 if other checks fail

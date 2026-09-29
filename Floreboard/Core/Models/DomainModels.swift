@@ -91,6 +91,7 @@ struct DesignResult: Codable, Identifiable {
   var reasoning: String? = nil  // Added for CoT
   var steps: [String]
   var imageUrl: String? = nil
+  var referenceImageUrl: String? = nil
   var imageTaskId: String? = nil
   var imageStatus: ImageStatus? = nil
   var imageError: String? = nil

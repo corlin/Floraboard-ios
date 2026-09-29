@@ -60,6 +60,7 @@ enum FormatType: String, Codable, CaseIterable, Identifiable {
 
 enum ImageStatus: String, Codable {
   case pending = "PENDING"
+  case generating = "GENERATING"
   case succeeded = "SUCCEEDED"
   case failed = "FAILED"
 }

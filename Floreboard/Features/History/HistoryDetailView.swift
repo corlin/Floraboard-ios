@@ -5,6 +5,7 @@ struct DesignDetailView: View {
   @EnvironmentObject var historyService: HistoryService
   @EnvironmentObject var inventoryService: InventoryService
   @Environment(\.imagePersistence) var imagePersistence
+  @State private var currentDesign: DesignResult
   @State private var designImage: UIImage? = nil
   @State private var posterImage: UIImage? = nil
   @State private var isShowingFullScreen = false
@@ -12,6 +13,12 @@ struct DesignDetailView: View {
   @State private var showStockWarning = false
   @State private var shortages: [InventoryService.StockShortage] = []
   @State private var showExecutionSheet = false
+  @State private var isRetryingImage = false
+
+  init(design: DesignResult) {
+    self.design = design
+    self._currentDesign = State(initialValue: design)
+  }
 
   var body: some View {
     ZStack {
@@ -39,14 +46,54 @@ struct DesignDetailView: View {
               }
           } else {
             // Placeholder or missing
-            if let imageError = design.imageError, !imageError.isEmpty {
-              VStack(alignment: .leading, spacing: 8) {
-                Label(Tx.t("result.imageError.title"), systemImage: "photo.badge.exclamationmark")
-                  .font(AppTheme.sansFont(size: 14, weight: .bold))
-                  .foregroundColor(AppTheme.primary)
+            if let imageError = currentDesign.imageError, !imageError.isEmpty {
+              VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                  Label(Tx.t("result.imageError.title"), systemImage: "photo.badge.exclamationmark")
+                    .font(AppTheme.sansFont(size: 14, weight: .bold))
+                    .foregroundColor(AppTheme.primary)
+                  Spacer()
+                }
                 Text(imageError)
                   .font(AppTheme.sansFont(size: 13))
                   .foregroundColor(AppTheme.mutedText)
+
+                HStack(spacing: 10) {
+                  Button(action: retryImageGeneration) {
+                    HStack(spacing: 4) {
+                      if isRetryingImage {
+                        ProgressView()
+                          .scaleEffect(0.75)
+                      } else {
+                        Image(systemName: "arrow.clockwise")
+                      }
+                      Text(isRetryingImage ? Tx.t("design.loading.dreaming") : Tx.t("general.retry"))
+                        .font(AppTheme.sansFont(size: 12, weight: .semibold))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(AppTheme.primary.opacity(0.12))
+                    .foregroundColor(AppTheme.primary)
+                    .clipShape(Capsule())
+                  }
+                  .disabled(isRetryingImage)
+
+                  if currentDesign.referenceImageUrl != nil {
+                    Button(action: useReferenceImageAsFinal) {
+                      HStack(spacing: 4) {
+                        Image(systemName: "photo.on.rectangle.angled")
+                        Text(Tx.t("design.image.useReference"))
+                          .font(AppTheme.sansFont(size: 12, weight: .semibold))
+                      }
+                      .padding(.horizontal, 12)
+                      .padding(.vertical, 6)
+                      .background(AppTheme.accent.opacity(0.12))
+                      .foregroundColor(AppTheme.accent)
+                      .clipShape(Capsule())
+                    }
+                    .disabled(isRetryingImage)
+                  }
+                }
               }
               .padding()
               .glassmorphic()
@@ -247,8 +294,95 @@ struct DesignDetailView: View {
     HapticManager.shared.notification(type: .success)
   }
 
+  private func retryImageGeneration() {
+    guard let prompt = currentDesign.imagePrompt, !prompt.isEmpty, !isRetryingImage else { return }
+    isRetryingImage = true
+    currentDesign.imageError = nil
+    currentDesign.imageStatus = .generating
+
+    Task {
+      do {
+        let imageUrlString = try await AIService.shared.generateImage(
+          prompt: prompt,
+          requestId: currentDesign.syncId ?? currentDesign.requestId
+        )
+        let image = try await resolveGeneratedImage(from: imageUrlString)
+
+        if let validImage = image {
+          if let filename = imagePersistence.saveImage(validImage, name: currentDesign.id) {
+            await MainActor.run {
+              currentDesign.imageUrl = filename
+              currentDesign.imageError = nil
+              currentDesign.imageStatus = .succeeded
+              self.designImage = validImage
+              generatePoster()
+            }
+          } else {
+            await MainActor.run {
+              currentDesign.imageError = Tx.t("error.saveImage")
+              currentDesign.imageStatus = .failed
+            }
+          }
+        } else {
+          await MainActor.run {
+            currentDesign.imageError = Tx.t("error.invalidImageData")
+            currentDesign.imageStatus = .failed
+          }
+        }
+      } catch {
+        await MainActor.run {
+          currentDesign.imageError = AppError(from: error).localizedDescription
+          currentDesign.imageStatus = .failed
+        }
+      }
+
+      let updated = currentDesign
+      await MainActor.run {
+        isRetryingImage = false
+        historyService.saveDesign(updated)
+      }
+    }
+  }
+
+  private func useReferenceImageAsFinal() {
+    guard let refPath = currentDesign.referenceImageUrl else { return }
+    if let refImage = imagePersistence.loadImage(named: refPath) {
+      if let filename = imagePersistence.saveImage(refImage, name: currentDesign.id) {
+        currentDesign.imageUrl = filename
+        currentDesign.imageError = nil
+        currentDesign.imageStatus = .succeeded
+        self.designImage = refImage
+        historyService.saveDesign(currentDesign)
+        generatePoster()
+      }
+    }
+  }
+
+  private func resolveGeneratedImage(from imageString: String) async throws -> UIImage? {
+    if imageString.hasPrefix("data:image") {
+      let base64String = imageString.components(separatedBy: ",").last ?? imageString
+      if let data = Data(base64Encoded: base64String, options: .ignoreUnknownCharacters) {
+        return UIImage(data: data)
+      }
+      return nil
+    }
+
+    if let url = URL(string: imageString),
+      let scheme = url.scheme?.lowercased(),
+      scheme == "http" || scheme == "https"
+    {
+      return try await AIProxyClient.downloadImageWithRetry(from: url, maxRetries: 2)
+    }
+
+    if let data = Data(base64Encoded: imageString, options: .ignoreUnknownCharacters) {
+      return UIImage(data: data)
+    }
+
+    return nil
+  }
+
   private func loadDetailImageAsync() async {
-    if let path = design.imageUrl {
+    if let path = currentDesign.imageUrl {
       let img = await imagePersistence.loadImageAsync(namedOrURL: path)
       await MainActor.run {
         self.designImage = img
@@ -264,7 +398,7 @@ struct DesignDetailView: View {
 
   @MainActor
   private func generatePoster() {
-    let renderer = ImageRenderer(content: SharePosterView(design: design, image: designImage))
+    let renderer = ImageRenderer(content: SharePosterView(design: currentDesign, image: designImage))
     renderer.scale = UIScreen.main.scale
     if let uiImage = renderer.uiImage {
       self.posterImage = uiImage

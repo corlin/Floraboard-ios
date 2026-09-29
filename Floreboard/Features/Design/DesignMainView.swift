@@ -125,6 +125,7 @@ struct DesignMainView: View {
           ResultView(
             result: result,
             onRetryImage: { viewModel.retryImageGeneration() },
+            onUseReferenceImage: { viewModel.useReferenceImageAsFinal() },
             isRetryingImage: viewModel.isRegeneratingImage
           )
         }
@@ -141,8 +142,13 @@ struct DesignMainView: View {
         )
       ) { item in
         Alert(
-          title: Text(Tx.t("general.error")), message: Text(item.message),
-          dismissButton: .default(Text(Tx.t("general.ok"))))
+          title: Text(Tx.t("general.error")),
+          message: Text(item.message),
+          primaryButton: .default(Text(Tx.t("general.retry")), action: {
+            viewModel.generateDesign()
+          }),
+          secondaryButton: .cancel(Text(Tx.t("general.cancel")))
+        )
       }
     }
   }
