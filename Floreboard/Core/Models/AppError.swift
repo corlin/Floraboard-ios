@@ -45,12 +45,21 @@ enum AppError: LocalizedError {
       case .insufficientQuota, .insufficientCredits:
         self = .quotaExceeded
       }
+    } else if error is DecodingError {
+      self = .server(Tx.t("error.api.invalidResponse"))
     } else {
       let nsError = error as NSError
       if nsError.domain == NSURLErrorDomain {
         self = .network(Tx.t("error.network"))
+      } else if nsError.domain == NSCocoaErrorDomain && nsError.code == 251 {
+        self = .server(Tx.t("error.api.invalidResponse"))
       } else {
-        self = .unknown(error.localizedDescription)
+        let desc = error.localizedDescription
+        if desc.contains("correct format") || desc.contains("The data couldn") {
+          self = .server(Tx.t("error.api.invalidResponse"))
+        } else {
+          self = .unknown(desc)
+        }
       }
     }
   }

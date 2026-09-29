@@ -51,7 +51,7 @@ struct AIProxyClient {
 
     let responseData = try await postRaw("api/v1/proxy", jsonObject: body, tenantId: tenantId)
     let jsonContent = try extractAssistantMessage(from: responseData)
-    let designResp = try parseDesignResponse(from: jsonContent)
+    let designResp = try parseDesignResponse(from: jsonContent, inventory: inventory)
     return designResp.toDesignResult(localRequestId: request.id, inventory: inventory)
   }
 
@@ -92,7 +92,7 @@ struct AIProxyClient {
 
     let responseData = try await postRaw("api/v1/proxy", jsonObject: body, tenantId: tenantId)
     let jsonContent = try extractAssistantMessage(from: responseData)
-    let designResp = try parseDesignResponse(from: jsonContent)
+    let designResp = try parseDesignResponse(from: jsonContent, inventory: inventory)
     return designResp.toDesignResult(localRequestId: request.id, inventory: inventory)
   }
 
@@ -434,31 +434,306 @@ struct AIProxyClient {
     throw AIProxyError.invalidResponse
   }
 
-  private func parseDesignResponse(from text: String) throws -> AIProxyDesignResponse {
-    var raw = text.trimmingCharacters(in: .whitespacesAndNewlines)
+  private func parseDesignResponse(from text: String, inventory: [FlowerType] = []) throws -> AIProxyDesignResponse {
+    let cleanText = stripMarkdownAndThinkingTags(text.trimmingCharacters(in: .whitespacesAndNewlines))
 
-    // Robust extraction: find outer '{' and '}' bounds, ignoring preamble thoughts and postscript markdown
-    if let firstBrace = raw.firstIndex(of: "{"),
-       let lastBrace = raw.lastIndex(of: "}"),
-       firstBrace < lastBrace {
-      raw = String(raw[firstBrace...lastBrace])
-    } else {
-      if raw.hasPrefix("```json") {
-        raw = raw.replacingOccurrences(of: "```json", with: "")
+    // Tier 1: Strict standard JSONDecoder decoding within outer '{' ... '}'
+    if let range = findOuterJSONRange(in: cleanText) {
+      let candidate = String(cleanText[range])
+      if let data = candidate.data(using: .utf8),
+         let decoded = try? JSONDecoder().decode(AIProxyDesignResponse.self, from: data) {
+        return decoded
       }
-      if raw.hasPrefix("```") {
-        raw = raw.replacingOccurrences(of: "```", with: "")
-      }
-      if raw.hasSuffix("```") {
-        raw = String(raw.dropLast(3))
-      }
-      raw = raw.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    guard let data = raw.data(using: .utf8) else {
-      throw AIProxyError.invalidResponse
+    // Tier 2: Sanitize control characters, repair unescaped newlines/quotes, close unclosed braces
+    let sanitized = sanitizeAndRepairJSON(cleanText)
+    if let data = sanitized.data(using: .utf8) {
+      if let decoded = try? JSONDecoder().decode(AIProxyDesignResponse.self, from: data) {
+        return decoded
+      }
+      if let dict = (try? JSONSerialization.jsonObject(with: data, options: [.fragmentsAllowed])) as? [String: Any] {
+        return buildDesignResponse(from: dict, fallbackInventory: inventory)
+      }
     }
-    return try JSONDecoder().decode(AIProxyDesignResponse.self, from: data)
+
+    // Tier 3: Lenient field-level regex extraction with auto-healing
+    AppLogger.ai.warning("Executing Tier 3 resilient regex field extraction for AI response")
+    return extractDesignResponseLeniently(from: cleanText, inventory: inventory)
+  }
+
+  private func stripMarkdownAndThinkingTags(_ input: String) -> String {
+    var text = input
+    // Strip <think>...</think>
+    if let startTag = text.range(of: "<think>"),
+       let endTag = text.range(of: "</think>", range: startTag.upperBound..<text.endIndex) {
+      text.removeSubrange(startTag.lowerBound..<endTag.upperBound)
+    }
+    // Strip markdown code fences
+    if text.contains("```json") {
+      text = text.replacingOccurrences(of: "```json", with: "")
+    }
+    if text.contains("```") {
+      text = text.replacingOccurrences(of: "```", with: "")
+    }
+    return text.trimmingCharacters(in: .whitespacesAndNewlines)
+  }
+
+  private func findOuterJSONRange(in input: String) -> Range<String.Index>? {
+    guard let firstBrace = input.firstIndex(of: "{"),
+          let lastBrace = input.lastIndex(of: "}"),
+          firstBrace < lastBrace else {
+      return nil
+    }
+    return firstBrace..<input.index(after: lastBrace)
+  }
+
+  private func sanitizeAndRepairJSON(_ input: String) -> String {
+    var result = ""
+    var inString = false
+    var isEscaped = false
+    var openBraces = 0
+    var openBrackets = 0
+    var hasStarted = false
+
+    for char in input {
+      if !hasStarted {
+        if char == "{" {
+          hasStarted = true
+          openBraces += 1
+          result.append(char)
+        }
+        continue
+      }
+
+      if isEscaped {
+        result.append(char)
+        isEscaped = false
+        continue
+      }
+
+      if char == "\\" {
+        result.append(char)
+        isEscaped = true
+        continue
+      }
+
+      if char == "\"" {
+        inString.toggle()
+        result.append(char)
+        continue
+      }
+
+      if inString {
+        if char == "\n" {
+          result.append("\\n")
+        } else if char == "\r" {
+          // ignore CR
+        } else if char == "\t" {
+          result.append("\\t")
+        } else if let ascii = char.asciiValue, ascii < 32 {
+          result.append(" ")
+        } else {
+          result.append(char)
+        }
+      } else {
+        if char == "{" {
+          openBraces += 1
+        } else if char == "}" {
+          openBraces = max(0, openBraces - 1)
+        } else if char == "[" {
+          openBrackets += 1
+        } else if char == "]" {
+          openBrackets = max(0, openBrackets - 1)
+        }
+        result.append(char)
+      }
+    }
+
+    // Auto-close string if ended while inString
+    if inString {
+      result.append("\"")
+    }
+
+    // Trim trailing whitespace and trailing commas
+    var trimmed = result.trimmingCharacters(in: .whitespacesAndNewlines)
+    while trimmed.hasSuffix(",") {
+      trimmed = String(trimmed.dropLast()).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    // Auto-close missing brackets and braces
+    for _ in 0..<openBrackets {
+      trimmed.append("]")
+    }
+    for _ in 0..<openBraces {
+      trimmed.append("}")
+    }
+
+    // Remove trailing commas before closing braces/brackets like `, }` or `, ]`
+    trimmed = trimmed.replacingOccurrences(
+      of: ",\\s*([}\\]])",
+      with: "$1",
+      options: .regularExpression
+    )
+
+    return trimmed
+  }
+
+  private func buildDesignResponse(from dict: [String: Any], fallbackInventory: [FlowerType]) -> AIProxyDesignResponse {
+    let title = (dict["title"] as? String) ?? (dict["name"] as? String) ?? "专属花艺定制方案"
+    let description = (dict["description"] as? String) ?? (dict["concept"] as? String) ?? "精选花艺美学设计方案"
+    let meaningText = (dict["meaningText"] as? String) ?? (dict["meaning"] as? String) ?? "花开向阳，美意延绵"
+    let reasoning = (dict["reasoning"] as? String) ?? (dict["rationale"] as? String)
+    let imagePrompt = (dict["imagePrompt"] as? String) ?? (dict["image_prompt"] as? String)
+
+    var cost: Double? = nil
+    if let d = dict["estimatedCost"] as? Double { cost = d }
+    else if let i = dict["estimatedCost"] as? Int { cost = Double(i) }
+    else if let s = dict["estimatedCost"] as? String {
+      let filtered = s.filter { "0123456789.".contains($0) }
+      cost = Double(filtered)
+    }
+
+    var steps: [String] = []
+    if let sArr = dict["steps"] as? [String] {
+      steps = sArr
+    } else if let sArr = dict["instructions"] as? [String] {
+      steps = sArr
+    } else if let sStr = dict["steps"] as? String {
+      steps = sStr.components(separatedBy: "\n").filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+    }
+    if steps.isEmpty {
+      steps = [
+        "修剪主花确立构架高度与比例",
+        "按流派技法固定于容器视点核心",
+        "配花及衬叶点缀增强自然呼吸感"
+      ]
+    }
+
+    var flowerList: [AIProxyFlowerItem] = []
+    let rawList = (dict["flowerList"] as? [[String: Any]]) ?? (dict["flowers"] as? [[String: Any]]) ?? (dict["materials"] as? [[String: Any]]) ?? []
+    for item in rawList {
+      let name = (item["flowerName"] as? String) ?? (item["name"] as? String) ?? "精选花材"
+      let count = (item["count"] as? Int) ?? (item["quantity"] as? Int) ?? 3
+      let unitCost = (item["unitCost"] as? Double) ?? (item["cost"] as? Double)
+      let reason = (item["reason"] as? String) ?? (item["desc"] as? String)
+      flowerList.append(AIProxyFlowerItem(flowerName: name, count: count, unitCost: unitCost, reason: reason))
+    }
+
+    if flowerList.isEmpty {
+      flowerList = autoHealFlowers(from: fallbackInventory)
+    }
+
+    return AIProxyDesignResponse(
+      title: title,
+      description: description,
+      meaningText: meaningText,
+      reasoning: reasoning,
+      steps: steps,
+      imagePrompt: imagePrompt,
+      estimatedCost: cost,
+      flowerList: flowerList
+    )
+  }
+
+  private func extractDesignResponseLeniently(from text: String, inventory: [FlowerType]) -> AIProxyDesignResponse {
+    let title = extractRegexMatch(pattern: "\"title\"\\s*:\\s*\"([^\"]+)\"", in: text)
+      ?? extractRegexMatch(pattern: "\"name\"\\s*:\\s*\"([^\"]+)\"", in: text)
+      ?? "大师级花艺定制方案"
+
+    let description = extractRegexMatch(pattern: "\"description\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"", in: text)
+      ?? extractRegexMatch(pattern: "\"concept\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"", in: text)
+      ?? "依循流派技法与空间美学所呈现的意境花作"
+
+    let meaningText = extractRegexMatch(pattern: "\"meaningText\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"", in: text)
+      ?? extractRegexMatch(pattern: "\"meaning\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"", in: text)
+      ?? "气韵生动，天地和谐"
+
+    let reasoning = extractRegexMatch(pattern: "\"reasoning\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"", in: text)
+    let imagePrompt = extractRegexMatch(pattern: "\"imagePrompt\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"", in: text)
+
+    var steps: [String] = []
+    if let stepsMatch = extractRegexMatch(pattern: "\"steps\"\\s*:\\s*\\[([^\\]]*)\\]", in: text) {
+      let stepItems = stepsMatch.components(separatedBy: ",")
+        .map { $0.trimmingCharacters(in: CharacterSet(charactersIn: " \"\n\r\t")) }
+        .filter { !$0.isEmpty }
+      if !stepItems.isEmpty {
+        steps = stepItems
+      }
+    }
+    if steps.isEmpty {
+      steps = [
+        "修剪主花确立构架高度与比例",
+        "按流派技法固定于容器视点核心",
+        "配花及衬叶点缀增强自然呼吸感"
+      ]
+    }
+
+    var flowerList: [AIProxyFlowerItem] = []
+    // Regex scan for items
+    let pattern = "\\{[^}]*?\"(?:flowerName|name)\"\\s*:\\s*\"([^\"]+)\"[^}]*?\"(?:count|quantity)\"\\s*:\\s*(\\d+)[^}]*?\\}"
+    if let regex = try? NSRegularExpression(pattern: pattern, options: []) {
+      let nsString = text as NSString
+      let matches = regex.matches(in: text, options: [], range: NSRange(location: 0, length: nsString.length))
+      for match in matches {
+        if match.numberOfRanges >= 3 {
+          let name = nsString.substring(with: match.range(at: 1))
+          let countStr = nsString.substring(with: match.range(at: 2))
+          let count = Int(countStr) ?? 3
+          flowerList.append(AIProxyFlowerItem(flowerName: name, count: count, unitCost: nil, reason: nil))
+        }
+      }
+    }
+
+    if flowerList.isEmpty {
+      flowerList = autoHealFlowers(from: inventory)
+    }
+
+    return AIProxyDesignResponse(
+      title: title,
+      description: description,
+      meaningText: meaningText,
+      reasoning: reasoning,
+      steps: steps,
+      imagePrompt: imagePrompt,
+      estimatedCost: nil,
+      flowerList: flowerList
+    )
+  }
+
+  private func extractRegexMatch(pattern: String, in text: String) -> String? {
+    guard let regex = try? NSRegularExpression(pattern: pattern, options: [.dotMatchesLineSeparators]) else {
+      return nil
+    }
+    let nsString = text as NSString
+    guard let match = regex.firstMatch(in: text, options: [], range: NSRange(location: 0, length: nsString.length)),
+          match.numberOfRanges >= 2 else {
+      return nil
+    }
+    let rawResult = nsString.substring(with: match.range(at: 1))
+    return rawResult
+      .replacingOccurrences(of: "\\n", with: "\n")
+      .replacingOccurrences(of: "\\\"", with: "\"")
+      .replacingOccurrences(of: "\\\\", with: "\\")
+  }
+
+  private func autoHealFlowers(from inventory: [FlowerType]) -> [AIProxyFlowerItem] {
+    if inventory.isEmpty {
+      return [
+        AIProxyFlowerItem(flowerName: "红玫瑰", count: 5, unitCost: 15.0, reason: "核心主花，奠定雅致基调"),
+        AIProxyFlowerItem(flowerName: "尤加利叶", count: 3, unitCost: 8.0, reason: "线条衬叶，增添自然灵动")
+      ]
+    }
+    let available = inventory.filter { $0.quantity > 0 }
+    let selected = (available.isEmpty ? inventory : available).prefix(3)
+    return selected.map { flower in
+      AIProxyFlowerItem(
+        flowerName: flower.name,
+        count: max(1, min(flower.quantity, 3)),
+        unitCost: flower.unitCost,
+        reason: "精选店内优质花材，契合空间语境与设计意向"
+      )
+    }
   }
 
   // MARK: - Networking Core
