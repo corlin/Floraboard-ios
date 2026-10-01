@@ -82,6 +82,30 @@ struct DesignFlowerItem: Codable, Identifiable {
   var unitCost: Double?
 }
 
+/// 制作稿：服务端生成的工艺信息（容器、固定方式、备料、修剪长度、扎束顺序、养护、耗时）。
+/// 与网页端、云端 `designs.production` 字段同构；所有字段都可缺省。
+struct DesignProduction: Codable, Equatable {
+  struct StemLength: Codable, Equatable {
+    var flowerName: String
+    var flowerId: String? = nil
+    var lengthCm: Int
+  }
+
+  var container: String? = nil
+  var mechanics: String? = nil
+  var prep: [String]? = nil
+  var stemLengths: [StemLength]? = nil
+  var assembly: [String]? = nil
+  var care: [String]? = nil
+  var estMinutes: Int? = nil
+
+  /// 是否有任何可展示的内容
+  var hasContent: Bool {
+    !(container ?? "").isEmpty || !(mechanics ?? "").isEmpty || !(prep ?? []).isEmpty
+      || !(stemLengths ?? []).isEmpty || !(assembly ?? []).isEmpty || !(care ?? []).isEmpty
+  }
+}
+
 struct DesignResult: Codable, Identifiable {
   var id: String
   var requestId: String
@@ -106,6 +130,7 @@ struct DesignResult: Codable, Identifiable {
   var feedback: String? = nil
   var status: DesignStatus
   var executedAt: Double? = nil
+  var production: DesignProduction? = nil  // 制作稿（工艺信息），由服务端生成
 
   var syncId: String? = nil
   var syncVersion: Int? = nil

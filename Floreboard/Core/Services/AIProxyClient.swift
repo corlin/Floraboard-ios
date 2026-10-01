@@ -602,6 +602,14 @@ struct AIProxyClient {
       flowerList = autoHealFlowers(from: fallbackInventory)
     }
 
+    var production: DesignProduction? = nil
+    if let prodDict = dict["production"] as? [String: Any],
+       let data = try? JSONSerialization.data(withJSONObject: prodDict),
+       let decoded = try? JSONDecoder().decode(DesignProduction.self, from: data),
+       decoded.hasContent {
+      production = decoded
+    }
+
     return AIProxyDesignResponse(
       title: title,
       description: description,
@@ -610,7 +618,8 @@ struct AIProxyClient {
       steps: steps,
       imagePrompt: imagePrompt,
       estimatedCost: cost,
-      flowerList: flowerList
+      flowerList: flowerList,
+      production: production
     )
   }
 
@@ -878,6 +887,7 @@ struct AIProxyDesignResponse: Codable {
   var imagePrompt: String?
   var estimatedCost: Double?
   var flowerList: [AIProxyFlowerItem]
+  var production: DesignProduction? = nil
 
   enum CodingKeys: String, CodingKey {
     case title, name
@@ -888,6 +898,7 @@ struct AIProxyDesignResponse: Codable {
     case imagePrompt, image_prompt, visualPrompt, prompt
     case estimatedCost, cost, totalCost, budget
     case flowerList, flowers, materials, items
+    case production
   }
 
   init(
@@ -898,7 +909,8 @@ struct AIProxyDesignResponse: Codable {
     steps: [String],
     imagePrompt: String? = nil,
     estimatedCost: Double? = nil,
-    flowerList: [AIProxyFlowerItem] = []
+    flowerList: [AIProxyFlowerItem] = [],
+    production: DesignProduction? = nil
   ) {
     self.title = title
     self.description = description
@@ -908,6 +920,7 @@ struct AIProxyDesignResponse: Codable {
     self.imagePrompt = imagePrompt
     self.estimatedCost = estimatedCost
     self.flowerList = flowerList
+    self.production = production
   }
 
   init(from decoder: Decoder) throws {
@@ -982,6 +995,8 @@ struct AIProxyDesignResponse: Codable {
     } else {
       self.flowerList = []
     }
+
+    self.production = try? container.decodeIfPresent(DesignProduction.self, forKey: .production)
   }
 
   func toDesignResult(localRequestId: String, inventory: [FlowerType]) -> DesignResult {
@@ -1026,7 +1041,8 @@ struct AIProxyDesignResponse: Codable {
       rating: nil,
       feedback: nil,
       status: .draft,
-      executedAt: nil
+      executedAt: nil,
+      production: production
     )
   }
 
@@ -1040,6 +1056,7 @@ struct AIProxyDesignResponse: Codable {
     try container.encodeIfPresent(imagePrompt, forKey: .imagePrompt)
     try container.encodeIfPresent(estimatedCost, forKey: .estimatedCost)
     try container.encode(flowerList, forKey: .flowerList)
+    try container.encodeIfPresent(production, forKey: .production)
   }
 }
 

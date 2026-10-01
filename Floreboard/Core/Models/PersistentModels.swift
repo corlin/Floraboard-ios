@@ -114,6 +114,7 @@ final class DesignRecord {
   var feedback: String?
   var statusRaw: String
   var executedAt: Double?
+  var productionData: Data?  // DesignProduction 的 JSON；可空，旧数据无此列也能轻量迁移
   var syncId: String?
   var syncVersion: Int?
   var syncedAt: Double?
@@ -141,6 +142,7 @@ final class DesignRecord {
     self.feedback = design.feedback
     self.statusRaw = design.status.rawValue
     self.executedAt = design.executedAt
+    self.productionData = design.production.flatMap { try? JSONEncoder().encode($0) }
     self.syncId = design.syncId
     self.syncVersion = design.syncVersion
     self.syncedAt = design.syncedAt
@@ -174,6 +176,7 @@ final class DesignRecord {
     result.rating = rating
     result.feedback = feedback
     result.executedAt = executedAt
+    result.production = productionData.flatMap { try? JSONDecoder().decode(DesignProduction.self, from: $0) }
     result.syncId = syncId
     result.syncVersion = syncVersion
     result.syncedAt = syncedAt
@@ -203,6 +206,7 @@ final class DesignRecord {
     feedback = design.feedback
     statusRaw = design.status.rawValue
     executedAt = design.executedAt
+    productionData = design.production.flatMap { try? JSONEncoder().encode($0) }
     syncId = design.syncId
     syncVersion = design.syncVersion
     syncedAt = design.syncedAt

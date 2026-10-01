@@ -192,6 +192,9 @@ struct ResultView: View {
               .padding(.horizontal)
             }
 
+            // 制作稿：配方表 + 制作前校验 + 工艺要点
+            ProductionSheetView(design: result)
+
             // Execute Button
             if !executed && result.status == .draft {
               Button(action: { showExecutionSheet = true }) {

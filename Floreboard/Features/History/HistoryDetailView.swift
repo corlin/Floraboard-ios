@@ -202,6 +202,9 @@ struct DesignDetailView: View {
             .padding(.horizontal)
           }
 
+          // 制作稿：配方表 + 制作前校验 + 工艺要点
+          ProductionSheetView(design: currentDesign)
+
           // Action Buttons
           if currentStatus == .draft {
             Button(action: { showExecutionSheet = true }) {
