@@ -140,6 +140,7 @@ class DesignViewModel: ObservableObject {
 
           // Double-layer resilience: 1 silent retry before surfacing error to user
           var generatedImage: UIImage? = nil
+          var generatedRemoteURL: String? = nil
           var lastError: Error? = nil
 
           for attempt in 1...2 {
@@ -150,6 +151,7 @@ class DesignViewModel: ObservableObject {
               )
               AppLogger.ai.debug("Attempt \(attempt): Received image string length: \(imageUrlString.count)")
 
+              generatedRemoteURL = DesignMerge.isRemoteImage(imageUrlString) ? imageUrlString : nil
               generatedImage = try await resolveGeneratedImage(from: imageUrlString)
               if generatedImage != nil {
                 lastError = nil
@@ -166,8 +168,11 @@ class DesignViewModel: ObservableObject {
 
           // Save generated image or record structured error
           if let validImage = generatedImage {
-            if let filename = imagePersistence.saveImage(validImage, name: result.id) {
-              result.imageUrl = filename
+            // 优先保存云端可访问的 URL（跨设备可见）；没有 URL 就上传；都失败才退回本地文件名
+            if let stored = await ImageSyncService.shared.storedImageValue(
+              image: validImage, remoteURL: generatedRemoteURL, designId: result.id, persistence: imagePersistence)
+            {
+              result.imageUrl = stored
               result.imageStatus = .succeeded
               result.imageError = nil
             } else {
@@ -186,8 +191,10 @@ class DesignViewModel: ObservableObject {
           }
         } else if let selectedImg = selectedImage {
           // Visual Muse: Fallback to input image if no imagePrompt returned
-          if let filename = imagePersistence.saveImage(selectedImg, name: result.id) {
-            result.imageUrl = filename
+          if let stored = await ImageSyncService.shared.storedImageValue(
+            image: selectedImg, remoteURL: nil, designId: result.id, persistence: imagePersistence)
+          {
+            result.imageUrl = stored
             result.imageStatus = .succeeded
           }
         }
@@ -237,8 +244,12 @@ class DesignViewModel: ObservableObject {
         let image = try await resolveGeneratedImage(from: imageUrlString)
 
         if let validImage = image {
-          if let filename = imagePersistence.saveImage(validImage, name: result.id) {
-            result.imageUrl = filename
+          if let stored = await ImageSyncService.shared.storedImageValue(
+            image: validImage,
+            remoteURL: DesignMerge.isRemoteImage(imageUrlString) ? imageUrlString : nil,
+            designId: result.id, persistence: imagePersistence)
+          {
+            result.imageUrl = stored
             result.imageError = nil
             result.imageStatus = .succeeded
           } else {
@@ -272,12 +283,19 @@ class DesignViewModel: ObservableObject {
           let historyService = historyService else { return }
 
     if let refImage = imagePersistence.loadImage(named: refPath) {
-      if let filename = imagePersistence.saveImage(refImage, name: result.id) {
-        result.imageUrl = filename
-        result.imageError = nil
-        result.imageStatus = .succeeded
-        self.generatedResult = result
-        historyService.saveDesign(result)
+      Task {
+        if let stored = await ImageSyncService.shared.storedImageValue(
+          image: refImage, remoteURL: nil, designId: result.id, persistence: imagePersistence)
+        {
+          var updated = result
+          updated.imageUrl = stored
+          updated.imageError = nil
+          updated.imageStatus = .succeeded
+          await MainActor.run {
+            self.generatedResult = updated
+            historyService.saveDesign(updated)
+          }
+        }
       }
     }
   }

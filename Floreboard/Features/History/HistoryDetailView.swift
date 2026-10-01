@@ -309,9 +309,14 @@ struct DesignDetailView: View {
         let image = try await resolveGeneratedImage(from: imageUrlString)
 
         if let validImage = image {
-          if let filename = imagePersistence.saveImage(validImage, name: currentDesign.id) {
+          let designId = await MainActor.run { currentDesign.id }
+          if let stored = await ImageSyncService.shared.storedImageValue(
+            image: validImage,
+            remoteURL: DesignMerge.isRemoteImage(imageUrlString) ? imageUrlString : nil,
+            designId: designId, persistence: imagePersistence)
+          {
             await MainActor.run {
-              currentDesign.imageUrl = filename
+              currentDesign.imageUrl = stored
               currentDesign.imageError = nil
               currentDesign.imageStatus = .succeeded
               self.designImage = validImage
@@ -347,13 +352,20 @@ struct DesignDetailView: View {
   private func useReferenceImageAsFinal() {
     guard let refPath = currentDesign.referenceImageUrl else { return }
     if let refImage = imagePersistence.loadImage(named: refPath) {
-      if let filename = imagePersistence.saveImage(refImage, name: currentDesign.id) {
-        currentDesign.imageUrl = filename
-        currentDesign.imageError = nil
-        currentDesign.imageStatus = .succeeded
-        self.designImage = refImage
-        historyService.saveDesign(currentDesign)
-        generatePoster()
+      let designId = currentDesign.id
+      Task {
+        if let stored = await ImageSyncService.shared.storedImageValue(
+          image: refImage, remoteURL: nil, designId: designId, persistence: imagePersistence)
+        {
+          await MainActor.run {
+            currentDesign.imageUrl = stored
+            currentDesign.imageError = nil
+            currentDesign.imageStatus = .succeeded
+            self.designImage = refImage
+            historyService.saveDesign(currentDesign)
+            generatePoster()
+          }
+        }
       }
     }
   }

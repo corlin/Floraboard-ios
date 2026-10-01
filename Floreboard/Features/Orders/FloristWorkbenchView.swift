@@ -306,8 +306,11 @@ struct FloristWorkbenchView: View {
   }
 
   private func loadImage() {
-    if let design = associatedDesign, let path = design.imageUrl, !path.hasPrefix("http") {
-      workbenchImage = imagePersistence.loadImage(named: path)
+    if let design = associatedDesign, let path = design.imageUrl, !path.isEmpty {
+      Task {
+        let img = await imagePersistence.loadImageAsync(namedOrURL: path)
+        await MainActor.run { workbenchImage = img }
+      }
     }
   }
 }

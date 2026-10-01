@@ -42,6 +42,17 @@ class ImagePersistence {
     }
   }
 
+  /// 把已经拿到手的图片写入“远程地址”的磁盘/内存缓存，避免随后再下载一次。
+  func cacheRemote(_ image: UIImage, for urlString: String) {
+    cache.setObject(image, forKey: urlString as NSString)
+    let sanitizedKey = urlString.replacingOccurrences(of: "[^a-zA-Z0-9_.-]", with: "_", options: .regularExpression)
+    let diskFileName = "cached_\(sanitizedKey.suffix(40)).jpg"
+    let fileURL = documentsDirectory.appendingPathComponent(diskFileName)
+    if let data = image.jpegData(compressionQuality: 0.8) {
+      try? data.write(to: fileURL)
+    }
+  }
+
   func loadImage(named fileName: String) -> UIImage? {
     // Check cache first
     if let cachedImage = cache.object(forKey: fileName as NSString) {

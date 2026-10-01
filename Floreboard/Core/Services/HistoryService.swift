@@ -39,30 +39,43 @@ class HistoryService: ObservableObject {
       let client = try AIService.shared.makeProxyClient()
       let cloudDesigns = try await client.fetchDesigns(tenantId: tenantId)
 
-      if !cloudDesigns.isEmpty {
-        // Upsert into local SwiftData
-        for design in cloudDesigns {
-          let designID = design.id
-          var descriptor = FetchDescriptor<DesignRecord>(
-            predicate: #Predicate { $0.id == designID }
-          )
-          descriptor.fetchLimit = 1
+      var toPush: [DesignResult] = []
 
-          if let existing = try? context.fetch(descriptor).first {
-            existing.update(from: design)
-            existing.tenantId = tenantId
-          } else {
-            let record = DesignRecord(from: design)
-            record.tenantId = tenantId
-            context.insert(record)
-          }
+      for cloud in cloudDesigns {
+        let designID = cloud.id
+        var descriptor = FetchDescriptor<DesignRecord>(
+          predicate: #Predicate { $0.id == designID }
+        )
+        descriptor.fetchLimit = 1
+
+        if let existing = try? context.fetch(descriptor).first {
+          // 云端可能是一份旧副本（以前 iOS 的修改从未同步上去）。已执行/图片/评分这类“只会向前推进”的字段
+          // 以更靠前的一方为准，并把合并结果推回云端，而不是让旧的云端数据覆盖本地进度。
+          let merged = DesignMerge.merge(local: existing.toDesignResult(), cloud: cloud)
+          existing.update(from: merged)
+          existing.tenantId = tenantId
+          if DesignMerge.needsPush(merged: merged, cloud: cloud) { toPush.append(merged) }
+        } else {
+          let record = DesignRecord(from: cloud)
+          record.tenantId = tenantId
+          context.insert(record)
         }
-        try? context.save()
-        loadDesigns()
+      }
+
+      // 注意：不会把“云端没有而本机有”的方案推回云端——它们可能是在别的设备上被删除的，推回去会让已删除的方案复活。
+
+      try? context.save()
+      loadDesigns()
+
+      for design in toPush {
+        try? await client.upsertDesign(tenantId: tenantId, design: design)
       }
     } catch {
       print("[HistoryService] Cloud sync skipped or failed: \(error.localizedDescription)")
     }
+
+    // 补传仍指向本地文件名的图片（历史遗留），换成可跨设备访问的 URL
+    await ImageSyncService.shared.healLocalImages(history: self)
   }
 
   func saveDesign(_ design: DesignResult) {
@@ -80,7 +93,7 @@ class HistoryService: ObservableObject {
     if let tenantId = AuthService.shared.currentTenant?.id {
       Task {
         if let client = try? AIService.shared.makeProxyClient() {
-          try? await client.saveDesign(tenantId: tenantId, design: design)
+          try? await client.upsertDesign(tenantId: tenantId, design: design)
         }
       }
     }

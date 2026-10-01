@@ -581,8 +581,9 @@ struct GalleryThumbnail: View {
       }
     }
     .task {
-      if let p = path, !p.hasPrefix("http") {
-        self.image = imagePersistence.loadImage(named: p)
+      // 支持本地文件名和远程 URL（带磁盘缓存）
+      if let p = path, !p.isEmpty {
+        self.image = await imagePersistence.loadImageAsync(namedOrURL: p)
       }
     }
   }

@@ -273,11 +273,41 @@ struct AIProxyClient {
   func fetchDesigns(tenantId: String) async throws -> [DesignResult] {
     let req = try makeRequest(path: "api/v1/designs", method: "GET", tenantId: tenantId)
     let wrapper: APIResponseWrapper<[DesignResult]> = try await perform(req)
-    return wrapper.data ?? []
+    // 云端时间戳是毫秒，本地使用秒
+    return (wrapper.data ?? []).map { DesignMerge.normalizedTimestamps($0) }
   }
 
   func saveDesign(tenantId: String, design: DesignResult) async throws {
     let _: EmptyResponse = try await post("api/v1/designs", body: design, tenantId: tenantId)
+  }
+
+  /// 创建或更新方案：先 PUT（更新已有），云端还没有（NOT_FOUND）再 POST（创建）。
+  /// 之前只会 POST，而云端对已存在的 id 不做更新，所以出图重试结果、评分、已执行状态等后续修改从未同步到云端。
+  func upsertDesign(tenantId: String, design: DesignResult) async throws {
+    var req = try makeRequest(path: "api/v1/designs/\(design.id)", method: "PUT", tenantId: tenantId)
+    req.httpBody = try JSONEncoder().encode(design)
+    do {
+      _ = try await performRaw(req)
+    } catch AIProxyError.rejected(let err) where err.code == "NOT_FOUND" || err.message == "Design not found" {
+      // 云端还没有这条方案：创建（兼容尚未返回 NOT_FOUND 错误码的旧服务端）
+      try await saveDesign(tenantId: tenantId, design: design)
+    } catch AIProxyError.httpStatus(404) {
+      try await saveDesign(tenantId: tenantId, design: design)
+    }
+  }
+
+  /// 上传图片到云端存储（R2），返回可跨设备访问的公开 URL。
+  /// 服务端按文件头校验类型，只接受 JPEG/PNG/WebP/GIF，最大 10MB。
+  func uploadImage(_ data: Data, contentType: String = "image/jpeg", tenantId: String?) async throws -> String {
+    var req = try makeRequest(path: "api/v1/storage/upload?bucket=reference", method: "POST", tenantId: tenantId)
+    req.setValue(contentType, forHTTPHeaderField: "Content-Type")
+    req.httpBody = data
+    let responseData = try await performRaw(req, session: imageURLSession)
+    guard let json = try? JSONSerialization.jsonObject(with: responseData) as? [String: Any],
+          let url = json["url"] as? String, DesignMerge.isRemoteImage(url) else {
+      throw AIProxyError.invalidResponse
+    }
+    return url
   }
 
   func deleteDesign(tenantId: String, designId: String) async throws {
