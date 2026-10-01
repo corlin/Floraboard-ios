@@ -115,6 +115,8 @@ final class DesignRecord {
   var statusRaw: String
   var executedAt: Double?
   var productionData: Data?  // DesignProduction 的 JSON；可空，旧数据无此列也能轻量迁移
+  var requestData: Data?  // DesignRequestSnapshot 的 JSON（可空，轻量迁移）
+  var findingsData: Data?  // DesignFindings 的 JSON（可空，轻量迁移）
   var syncId: String?
   var syncVersion: Int?
   var syncedAt: Double?
@@ -143,6 +145,8 @@ final class DesignRecord {
     self.statusRaw = design.status.rawValue
     self.executedAt = design.executedAt
     self.productionData = design.production.flatMap { try? JSONEncoder().encode($0) }
+    self.requestData = design.request.flatMap { try? JSONEncoder().encode($0) }
+    self.findingsData = design.findings.flatMap { try? JSONEncoder().encode($0) }
     self.syncId = design.syncId
     self.syncVersion = design.syncVersion
     self.syncedAt = design.syncedAt
@@ -177,6 +181,8 @@ final class DesignRecord {
     result.feedback = feedback
     result.executedAt = executedAt
     result.production = productionData.flatMap { try? JSONDecoder().decode(DesignProduction.self, from: $0) }
+    result.request = requestData.flatMap { try? JSONDecoder().decode(DesignRequestSnapshot.self, from: $0) }
+    result.findings = findingsData.flatMap { try? JSONDecoder().decode(DesignFindings.self, from: $0) }
     result.syncId = syncId
     result.syncVersion = syncVersion
     result.syncedAt = syncedAt
@@ -207,6 +213,8 @@ final class DesignRecord {
     statusRaw = design.status.rawValue
     executedAt = design.executedAt
     productionData = design.production.flatMap { try? JSONEncoder().encode($0) }
+    requestData = design.request.flatMap { try? JSONEncoder().encode($0) }
+    findingsData = design.findings.flatMap { try? JSONEncoder().encode($0) }
     syncId = design.syncId
     syncVersion = design.syncVersion
     syncedAt = design.syncedAt

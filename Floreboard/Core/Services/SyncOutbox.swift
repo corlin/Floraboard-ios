@@ -64,6 +64,11 @@ final class SyncOutbox {
     return state.hasPending(designs: designs)
   }
 
+  func hasAny(_ kind: SyncOp.Kind) -> Bool {
+    guard loadState() else { return false }
+    return state.hasAny(kind)
+  }
+
   func has(_ kind: SyncOp.Kind, id: String) -> Bool {
     guard loadState() else { return false }
     return state.has(kind, id: id)
@@ -123,7 +128,31 @@ final class SyncOutbox {
       case .designUpsert:
         // 本地已经没有这条（被删除/被清理）：无需再推
         guard let design = HistoryService.shared.savedDesigns.first(where: { $0.id == op.id }) else { return }
-        try await client.upsertDesign(tenantId: tenantId, design: design)
+        var outgoing = design
+        // 这条方案还有待执行的“服务端原子执行”：先以草稿推送，让服务端来完成扣库存与标记已执行，
+        // 否则云端已是“已执行”，原子执行会判定为重复而不扣库存
+        if state.has(.designExecute, id: op.id) {
+          outgoing.status = .draft
+          outgoing.executedAt = nil
+        }
+        let findings = try await client.upsertDesign(tenantId: tenantId, design: outgoing)
+        HistoryService.shared.applyFindings(id: op.id, findings)
+      case .designExecute:
+        guard let design = HistoryService.shared.savedDesigns.first(where: { $0.id == op.id }) else { return }
+        let result: AIProxyClient.ExecuteResult
+        do {
+          result = try await client.executeDesign(tenantId: tenantId, designId: op.id)
+        } catch where Self.isNotFound(error) {
+          // 云端还没有这条方案：先以草稿创建，再原子执行
+          var draft = design
+          draft.status = .draft
+          draft.executedAt = nil
+          try await client.upsertDesign(tenantId: tenantId, design: draft)
+          result = try await client.executeDesign(tenantId: tenantId, designId: op.id)
+        }
+        // 以服务端返回为准：执行时间与受影响库存的最新值（可能含其他设备的并发变更）
+        HistoryService.shared.applyExecution(id: op.id, executedAt: result.executedAt)
+        InventoryService.shared.applyServerInventory(result.inventory)
       case .designDelete:
         try await client.deleteDesign(tenantId: tenantId, designId: op.id)
       case .flowerUpsert:

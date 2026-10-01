@@ -57,6 +57,8 @@ struct HistoryRow: View {
           )
           .font(.caption)
           .foregroundColor(AppTheme.mutedText)
+
+          ReviewBadge(findings: design.findings)
         }
       }
       Spacer()

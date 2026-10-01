@@ -205,6 +205,14 @@ struct DesignDetailView: View {
           // 制作稿：配方表 + 制作前校验 + 工艺要点
           ProductionSheetView(design: currentDesign)
 
+          // 评分与心得：保存后同步到云端
+          DesignEvaluationView(rating: currentDesign.rating, feedback: currentDesign.feedback) { rating, feedback in
+            currentDesign.rating = rating > 0 ? rating : nil
+            currentDesign.feedback = feedback.isEmpty ? nil : feedback
+            historyService.saveDesign(currentDesign)
+            HapticManager.shared.notification(type: .success)
+          }
+
           // Action Buttons
           if currentStatus == .draft {
             Button(action: { showExecutionSheet = true }) {
@@ -245,6 +253,15 @@ struct DesignDetailView: View {
       }
     }
     .navigationBarTitleDisplayMode(.inline)
+    .onReceive(historyService.$savedDesigns) { designs in
+      // 服务端会重算校验结果、原子执行会写入执行状态：把这些“以云端为准”的字段同步进本页副本
+      guard let latest = designs.first(where: { $0.id == currentDesign.id }) else { return }
+      if latest.findings != currentDesign.findings { currentDesign.findings = latest.findings }
+      if latest.status == .completed && currentDesign.status != .completed {
+        currentDesign.status = .completed
+        currentDesign.executedAt = latest.executedAt
+      }
+    }
     .toolbar {
       ToolbarItem(placement: .navigationBarTrailing) {
         if let poster = posterImage {
@@ -293,6 +310,9 @@ struct DesignDetailView: View {
 
   private func commitExecution(mappedItems: [InventoryService.DeductionItem]?) {
     historyService.executeDesign(design, mappedItems: mappedItems)
+    // 本页持有的是方案副本：同步已执行状态，避免之后保存评分/出图结果时把状态写回草稿
+    currentDesign.status = .completed
+    currentDesign.executedAt = currentDesign.executedAt ?? Date().timeIntervalSince1970
     displayedStatus = .completed
     HapticManager.shared.notification(type: .success)
   }

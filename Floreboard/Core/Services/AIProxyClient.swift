@@ -45,7 +45,7 @@ struct AIProxyClient {
 
     let responseData = try await postRaw("api/v1/proxy", jsonObject: body, tenantId: tenantId)
     let designResp = try extractPlan(from: responseData, inventory: inventory)
-    return designResp.toDesignResult(localRequestId: request.id, inventory: inventory)
+    return designResp.toDesignResult(request: request, language: localeCode(for: language), inventory: inventory)
   }
 
   /// Generates a design plan from an inspiration image (analyze_image, server-side prompting)
@@ -75,7 +75,7 @@ struct AIProxyClient {
 
     let responseData = try await postRaw("api/v1/proxy", jsonObject: body, tenantId: tenantId)
     let designResp = try extractPlan(from: responseData, inventory: inventory)
-    return designResp.toDesignResult(localRequestId: request.id, inventory: inventory)
+    return designResp.toDesignResult(request: request, language: localeCode(for: language), inventory: inventory)
   }
 
   /// Requests 4K image generation and polls until completed (persisted to R2 by backend)
@@ -277,22 +277,53 @@ struct AIProxyClient {
     return (wrapper.data ?? []).map { DesignMerge.normalizedTimestamps($0) }
   }
 
-  func saveDesign(tenantId: String, design: DesignResult) async throws {
-    let _: EmptyResponse = try await post("api/v1/designs", body: design, tenantId: tenantId)
+  @discardableResult
+  func saveDesign(tenantId: String, design: DesignResult) async throws -> DesignFindings? {
+    var req = try makeRequest(path: "api/v1/designs", method: "POST", tenantId: tenantId)
+    req.httpBody = try JSONEncoder().encode(design)
+    return Self.findings(in: try await performRaw(req))
+  }
+
+  /// 服务端在创建/更新时按已存数据重算专业校验，随响应返回
+  private static func findings(in data: Data) -> DesignFindings? {
+    struct Body: Decodable { struct D: Decodable { var findings: DesignFindings? }; var data: D? }
+    return (try? JSONDecoder().decode(Body.self, from: data))?.data?.findings
+  }
+
+  struct ExecuteResult {
+    var executed: Bool
+    var executedAt: Double?
+    var inventory: [FlowerType]
+  }
+
+  /// 服务端原子执行：在一个事务里扣减库存并标记已执行，并发/重复请求安全（只会扣一次）。
+  func executeDesign(tenantId: String, designId: String) async throws -> ExecuteResult {
+    struct Body: Decodable {
+      struct D: Decodable { var executed: Bool?; var executedAt: Double?; var inventory: [FlowerType]? }
+      var data: D?
+    }
+    let req = try makeRequest(path: "api/v1/designs/\(designId)/execute", method: "POST", tenantId: tenantId)
+    let data = try await performRaw(req)
+    guard let d = (try? JSONDecoder().decode(Body.self, from: data))?.data else { throw AIProxyError.invalidResponse }
+    return ExecuteResult(
+      executed: d.executed ?? false,
+      executedAt: d.executedAt.map { DesignMerge.seconds($0) },
+      inventory: d.inventory ?? [])
   }
 
   /// 创建或更新方案：先 PUT（更新已有），云端还没有（NOT_FOUND）再 POST（创建）。
   /// 之前只会 POST，而云端对已存在的 id 不做更新，所以出图重试结果、评分、已执行状态等后续修改从未同步到云端。
-  func upsertDesign(tenantId: String, design: DesignResult) async throws {
+  @discardableResult
+  func upsertDesign(tenantId: String, design: DesignResult) async throws -> DesignFindings? {
     var req = try makeRequest(path: "api/v1/designs/\(design.id)", method: "PUT", tenantId: tenantId)
     req.httpBody = try JSONEncoder().encode(design)
     do {
-      _ = try await performRaw(req)
+      return Self.findings(in: try await performRaw(req))
     } catch AIProxyError.rejected(let err) where err.code == "NOT_FOUND" || err.message == "Design not found" {
       // 云端还没有这条方案：创建（兼容尚未返回 NOT_FOUND 错误码的旧服务端）
-      try await saveDesign(tenantId: tenantId, design: design)
+      return try await saveDesign(tenantId: tenantId, design: design)
     } catch AIProxyError.httpStatus(404) {
-      try await saveDesign(tenantId: tenantId, design: design)
+      return try await saveDesign(tenantId: tenantId, design: design)
     }
   }
 
@@ -888,8 +919,10 @@ struct AIProxyDesignResponse: Codable {
   var estimatedCost: Double?
   var flowerList: [AIProxyFlowerItem]
   var production: DesignProduction? = nil
+  var findings: [DesignFinding]? = nil
 
   enum CodingKeys: String, CodingKey {
+    case findings
     case title, name
     case description, concept, desc, summary
     case meaningText, meaning, flowerMeaning, significance
@@ -997,9 +1030,12 @@ struct AIProxyDesignResponse: Codable {
     }
 
     self.production = try? container.decodeIfPresent(DesignProduction.self, forKey: .production)
+    self.findings = try? container.decodeIfPresent([DesignFinding].self, forKey: .findings)
   }
 
-  func toDesignResult(localRequestId: String, inventory: [FlowerType]) -> DesignResult {
+  /// 利润口径与网页端一致（见 web 的 financials.ts）：
+  /// 成交价 = 客户预算（有预算时），否则取各花材零售价合计；利润 = 成交价 − 成本（可为负）；利润率 = 利润 ÷ 成交价。
+  func toDesignResult(request: DesignRequest, language: String, inventory: [FlowerType]) -> DesignResult {
     let items = flowerList.map { item in
       let matched = inventory.first {
         $0.name.localizedCaseInsensitiveCompare(item.flowerName) == .orderedSame
@@ -1016,12 +1052,19 @@ struct AIProxyDesignResponse: Codable {
       total + (item.unitCost ?? 5.0) * Double(item.count)
     }
     let cost = estimatedCost ?? fallbackCost
-    let profit = cost * 0.4
-    let margin = 0.4
+    let retail = flowerList.reduce(0.0) { total, item in
+      let matched = inventory.first {
+        $0.name.localizedCaseInsensitiveCompare(item.flowerName) == .orderedSame
+      }
+      return total + (matched?.retailPrice ?? 0) * Double(item.count)
+    }
+    let price = DesignPricing.price(budget: request.budget, retail: retail)
+    let profit = price - cost
+    let margin = DesignPricing.margin(price: price, profit: profit)
 
     return DesignResult(
       id: UUID().uuidString,
-      requestId: localRequestId,
+      requestId: request.id,
       title: title,
       description: description,
       flowerList: items,
@@ -1042,7 +1085,9 @@ struct AIProxyDesignResponse: Codable {
       feedback: nil,
       status: .draft,
       executedAt: nil,
-      production: production
+      production: production,
+      request: DesignRequestSnapshot(request, language: language),
+      findings: findings.map { DesignFindings(v: "plan", at: "", items: $0) }
     )
   }
 

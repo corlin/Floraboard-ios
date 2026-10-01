@@ -10,19 +10,18 @@ import Foundation
 
 struct SyncOp: Codable, Hashable {
   enum Kind: String, Codable {
-    case designUpsert, designDelete, flowerUpsert, flowerDelete
+    /// designExecute：服务端原子执行（扣库存 + 标记已执行），只会扣一次
+    case designUpsert, designDelete, designExecute, flowerUpsert, flowerDelete
 
-    /// 同一条数据上互相抵消的操作（后发生的覆盖先发生的）
-    var counterpart: Kind {
-      switch self {
-      case .designUpsert: return .designDelete
-      case .designDelete: return .designUpsert
-      case .flowerUpsert: return .flowerDelete
-      case .flowerDelete: return .flowerUpsert
-      }
+    var isDesign: Bool { self == .designUpsert || self == .designDelete || self == .designExecute }
+    var isDelete: Bool { self == .designDelete || self == .flowerDelete }
+
+    /// 入队 `self` 时，同一条数据上会被它取代的操作：
+    /// 删除取代该数据上的一切；其他操作只取代此前的删除（重新创建）。
+    func supersedes(_ other: Kind) -> Bool {
+      guard isDesign == other.isDesign, self != other else { return false }
+      return isDelete || other.isDelete
     }
-
-    var isDesign: Bool { self == .designUpsert || self == .designDelete }
   }
 
   let kind: Kind
@@ -61,7 +60,7 @@ struct OutboxState: Codable, Equatable {
 
   /// 入队：与同一数据上相反的操作互相抵消；重复入队合并并立刻可重试（有了新的本地修改）
   mutating func enqueue(_ op: SyncOp, now: Double) {
-    entries.removeAll { $0.op.id == op.id && $0.op.kind == op.kind.counterpart }
+    entries.removeAll { $0.op.id == op.id && op.kind.supersedes($0.op.kind) }
     if let i = entries.firstIndex(where: { $0.op == op }) {
       entries[i].failures = 0
       entries[i].nextAttemptAt = now
@@ -100,6 +99,10 @@ struct OutboxState: Codable, Equatable {
 
   func has(_ kind: SyncOp.Kind, id: String) -> Bool {
     entries.contains { $0.op.kind == kind && $0.op.id == id }
+  }
+
+  func hasAny(_ kind: SyncOp.Kind) -> Bool {
+    entries.contains { $0.op.kind == kind }
   }
 
   func hasPending(designs: Bool) -> Bool {

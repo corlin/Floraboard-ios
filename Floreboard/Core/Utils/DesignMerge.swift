@@ -80,6 +80,10 @@ enum DesignMerge {
     if (merged.feedback ?? "").isEmpty { merged.feedback = local.feedback }
     if (merged.imagePrompt ?? "").isEmpty { merged.imagePrompt = local.imagePrompt }
 
+    // 生成参数与校验结果以云端为准（服务端计算）；云端没有时保留本地
+    if merged.request == nil { merged.request = local.request }
+    if merged.findings == nil { merged.findings = local.findings }
+
     // 参考图只存在于本机，云端没有这个字段
     merged.referenceImageUrl = local.referenceImageUrl ?? cloud.referenceImageUrl
     return merged

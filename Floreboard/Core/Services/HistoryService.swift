@@ -49,7 +49,7 @@ class HistoryService: ObservableObject {
         // 本机有尚未推送成功的删除：不要把云端旧副本拉回来（会让已删除的方案复活）
         if SyncOutbox.shared.has(.designDelete, id: designID) { continue }
         // 本机有尚未推送成功的修改：本地更新，保留并稍后推送，不让旧的云端数据覆盖
-        if SyncOutbox.shared.has(.designUpsert, id: designID) { continue }
+        if SyncOutbox.shared.has(.designUpsert, id: designID) || SyncOutbox.shared.has(.designExecute, id: designID) { continue }
         var descriptor = FetchDescriptor<DesignRecord>(
           predicate: #Predicate { $0.id == designID }
         )
@@ -85,7 +85,8 @@ class HistoryService: ObservableObject {
     await ImageSyncService.shared.healLocalImages(history: self)
   }
 
-  func saveDesign(_ design: DesignResult) {
+  /// push=false：只更新本地（例如服务端已经是权威来源时），不再排队推送
+  func saveDesign(_ design: DesignResult, push: Bool = true) {
     guard modelContext != nil else { return }
 
     // Check if exists, update if so, else insert at front
@@ -97,22 +98,51 @@ class HistoryService: ObservableObject {
     persist(design)
 
     // Replicate to cloud（失败会进入发件箱自动重试）
-    SyncOutbox.shared.enqueue(.designUpsert, id: design.id)
+    if push { SyncOutbox.shared.enqueue(.designUpsert, id: design.id) }
+  }
+
+  /// 服务端重算的专业校验结果：只更新本地，不触发再次推送
+  func applyFindings(id: String, _ findings: DesignFindings?) {
+    guard let findings, var design = savedDesigns.first(where: { $0.id == id }),
+          design.findings != findings else { return }
+    design.findings = findings
+    saveDesign(design, push: false)
+  }
+
+  /// 服务端原子执行完成：以服务端的执行时间为准，只更新本地
+  func applyExecution(id: String, executedAt: Double?) {
+    guard var design = savedDesigns.first(where: { $0.id == id }) else { return }
+    design.status = .completed
+    design.executedAt = executedAt ?? design.executedAt ?? Date().timeIntervalSince1970
+    saveDesign(design, push: false)
   }
 
   func executeDesign(_ design: DesignResult, mappedItems: [InventoryService.DeductionItem]? = nil) {
     guard design.status != .completed else { return }
 
-    if let mapped = mappedItems {
-      InventoryService.shared.deductInventoryExact(items: mapped)
-    } else {
-      let _ = InventoryService.shared.deductInventory(for: design.flowerList)
-    }
-
     var updatedDesign = design
     updatedDesign.status = .completed
     updatedDesign.executedAt = Date().timeIntervalSince1970
 
+    // 用户确认的扣减与服务端会做的一致（绝大多数情况）：走服务端原子执行——
+    // 一个事务里扣库存并标记已执行，多设备/重复点击也只扣一次；本地先乐观更新，失败自动重试。
+    let inventory = InventoryService.shared
+    let expected = ExecutionPlan.expectedDeductions(
+      rows: design.flowerList.map { ($0.flowerName, $0.count) },
+      inventory: inventory.flowers.map { ($0.id, $0.name) })
+    if ExecutionPlan.matchesServer(mapped: mappedItems?.map { ($0.flowerId, $0.amount) }, expected: expected) {
+      inventory.applyLocalDeductions(expected)
+      saveDesign(updatedDesign, push: false)
+      SyncOutbox.shared.enqueue(.designExecute, id: design.id)
+      return
+    }
+
+    // 用户手动调整了花材映射：服务端不知道这份映射，走本地扣减并推送（旧路径）
+    if let mapped = mappedItems {
+      inventory.deductInventoryExact(items: mapped)
+    } else {
+      let _ = inventory.deductInventory(for: design.flowerList)
+    }
     saveDesign(updatedDesign)
   }
 

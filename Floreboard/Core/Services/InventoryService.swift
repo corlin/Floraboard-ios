@@ -87,7 +87,7 @@ class InventoryService: ObservableObject {
       let client = try AIService.shared.makeProxyClient()
       let cloudFlowers = try await client.fetchInventory(tenantId: tenantId)
 
-      if SyncOutbox.shared.hasPending(designs: false) {
+      if SyncOutbox.shared.hasPending(designs: false) || SyncOutbox.shared.hasAny(.designExecute) {
         AppLogger.sync.info("inventory has unsent local changes; keeping local copy this round")
       } else if !cloudFlowers.isEmpty {
         // Cloud has records: replace local cache with cloud records
@@ -174,6 +174,39 @@ class InventoryService: ObservableObject {
     }
 
     SyncOutbox.shared.enqueue(.flowerDelete, id: id)
+  }
+
+  /// 只更新本地（不排队推送）：服务端原子执行会自己扣减云端库存，这里仅做乐观显示
+  func applyLocalDeductions(_ deductions: [String: Int]) {
+    for (id, amount) in deductions {
+      guard var f = flowers.first(where: { $0.id == id }) else { continue }
+      f.quantity = max(0, f.quantity - amount)
+      f.totalUsed = (f.totalUsed ?? 0) + amount
+      setLocalOnly(f)
+    }
+  }
+
+  /// 以服务端返回的库存最新值为准（只更新本地）
+  func applyServerInventory(_ items: [FlowerType]) {
+    for item in items {
+      guard var f = flowers.first(where: { $0.id == item.id }) else { continue }
+      f.quantity = item.quantity
+      f.totalUsed = item.totalUsed
+      setLocalOnly(f)
+    }
+  }
+
+  private func setLocalOnly(_ flower: FlowerType) {
+    guard let index = flowers.firstIndex(where: { $0.id == flower.id }) else { return }
+    flowers[index] = flower
+    guard let context = modelContext else { return }
+    let flowerID = flower.id
+    var descriptor = FetchDescriptor<FlowerRecord>(predicate: #Predicate { $0.id == flowerID })
+    descriptor.fetchLimit = 1
+    if let record = try? context.fetch(descriptor).first {
+      record.update(from: flower)
+      try? context.save()
+    }
   }
 
   func deductStock(flowerId: String, amount: Int) {

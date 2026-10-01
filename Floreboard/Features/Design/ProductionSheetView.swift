@@ -12,6 +12,12 @@ import SwiftUI
 struct ProductionSheetView: View {
   let design: DesignResult
   @EnvironmentObject var inventoryService: InventoryService
+  @EnvironmentObject var historyService: HistoryService
+
+  /// 专业校验结果：优先取本地库里最新的（服务端重算后会更新），其次用传入方案自带的
+  private var findings: DesignFindings? {
+    historyService.savedDesigns.first(where: { $0.id == design.id })?.findings ?? design.findings
+  }
 
   private var production: DesignProduction? { design.production }
 
@@ -51,6 +57,7 @@ struct ProductionSheetView: View {
       header(a)
       recipe(a)
       checks(a)
+      if let f = findings { DesignReviewSection(findings: f) }
       if let p = production, p.hasContent { craft(p) }
     }
     .padding()

@@ -131,6 +131,8 @@ struct DesignResult: Codable, Identifiable {
   var status: DesignStatus
   var executedAt: Double? = nil
   var production: DesignProduction? = nil  // 制作稿（工艺信息），由服务端生成
+  var request: DesignRequestSnapshot? = nil  // 生成参数快照（服务端据此校验）
+  var findings: DesignFindings? = nil  // 专业校验结果（服务端计算）
 
   var syncId: String? = nil
   var syncVersion: Int? = nil
