@@ -27,35 +27,28 @@ struct AIProxyClient {
 
   // MARK: - AI Generation via /api/v1/proxy
 
-  /// Generates a floral design plan via proxy chat action
+  /// Generates a floral design plan (prompt assembled server-side via generate_plan)
   func generatePlan(
     tenantId: String,
     language: Language,
     request: DesignRequest,
     inventory: [FlowerType]
   ) async throws -> DesignResult {
-    let systemPrompt = buildSystemPrompt(language: language, request: request, inventory: inventory)
-    let userPrompt = buildUserPrompt(request: request)
-
     let body: [String: Any] = [
-      "tenantId": tenantId,
-      "action": "chat",
+      "action": "generate_plan",
       "payload": [
-        "messages": [
-          ["role": "system", "content": systemPrompt],
-          ["role": "user", "content": userPrompt]
-        ],
-        "temperature": 0.7
-      ]
+        "request": planRequestPayload(request),
+        "language": localeCode(for: language),
+        "inventory": inventoryPayload(inventory),
+      ],
     ]
 
     let responseData = try await postRaw("api/v1/proxy", jsonObject: body, tenantId: tenantId)
-    let jsonContent = try extractAssistantMessage(from: responseData)
-    let designResp = try parseDesignResponse(from: jsonContent, inventory: inventory)
+    let designResp = try extractPlan(from: responseData, inventory: inventory)
     return designResp.toDesignResult(localRequestId: request.id, inventory: inventory)
   }
 
-  /// Generates a design plan from an inspiration image
+  /// Generates a design plan from an inspiration image (analyze_image, server-side prompting)
   func submitVisualDesign(
     tenantId: String,
     language: Language,
@@ -69,37 +62,26 @@ struct AIProxyClient {
       throw AIError.imageEncodingFailed
     }
     let base64String = "data:image/jpeg;base64," + jpegData.base64EncodedString()
-    let systemPrompt = buildSystemPrompt(language: language, request: request, inventory: inventory)
-    let userPrompt = buildUserPrompt(request: request) + "\nAnalyze the reference image and incorporate its color palette, structure, and aesthetic into the design."
 
     let body: [String: Any] = [
-      "tenantId": tenantId,
-      "action": "vision",
+      "action": "analyze_image",
       "payload": [
-        "messages": [
-          ["role": "system", "content": systemPrompt],
-          [
-            "role": "user",
-            "content": [
-              ["type": "text", "text": userPrompt],
-              ["type": "image_url", "image_url": ["url": base64String]]
-            ]
-          ]
-        ],
-        "imageBase64": base64String
-      ]
+        "request": planRequestPayload(request),
+        "language": localeCode(for: language),
+        "inventory": inventoryPayload(inventory),
+        "imageBase64": base64String,
+      ],
     ]
 
     let responseData = try await postRaw("api/v1/proxy", jsonObject: body, tenantId: tenantId)
-    let jsonContent = try extractAssistantMessage(from: responseData)
-    let designResp = try parseDesignResponse(from: jsonContent, inventory: inventory)
+    let designResp = try extractPlan(from: responseData, inventory: inventory)
     return designResp.toDesignResult(localRequestId: request.id, inventory: inventory)
   }
 
   /// Requests 4K image generation and polls until completed (persisted to R2 by backend)
   func generateFloralImage(tenantId: String, prompt: String) async throws -> String {
     let body: [String: Any] = [
-      "tenantId": tenantId,
+      
       "action": "image_generation",
       "payload": [
         "prompt": prompt
@@ -150,7 +132,7 @@ struct AIProxyClient {
       try await Task.sleep(nanoseconds: UInt64(waitSeconds * 1_000_000_000))
 
       let pollBody: [String: Any] = [
-        "tenantId": tenantId,
+        
         "action": "image_task_status",
         "payload": ["taskId": taskId]
       ]
@@ -238,11 +220,23 @@ struct AIProxyClient {
     return wrapper.data ?? []
   }
 
-  func verifyAppleIAP(tenantId: String, transactionId: String, productId: String) async throws -> AppleVerifyResponse {
-    let payload = [
+  func verifyAppleIAP(
+    tenantId: String,
+    transactionId: String,
+    productId: String,
+    jws: String? = nil,
+    originalTransactionId: String? = nil
+  ) async throws -> AppleVerifyResponse {
+    var payload: [String: String] = [
       "transactionId": transactionId,
       "productId": productId
     ]
+    if let jws = jws {
+      payload["jws"] = jws
+    }
+    if let origId = originalTransactionId {
+      payload["originalTransactionId"] = origId
+    }
     let res: AppleVerifyResponse = try await post("api/v1/payments/apple-verify", body: payload, tenantId: tenantId)
     return res
   }
@@ -296,120 +290,74 @@ struct AIProxyClient {
     return try await perform(req)
   }
 
-  // MARK: - Prompt Builders
+  // MARK: - Server-side Prompting
+  //
+  // 提示词与花艺领域知识全部在服务端（generate_plan / analyze_image）。
+  // 客户端只发送结构化参数，不再携带任何 prompt，也不再自行传 messages / model。
 
-  private func buildSystemPrompt(language: Language, request: DesignRequest, inventory: [FlowerType]) -> String {
-    let langName: String
-    let langRule: String
+  private func localeCode(for language: Language) -> String {
     switch language {
-    case .zh:
-      langName = "Simplified Chinese (简体中文)"
-      langRule = "所有文本（标题 title、设计理念 description、花语寓意 meaningText、制作步骤 steps、选花理由 reason）必须全部使用规范的简体中文输出。"
-    case .en:
-      langName = "English"
-      langRule = "All text fields (title, description, meaningText, steps, reason) must be written in fluent, elegant English."
-    case .ja:
-      langName = "Japanese (日本語)"
-      langRule = "すべてのテキスト（タイトル title、コンセプト説明 description、花言葉 meaningText、制作手順 steps、選定理由 reason）を必ず自然で洗練された日本語で出力してください。"
-    case .ko:
-      langName = "Korean (한국어)"
-      langRule = "모든 텍스트(제목 title, 디자인 설명 description, 꽃말/의미 meaningText, 제작 단계 steps, 선택 이유 reason)를 반드시 자연스럽고 품격 있는 한국어로 출력하십시오."
-    case .fr:
-      langName = "French (Français)"
-      langRule = "Tous les champs textuels (title, description, meaningText, steps, reason) doivent être rédigés en français élégant et naturel."
-    }
-
-    let invList = inventory.map { "- \($0.name) (\($0.color)): \($0.quantity) stems, cost ¥\($0.unitCost)" }.joined(separator: "\n")
-    let budget = request.budget ?? 500
-
-    if request.designMode == "professional" {
-      return """
-      You are a world-class master florist and floral art director.
-      Design a masterwork arrangement based on the inventory.
-
-      CRITICAL MULTILINGUAL INSTRUCTION:
-      Output Language: \(langName)
-      \(langRule)
-      Keep imagePrompt strictly in English for high-fidelity diffusion rendering.
-      Keep flowerName strictly matching the available inventory names.
-
-      Budget: ¥\(budget)
-      Available Inventory:
-      \(invList)
-
-      Return strictly valid JSON in this exact shape:
-      {
-        "title": "String",
-        "description": "String",
-        "meaningText": "String",
-        "reasoning": "String",
-        "steps": ["String", "String"],
-        "imagePrompt": "A photorealistic floral arrangement in English...",
-        "estimatedCost": \(budget),
-        "flowerList": [
-          {"flowerName": "name", "count": 5, "unitCost": 10.0, "reason": "reason"}
-        ]
-      }
-      """
-    } else {
-      return """
-      You are an expert floral designer. Create an exquisite floral arrangement based on the inventory.
-
-      CRITICAL MULTILINGUAL INSTRUCTION:
-      Output Language: \(langName)
-      \(langRule)
-      Keep imagePrompt strictly in English for high-fidelity diffusion rendering.
-      Keep flowerName strictly matching the available inventory names.
-
-      Target Budget: ¥\(budget)
-      Available Inventory:
-      \(invList)
-
-      Return strictly valid JSON in this exact shape:
-      {
-        "title": "String",
-        "description": "String",
-        "meaningText": "String",
-        "reasoning": "String",
-        "steps": ["String", "String"],
-        "imagePrompt": "A photorealistic floral arrangement in English...",
-        "estimatedCost": \(budget),
-        "flowerList": [
-          {"flowerName": "name", "count": 5, "unitCost": 10.0, "reason": "reason"}
-        ]
-      }
-      """
+    case .zh: return "zh-CN"
+    case .en: return "en-US"
+    case .ja: return "ja-JP"
+    case .ko: return "ko-KR"
+    case .fr: return "fr-FR"
     }
   }
 
-  private func buildUserPrompt(request: DesignRequest) -> String {
-    var parts: [String] = [
-      "Design Request:",
-      "- Occasion: \(request.occasion.displayName)",
-      "- Recipient: \(request.recipient.displayName)",
-      "- Style: \(request.style.displayName)",
-      "- Budget: ¥\(request.budget ?? 500)",
-      "- Special Notes: \(request.requirements ?? "None")"
+  private func planRequestPayload(_ request: DesignRequest) -> [String: Any] {
+    var dict: [String: Any] = [
+      "occasion": request.occasion.rawValue,
+      "recipient": request.recipient.rawValue,
+      "style": request.style.rawValue,
+      "budget": request.budget ?? 500,
     ]
-
-    if let school = request.school, !school.isEmpty {
-      parts.append("- Floral School: \(school)")
-    }
-    if let technique = request.technique, !technique.isEmpty {
-      parts.append("- Technique: \(technique)")
-    }
-    if let seasonality = request.seasonality, !seasonality.isEmpty {
-      parts.append("- Season: \(seasonality)")
-    }
-    if let context = request.culturalContext, !context.isEmpty {
-      parts.append("- Space & Cultural Context (空间与文化语境): \(context)")
-    }
-    if let proportion = request.proportionRule, !proportion.isEmpty {
-      parts.append("- Proportion Rule (比例法则): \(proportion)")
-    }
-
-    return parts.joined(separator: "\n")
+    if let v = request.requirements { dict["requirements"] = v }
+    if let v = request.colorPalette { dict["colorPalette"] = v.rawValue }
+    if let v = request.format { dict["format"] = v.rawValue }
+    if let v = request.school { dict["school"] = v }
+    if let v = request.technique { dict["technique"] = v }
+    if let v = request.designMode { dict["designMode"] = v }
+    if let v = request.proportionRule { dict["proportionRule"] = v }
+    if let v = request.seasonality { dict["seasonality"] = v }
+    if let v = request.culturalContext { dict["culturalContext"] = v }
+    if let v = request.scalePreference { dict["scalePreference"] = v }
+    if let v = request.moodPreference { dict["moodPreference"] = v }
+    if let v = request.formPreference { dict["formPreference"] = v }
+    if let v = request.backgroundStyle { dict["backgroundStyle"] = v }
+    return dict
   }
+
+  /// 仅作为云端尚无库存时的兜底；服务端以 D1 库存为准
+  private func inventoryPayload(_ inventory: [FlowerType]) -> [[String: Any]] {
+    inventory.map { f in
+      [
+        "id": f.id,
+        "name": f.name,
+        "color": f.color,
+        "quantity": f.quantity,
+        "unitCost": f.unitCost,
+        "retailPrice": f.retailPrice,
+        "category": f.category.rawValue,
+      ]
+    }
+  }
+
+  /// 解包服务端返回的 { success, data: { plan } }
+  private func extractPlan(from data: Data, inventory: [FlowerType]) throws -> AIProxyDesignResponse {
+    guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+      throw AIProxyError.invalidResponse
+    }
+    if let error = json["error"] as? String {
+      throw AIProxyError.rejected(AIProxyErrorResponse(message: error))
+    }
+    guard let root = json["data"] as? [String: Any],
+          let plan = root["plan"] as? [String: Any] else {
+      throw AIProxyError.invalidResponse
+    }
+    return buildDesignResponse(from: plan, fallbackInventory: inventory)
+  }
+
 
   private func extractAssistantMessage(from data: Data) throws -> String {
     guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
