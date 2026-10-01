@@ -35,6 +35,9 @@ class HistoryService: ObservableObject {
     isSyncing = true
     defer { isSyncing = false }
 
+    // 先把上次没推成功的修改发出去，再拉取云端
+    await SyncOutbox.shared.flush()
+
     do {
       let client = try AIService.shared.makeProxyClient()
       let cloudDesigns = try await client.fetchDesigns(tenantId: tenantId)
@@ -43,6 +46,10 @@ class HistoryService: ObservableObject {
 
       for cloud in cloudDesigns {
         let designID = cloud.id
+        // 本机有尚未推送成功的删除：不要把云端旧副本拉回来（会让已删除的方案复活）
+        if SyncOutbox.shared.has(.designDelete, id: designID) { continue }
+        // 本机有尚未推送成功的修改：本地更新，保留并稍后推送，不让旧的云端数据覆盖
+        if SyncOutbox.shared.has(.designUpsert, id: designID) { continue }
         var descriptor = FetchDescriptor<DesignRecord>(
           predicate: #Predicate { $0.id == designID }
         )
@@ -68,7 +75,7 @@ class HistoryService: ObservableObject {
       loadDesigns()
 
       for design in toPush {
-        try? await client.upsertDesign(tenantId: tenantId, design: design)
+        SyncOutbox.shared.enqueue(.designUpsert, id: design.id)
       }
     } catch {
       print("[HistoryService] Cloud sync skipped or failed: \(error.localizedDescription)")
@@ -89,14 +96,8 @@ class HistoryService: ObservableObject {
     }
     persist(design)
 
-    // Replicate to cloud
-    if let tenantId = AuthService.shared.currentTenant?.id {
-      Task {
-        if let client = try? AIService.shared.makeProxyClient() {
-          try? await client.upsertDesign(tenantId: tenantId, design: design)
-        }
-      }
-    }
+    // Replicate to cloud（失败会进入发件箱自动重试）
+    SyncOutbox.shared.enqueue(.designUpsert, id: design.id)
   }
 
   func executeDesign(_ design: DesignResult, mappedItems: [InventoryService.DeductionItem]? = nil) {
@@ -131,13 +132,7 @@ class HistoryService: ObservableObject {
       try? context.save()
     }
 
-    if let tenantId = AuthService.shared.currentTenant?.id {
-      Task {
-        if let client = try? AIService.shared.makeProxyClient() {
-          try? await client.deleteDesign(tenantId: tenantId, designId: id)
-        }
-      }
-    }
+    SyncOutbox.shared.enqueue(.designDelete, id: id)
   }
 
   func loadDesigns() {

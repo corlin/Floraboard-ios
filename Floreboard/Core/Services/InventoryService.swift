@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import OSLog
 import SwiftData
 
 @MainActor
@@ -79,11 +80,16 @@ class InventoryService: ObservableObject {
     isSyncing = true
     defer { isSyncing = false }
 
+    // 先把上次没推成功的库存修改发出去；仍有未推送的修改时不用云端覆盖本地缓存
+    await SyncOutbox.shared.flush()
+
     do {
       let client = try AIService.shared.makeProxyClient()
       let cloudFlowers = try await client.fetchInventory(tenantId: tenantId)
 
-      if !cloudFlowers.isEmpty {
+      if SyncOutbox.shared.hasPending(designs: false) {
+        AppLogger.sync.info("inventory has unsent local changes; keeping local copy this round")
+      } else if !cloudFlowers.isEmpty {
         // Cloud has records: replace local cache with cloud records
         let descriptor = FetchDescriptor<FlowerRecord>(
           predicate: #Predicate { $0.tenantId == tenantId }
@@ -122,11 +128,7 @@ class InventoryService: ObservableObject {
     context.insert(record)
     try? context.save()
 
-    Task {
-      if let client = try? AIService.shared.makeProxyClient() {
-        _ = try? await client.createFlower(tenantId: tenantId, flower: flower)
-      }
-    }
+    SyncOutbox.shared.enqueue(.flowerUpsert, id: flower.id)
   }
 
   func updateFlower(_ flower: FlowerType) {
@@ -151,11 +153,7 @@ class InventoryService: ObservableObject {
       }
       try? context.save()
 
-      Task {
-        if let client = try? AIService.shared.makeProxyClient() {
-          _ = try? await client.updateFlower(tenantId: tenantId, flower: flower)
-        }
-      }
+      SyncOutbox.shared.enqueue(.flowerUpsert, id: flower.id)
     }
   }
 
@@ -175,11 +173,7 @@ class InventoryService: ObservableObject {
       try? context.save()
     }
 
-    Task {
-      if let client = try? AIService.shared.makeProxyClient() {
-        try? await client.deleteFlower(tenantId: tenantId, flowerId: id)
-      }
-    }
+    SyncOutbox.shared.enqueue(.flowerDelete, id: id)
   }
 
   func deductStock(flowerId: String, amount: Int) {

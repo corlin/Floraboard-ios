@@ -24,6 +24,7 @@ struct FloreboardApp: App {
     InventoryService.shared.configure(with: context)
     HistoryService.shared.configure(with: context)
     OrderService.shared.configure(with: context)
+    SyncOutbox.shared.start()
   }
 
   var body: some Scene {
