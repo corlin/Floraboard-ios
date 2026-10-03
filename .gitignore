@@ -44,3 +44,6 @@ Packages/
 # Misc
 *.playground/
 .gemini/
+
+# 本地编译产物
+build_output/

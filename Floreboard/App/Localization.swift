@@ -122,6 +122,11 @@ class LocalizationManager: ObservableObject {
   func t(_ key: String, _ args: [String: String] = [:]) -> String {
     Tx.t(key, args)
   }
+
+  func t(_ key: String, _ arguments: CVarArg...) -> String {
+    let format = Tx.t(key)
+    return String(format: format, arguments: arguments)
+  }
 }
 
 // Helper for easier access in Views
@@ -162,5 +167,10 @@ struct Tx {
       value = value.replacingOccurrences(of: "{{\(k)}}", with: v)
     }
     return value
+  }
+
+  static func t(_ key: String, _ arguments: CVarArg...) -> String {
+    let format = Tx.t(key)
+    return String(format: format, arguments: arguments)
   }
 }
