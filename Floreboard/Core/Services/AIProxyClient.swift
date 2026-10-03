@@ -205,6 +205,17 @@ struct AIProxyClient {
 
   // MARK: - Payments & Credits
 
+  /// 当前店铺的 appAccountToken：购买时放进 Product.PurchaseOption.appAccountToken，
+  /// Apple 会把它签进交易，服务端据此拒绝把这笔购买记到别的店铺。
+  func fetchAppleAccountToken(tenantId: String) async throws -> UUID {
+    let req = try makeRequest(path: "api/v1/payments/apple-account-token", method: "GET", tenantId: tenantId)
+    let wrapper: APIResponseWrapper<AppleAccountTokenData> = try await perform(req)
+    guard let raw = wrapper.data?.appAccountToken, let token = UUID(uuidString: raw) else {
+      throw AIProxyError.invalidResponse
+    }
+    return token
+  }
+
   func fetchCredits(tenantId: String) async throws -> CreditsData {
     let req = try makeRequest(path: "api/v1/payments/credits", method: "GET", tenantId: tenantId)
     let wrapper: APIResponseWrapper<CreditsData> = try await perform(req)
@@ -893,6 +904,10 @@ struct AIProxyClient {
 }
 
 // MARK: - Generic API Response Wrappers
+
+struct AppleAccountTokenData: Codable {
+  var appAccountToken: String
+}
 
 struct APIResponseWrapper<T: Codable>: Codable {
   var success: Bool

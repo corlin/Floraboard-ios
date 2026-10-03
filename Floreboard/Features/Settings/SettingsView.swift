@@ -115,18 +115,35 @@ struct SettingsView: View {
                   }
                 }
 
-                Button {
-                  isShowingPaywall = true
-                } label: {
-                  HStack {
-                    Image(systemName: "plus.circle.fill")
-                    Text(rechargeButtonTitle)
-                      .font(AppTheme.sansFont(size: 15, weight: .semibold))
+                HStack(spacing: 10) {
+                  Button {
+                    isShowingPaywall = true
+                  } label: {
+                    HStack {
+                      Image(systemName: "plus.circle.fill")
+                      Text(rechargeButtonTitle)
+                        .font(AppTheme.sansFont(size: 14, weight: .semibold))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
                   }
-                  .frame(maxWidth: .infinity)
-                  .padding(.vertical, 12)
+                  .buttonStyle(PrimaryButtonStyle())
+
+                  if isProTier {
+                    Button {
+                      StoreKitManager.shared.openManageSubscriptions()
+                    } label: {
+                      HStack(spacing: 4) {
+                        Image(systemName: "gearshape")
+                        Text(localizationManager.t("settings.manageSubscription"))
+                          .font(AppTheme.sansFont(size: 13, weight: .medium))
+                      }
+                      .padding(.horizontal, 12)
+                      .padding(.vertical, 12)
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                  }
                 }
-                .buttonStyle(PrimaryButtonStyle())
 
                 // Recent Transactions List
                 if let txs = viewModel.creditsData?.transactions, !txs.isEmpty {
@@ -139,7 +156,7 @@ struct SettingsView: View {
                     ForEach(txs.prefix(5)) { tx in
                       HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                          Text(tx.description ?? (tx.amount > 0 ? localizationManager.t("settings.credits.top_up") : localizationManager.t("settings.credits.consume")))
+                          Text(localizedTxTitle(tx))
                             .font(AppTheme.sansFont(size: 13, weight: .medium))
                             .foregroundColor(AppTheme.foreground)
 
@@ -342,6 +359,11 @@ struct SettingsView: View {
               .frame(maxWidth: .infinity)
               .padding(.horizontal, 24)
 
+            // Legal & Support Footer
+            LegalFooterView()
+              .padding(.top, 12)
+              .padding(.horizontal, 24)
+
             Spacer().frame(height: 100) // Bottom padding for floating tab bar
           }
         }
@@ -375,6 +397,9 @@ struct SettingsView: View {
       }
       .onAppear {
         viewModel.setup(with: aiService)
+        Task {
+          await StoreKitManager.shared.checkEntitlements()
+        }
         withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
           appeared = true
         }
@@ -387,6 +412,9 @@ struct SettingsView: View {
   }
 
   private var isProTier: Bool {
+    if StoreKitManager.shared.isProMember {
+      return true
+    }
     let tier = viewModel.creditsData?.tier ?? auth.currentTenant?.tier ?? "free"
     return tier.lowercased() == "pro"
   }
@@ -439,9 +467,47 @@ struct SettingsView: View {
     let formatter = ISO8601DateFormatter()
     if let date = formatter.date(from: dateString) {
       let df = DateFormatter()
-      df.dateFormat = "MM-dd HH:mm"
+      df.locale = Locale(identifier: localizationManager.currentLanguage.rawValue)
+      df.dateStyle = .short
+      df.timeStyle = .short
       return df.string(from: date)
     }
     return String(dateString.prefix(16))
+  }
+
+  private func localizedTxTitle(_ tx: CreditTransaction) -> String {
+    let type = tx.type.lowercased()
+    let desc = (tx.description ?? "").lowercased()
+
+    if type.contains("signup") || type.contains("welcome") || type.contains("bonus") ||
+       desc.contains("新用户") || desc.contains("welcome") || desc.contains("bonus") || desc.contains("赠送") {
+      return localizationManager.t("settings.credits.tx.welcome_bonus")
+    }
+    if type.contains("sub") || desc.contains("订阅") || desc.contains("subscription") || desc.contains("yearly") || desc.contains("monthly") {
+      return localizationManager.t("settings.credits.tx.subscription")
+    }
+    if type.contains("pack") || type.contains("recharge") || type.contains("top_up") ||
+       desc.contains("充值") || desc.contains("点数包") || desc.contains("pack") || desc.contains("top-up") {
+      return localizationManager.t("settings.credits.tx.top_up")
+    }
+    if type.contains("render") || desc.contains("渲染") || desc.contains("4k") {
+      return localizationManager.t("settings.credits.tx.render")
+    }
+    if type.contains("design") || type.contains("generate") || type.contains("chat") ||
+       desc.contains("生成") || desc.contains("设计") || desc.contains("design") {
+      return localizationManager.t("settings.credits.tx.ai_design")
+    }
+    if type.contains("refund") || desc.contains("退款") || desc.contains("退还") || desc.contains("refund") {
+      return localizationManager.t("settings.credits.tx.refund")
+    }
+
+    // Direct type lookup if defined
+    let typeKey = "settings.credits.tx." + type
+    let directType = localizationManager.t(typeKey)
+    if directType != typeKey {
+      return directType
+    }
+
+    return tx.amount > 0 ? localizationManager.t("settings.credits.top_up") : localizationManager.t("settings.credits.consume")
   }
 }

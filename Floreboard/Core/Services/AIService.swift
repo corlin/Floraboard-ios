@@ -68,12 +68,24 @@ class AIService: ObservableObject {
     return try await makeProxyClient().fetchCredits(tenantId: tenantId)
   }
 
-  func verifyApplePurchase(transactionId: String, productId: String) async throws -> AppleVerifyResponse {
+  func appleAccountToken() async throws -> UUID {
+    let tenantId = await currentTenantId()
+    return try await makeProxyClient().fetchAppleAccountToken(tenantId: tenantId)
+  }
+
+  func verifyApplePurchase(
+    transactionId: String,
+    productId: String,
+    jws: String? = nil,
+    originalTransactionId: String? = nil
+  ) async throws -> AppleVerifyResponse {
     let tenantId = await currentTenantId()
     return try await makeProxyClient().verifyAppleIAP(
       tenantId: tenantId,
       transactionId: transactionId,
-      productId: productId
+      productId: productId,
+      jws: jws,
+      originalTransactionId: originalTransactionId
     )
   }
 

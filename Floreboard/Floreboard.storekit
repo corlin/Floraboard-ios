@@ -1,0 +1,200 @@
+{
+  "appPolicies" : {
+    "eula" : "https://floreboard.com/terms",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : "https://floreboard.com/privacy"
+      },
+      {
+        "locale" : "zh_CN",
+        "policyText" : "",
+        "policyURL" : "https://floreboard.com/privacy"
+      }
+    ]
+  },
+  "identifier" : "E2B7A890-7F15-4D02-9BD1-34F8C1D74E39",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "C1000001",
+      "localizations" : [
+        {
+          "description" : "包含100点AI设计与效果图生成算力，永久有效。",
+          "displayName" : "100 点数加油包",
+          "locale" : "zh_CN"
+        },
+        {
+          "description" : "100 generation credits with no expiration date.",
+          "displayName" : "100 Credits Booster Pack",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "cn.corlin.Floreboard.credits.100",
+      "referenceName" : "100 Credits Booster Pack",
+      "type" : "Consumable"
+    },
+    {
+      "displayPrice" : "12.99",
+      "familyShareable" : false,
+      "internalID" : "C1000002",
+      "localizations" : [
+        {
+          "description" : "包含300点进阶算力，适合高频花艺方案定制与4K高清渲染。",
+          "displayName" : "300 点数进阶包",
+          "locale" : "zh_CN"
+        },
+        {
+          "description" : "300 generation credits with no expiration date.",
+          "displayName" : "300 Credits Growth Pack",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "cn.corlin.Floreboard.credits.300",
+      "referenceName" : "300 Credits Growth Pack",
+      "type" : "Consumable"
+    }
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_locale" : "zh_CN",
+    "_storefront" : "CHN",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "78B45CD1",
+      "localizations" : [
+        {
+          "description" : "Floreboard Pro 尊享特权与算力包",
+          "displayName" : "Floreboard Pro 会员服务",
+          "locale" : "zh_CN"
+        },
+        {
+          "description" : "Floreboard Pro Membership and Credits",
+          "displayName" : "Floreboard Pro Membership",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "Floreboard Pro Membership",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "9.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "S1000001",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "每月赠送 300 点算力，解锁高阶花艺设计功能与商业渲染。",
+              "displayName" : "Pro 月度订阅",
+              "locale" : "zh_CN"
+            },
+            {
+              "description" : "300 credits per month with full access to Pro features.",
+              "displayName" : "Pro Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "cn.corlin.Floreboard.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Pro Monthly Subscription",
+          "subscriptionGroupID" : "78B45CD1",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "89.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "S1000002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "每年赠送 4000 点算力（省25%），优先算力通道与全量功能。",
+              "displayName" : "Pro 年度订阅",
+              "locale" : "zh_CN"
+            },
+            {
+              "description" : "4000 credits per year (save 25%) with priority rendering.",
+              "displayName" : "Pro Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "cn.corlin.Floreboard.pro.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Pro Yearly Subscription",
+          "subscriptionGroupID" : "78B45CD1",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

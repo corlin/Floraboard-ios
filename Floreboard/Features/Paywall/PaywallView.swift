@@ -31,7 +31,7 @@ struct PaywallView: View {
         name: Tx.t("paywall.proYearly"),
         credits: 4000,
         price: Tx.t("paywall.priceYearly"),
-        badge: Tx.t("paywall.save25"),
+        badge: Tx.t("paywall.save25", (0.25).formatted(.percent.precision(.fractionLength(0)))),
         description: Tx.t("paywall.proYearlyDesc"),
         isSubscription: true
       ),
@@ -48,7 +48,7 @@ struct PaywallView: View {
         id: "credit_pack_300",
         name: Tx.t("paywall.pack300"),
         credits: 300,
-        price: "$12.99",
+        price: Tx.t("paywall.pricePack300"),
         badge: Tx.t("paywall.bestValue"),
         description: Tx.t("paywall.pack300Desc"),
         isSubscription: false
@@ -57,7 +57,7 @@ struct PaywallView: View {
         id: "credit_pack_100",
         name: Tx.t("paywall.pack100"),
         credits: 100,
-        price: "$4.99",
+        price: Tx.t("paywall.pricePack100"),
         badge: nil,
         description: Tx.t("paywall.pack100Desc"),
         isSubscription: false
@@ -71,6 +71,45 @@ struct PaywallView: View {
 
       ScrollView(showsIndicators: false) {
         VStack(spacing: 24) {
+          // Top Navigation Bar (Close & Restore)
+          HStack {
+            Button {
+              dismiss()
+            } label: {
+              Image(systemName: "xmark")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(AppTheme.mutedText)
+                .padding(10)
+                .background(AppTheme.surfaceElevated.opacity(0.8))
+                .clipShape(Circle())
+            }
+
+            Spacer()
+
+            Button {
+              handleRestore()
+            } label: {
+              HStack(spacing: 4) {
+                if storeManager.isRestoring {
+                  ProgressView()
+                    .scaleEffect(0.8)
+                    .tint(AppTheme.primary)
+                }
+                Text(loc.t("paywall.restore"))
+                  .font(AppTheme.sansFont(size: 13, weight: .medium))
+                  .foregroundColor(AppTheme.primary)
+              }
+              .padding(.horizontal, 12)
+              .padding(.vertical, 6)
+              .background(AppTheme.surfaceElevated.opacity(0.8))
+              .clipShape(Capsule())
+              .overlay(Capsule().stroke(AppTheme.hairline, lineWidth: 1))
+            }
+            .disabled(isProcessing || storeManager.isRestoring)
+          }
+          .padding(.horizontal, 20)
+          .padding(.top, 16)
+
           // Header Icon
           ZStack {
             Circle()
@@ -81,7 +120,6 @@ struct PaywallView: View {
               .font(.system(size: 42))
               .foregroundStyle(AppTheme.creative)
           }
-          .padding(.top, 32)
 
           // Titles
           VStack(spacing: 8) {
@@ -158,7 +196,11 @@ struct PaywallView: View {
               .foregroundColor(AppTheme.mutedText)
               .underline()
           }
-          .padding(.bottom, 36)
+          .padding(.bottom, 8)
+
+          // Legal & Support Footer
+          LegalFooterView()
+            .padding(.bottom, 24)
         }
       }
     }
@@ -176,6 +218,32 @@ struct PaywallView: View {
     } catch {
       self.currentCredits = auth.currentTenant?.credits ?? 30
       self.tier = auth.currentTenant?.tier ?? "free"
+    }
+  }
+
+  private func handleRestore() {
+    guard !isProcessing && !storeManager.isRestoring else { return }
+    isProcessing = true
+    statusMessage = loc.t("paywall.restoring")
+
+    Task {
+      defer { isProcessing = false }
+      do {
+        let restored = try await storeManager.restorePurchases()
+        await refreshCredits()
+        if restored {
+          statusMessage = loc.t("paywall.restoreSuccess")
+          HapticManager.shared.notification(type: .success)
+          try? await Task.sleep(nanoseconds: 1_000_000_000)
+          onPurchaseSuccess?()
+          dismiss()
+        } else {
+          statusMessage = loc.t("paywall.restoreNone")
+          HapticManager.shared.impact(style: .medium)
+        }
+      } catch {
+        statusMessage = error.localizedDescription
+      }
     }
   }
 
