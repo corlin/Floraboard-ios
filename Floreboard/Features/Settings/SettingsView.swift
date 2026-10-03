@@ -1,9 +1,5 @@
 import SwiftUI
 
-extension AppTheme {
-  static let springDefault = Animation.spring(response: 0.35, dampingFraction: 0.8)
-}
-
 struct SettingsView: View {
   @Environment(\.aiService) var aiService
   @EnvironmentObject var auth: AuthService
@@ -406,7 +402,11 @@ struct SettingsView: View {
       }
     }
   }
+}
 
+// MARK: - Credits text & formatting
+
+extension SettingsView {
   private var currentCredits: Int {
     viewModel.creditsData?.credits ?? auth.currentTenant?.credits ?? 30
   }
@@ -419,38 +419,21 @@ struct SettingsView: View {
     return tier.lowercased() == "pro"
   }
 
-  private var proBadgeTitle: String {
-    let t = localizationManager.t("settings.credits.proBadge")
-    return t != "settings.credits.proBadge" ? t : localizationManager.t("settings.credits.tier_pro")
+  /// 先用新文案键，没有翻译时退回旧键名（兼容尚未更新的语言包）
+  private func text(_ key: String, orLegacy legacyKey: String, _ args: [String: String] = [:]) -> String {
+    let primary = localizationManager.t(key, args)
+    return primary != key ? primary : localizationManager.t(legacyKey, args)
   }
 
-  private var freeBadgeTitle: String {
-    let t = localizationManager.t("settings.credits.freeBadge")
-    return t != "settings.credits.freeBadge" ? t : localizationManager.t("settings.credits.tier_free")
-  }
+  private var proBadgeTitle: String { text("settings.credits.proBadge", orLegacy: "settings.credits.tier_pro") }
+  private var freeBadgeTitle: String { text("settings.credits.freeBadge", orLegacy: "settings.credits.tier_free") }
+  private var rechargeButtonTitle: String { text("settings.credits.recharge", orLegacy: "settings.credits.upgrade_button") }
+  private var historyTitle: String { text("settings.credits.history", orLegacy: "settings.credits.recent_title") }
+  private var noHistoryTitle: String { text("settings.credits.noHistory", orLegacy: "settings.credits.empty") }
 
   private func expirationText(_ dateString: String) -> String {
     let formatted = formatExpirationDate(dateString)
-    let t = localizationManager.t("settings.credits.expires", ["date": formatted])
-    if t != "settings.credits.expires" {
-      return t
-    }
-    return localizationManager.t("settings.credits.expires_at", ["date": formatted])
-  }
-
-  private var rechargeButtonTitle: String {
-    let t = localizationManager.t("settings.credits.recharge")
-    return t != "settings.credits.recharge" ? t : localizationManager.t("settings.credits.upgrade_button")
-  }
-
-  private var historyTitle: String {
-    let t = localizationManager.t("settings.credits.history")
-    return t != "settings.credits.history" ? t : localizationManager.t("settings.credits.recent_title")
-  }
-
-  private var noHistoryTitle: String {
-    let t = localizationManager.t("settings.credits.noHistory")
-    return t != "settings.credits.noHistory" ? t : localizationManager.t("settings.credits.empty")
+    return text("settings.credits.expires", orLegacy: "settings.credits.expires_at", ["date": formatted])
   }
 
   private func formatExpirationDate(_ dateString: String) -> String {
@@ -483,7 +466,8 @@ struct SettingsView: View {
        desc.contains("新用户") || desc.contains("welcome") || desc.contains("bonus") || desc.contains("赠送") {
       return localizationManager.t("settings.credits.tx.welcome_bonus")
     }
-    if type.contains("sub") || desc.contains("订阅") || desc.contains("subscription") || desc.contains("yearly") || desc.contains("monthly") {
+    let subscriptionWords = ["订阅", "subscription", "yearly", "monthly"]
+    if type.contains("sub") || subscriptionWords.contains(where: { desc.contains($0) }) {
       return localizationManager.t("settings.credits.tx.subscription")
     }
     if type.contains("pack") || type.contains("recharge") || type.contains("top_up") ||

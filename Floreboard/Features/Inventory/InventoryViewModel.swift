@@ -8,7 +8,7 @@ import SwiftUI
 class InventoryViewModel: ObservableObject {
   @Published var flowers: [FlowerType] = []
   @Published var searchText: String = ""
-  @Published var selectedCategory: FlowerCategory? = nil
+  @Published var selectedCategory: FlowerCategory?
 
   private var inventoryService: InventoryService?
   private var cancellables = Set<AnyCancellable>()
@@ -33,15 +33,10 @@ class InventoryViewModel: ObservableObject {
     }
   }
 
-  func addFlower(
-    name: String, color: String, quantity: Int, cost: Double, price: Double,
-    category: FlowerCategory, cultureTags: [String] = [], meaning: String = ""
-  ) {
-    let newFlower = FlowerType(
-      name: name, color: color, quantity: quantity, initialStock: quantity, category: category,
-      unitCost: cost, retailPrice: price, meaning: meaning)
-    var flower = newFlower
-    flower.cultureTags = cultureTags
+  /// 新增花材：初始库存即当前数量
+  func addFlower(_ draft: FlowerType) {
+    var flower = draft
+    flower.initialStock = draft.quantity
     inventoryService?.addFlower(flower)
   }
 

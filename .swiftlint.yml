@@ -6,6 +6,8 @@ included:
 
 excluded:
   - Floreboard/Assets.xcassets
+  # 由网页端 scripts/gen-ios-production-strings.mjs 自动生成，请勿手改，也不做风格检查
+  - Floreboard/Core/Localization/ProductionStrings.swift
   - DerivedData
   - build
 
@@ -56,6 +58,8 @@ type_body_length:
 type_name:
   min_length: 3
   max_length: 50
+  excluded:
+    - Tx # 全项目统一的本地化入口（Tx.t(...)），刻意保持简短
 
 identifier_name:
   min_length:
@@ -73,6 +77,10 @@ identifier_name:
     - s
     - c
     - ok
+
+# 错误码映射等函数本质上是一个大 switch，分支数不代表难以理解
+cyclomatic_complexity:
+  ignores_case_statements: true
 
 # Nesting
 nesting:

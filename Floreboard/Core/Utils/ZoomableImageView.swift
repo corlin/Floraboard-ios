@@ -35,7 +35,7 @@ struct ZoomableImageView: UIViewRepresentable {
       imageView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
       imageView.heightAnchor.constraint(equalTo: scrollView.heightAnchor),
       imageView.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
-      imageView.centerYAnchor.constraint(equalTo: scrollView.centerYAnchor),
+      imageView.centerYAnchor.constraint(equalTo: scrollView.centerYAnchor)
     ])
 
     // Double tap gesture
@@ -110,9 +110,9 @@ struct FullScreenImageView: View {
       VStack {
         HStack {
           Spacer()
-          Button(action: {
+          Button {
             dismiss()
-          }) {
+          } label: {
             Image(systemName: "xmark.circle.fill")
               .font(.system(size: 30))
               .foregroundColor(.white.opacity(0.8))

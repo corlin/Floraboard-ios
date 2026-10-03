@@ -15,7 +15,8 @@ struct PurchaseOrderGenerator {
       return Tx.t("purchase.no_low_stock")
     }
 
-    var summary = "📦 \(Tx.t("purchase.title")) (\(DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)))\n"
+    let today = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)
+    var summary = "📦 \(Tx.t("purchase.title")) (\(today))\n"
     summary += "-----------------------------------\n"
 
     var totalCost: Double = 0.0
@@ -24,7 +25,9 @@ struct PurchaseOrderGenerator {
       let deficit = max(20, flower.initialStock - flower.quantity)
       let cost = Double(deficit) * flower.unitCost
       totalCost += cost
-      summary += "• \(flower.name): \(Tx.t("inventory.stock")) \(flower.quantity) -> \(Tx.t("purchase.need")) +\(deficit) (\(Tx.t("purchase.cost")) ¥\(String(format: "%.2f", cost)))\n"
+      let costText = "\(Tx.t("purchase.cost")) ¥\(String(format: "%.2f", cost))"
+      let stockText = "\(Tx.t("inventory.stock")) \(flower.quantity)"
+      summary += "• \(flower.name): \(stockText) -> \(Tx.t("purchase.need")) +\(deficit) (\(costText))\n"
     }
 
     summary += "-----------------------------------\n"

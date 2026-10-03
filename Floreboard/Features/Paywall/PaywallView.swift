@@ -17,12 +17,12 @@ struct PaywallView: View {
   @EnvironmentObject var auth: AuthService
   @Environment(\.dismiss) var dismiss
 
-  var onPurchaseSuccess: (() -> Void)? = nil
+  var onPurchaseSuccess: (() -> Void)?
 
-  @State private var currentCredits: Int? = nil
+  @State private var currentCredits: Int?
   @State private var tier: String = "free"
   @State private var isProcessing: Bool = false
-  @State private var statusMessage: String? = nil
+  @State private var statusMessage: String?
 
   private var defaultPlans: [DisplayPlan] {
     [
@@ -188,9 +188,9 @@ struct PaywallView: View {
           }
 
           // Skip Button
-          Button(action: {
+          Button {
             dismiss()
-          }) {
+          } label: {
             Text(Tx.t("paywall.later"))
               .font(AppTheme.sansFont(size: 14, weight: .medium))
               .foregroundColor(AppTheme.mutedText)

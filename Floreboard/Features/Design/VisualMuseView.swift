@@ -36,10 +36,10 @@ struct VisualMuseView: View {
             .frame(maxHeight: .infinity, alignment: .top)
             .cornerRadius(AppTheme.imageRadius)
             
-            Button(action: {
+            Button {
               viewModel.selectedImage = nil
               pickerItem = nil
-            }) {
+            } label: {
               Image(systemName: "xmark.circle.fill")
                 .font(.system(size: 24))
                 .foregroundColor(.white)
@@ -47,7 +47,6 @@ struct VisualMuseView: View {
             }
             .padding(16)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-
           } else {
             VStack(spacing: 16) {
               ZStack {
@@ -83,8 +82,7 @@ struct VisualMuseView: View {
       .onChange(of: pickerItem) { _, newItem in
         Task {
           if let data = try? await newItem?.loadTransferable(type: Data.self),
-            let image = UIImage(data: data)
-          {
+            let image = UIImage(data: data) {
             viewModel.selectedImage = image
           }
         }
@@ -106,7 +104,7 @@ struct VisualMuseView: View {
                       ("auto", Tx.t("design.vm.options.scale.auto")),
                       ("micro", Tx.t("design.vm.options.scale.micro")),
                       ("small", Tx.t("design.vm.options.scale.small")),
-                      ("large", Tx.t("design.vm.options.scale.large")),
+                      ("large", Tx.t("design.vm.options.scale.large"))
                   ],
                   selection: Binding(
                       get: { viewModel.request.scalePreference ?? "auto" },
@@ -123,7 +121,7 @@ struct VisualMuseView: View {
                       ("auto", Tx.t("design.vm.options.mood.auto")),
                       ("romantic", Tx.t("design.vm.options.mood.romantic")),
                       ("serene", Tx.t("design.vm.options.mood.serene")),
-                      ("dramatic", Tx.t("design.vm.options.mood.dramatic")),
+                      ("dramatic", Tx.t("design.vm.options.mood.dramatic"))
                   ],
                   selection: Binding(
                       get: { viewModel.request.moodPreference ?? "auto" },
@@ -140,7 +138,7 @@ struct VisualMuseView: View {
                       ("auto", Tx.t("design.vm.options.form.auto")),
                       ("vertical", Tx.t("design.vm.options.form.vertical")),
                       ("cascade", Tx.t("design.vm.options.form.cascade")),
-                      ("organic", Tx.t("design.vm.options.form.organic")),
+                      ("organic", Tx.t("design.vm.options.form.organic"))
                   ],
                   selection: Binding(
                       get: { viewModel.request.formPreference ?? "auto" },
@@ -156,7 +154,7 @@ struct VisualMuseView: View {
                   options: [
                       ("auto", Tx.t("design.vm.options.bg.auto")),
                       ("minimal", Tx.t("design.vm.options.bg.minimal")),
-                      ("luxe", Tx.t("design.vm.options.bg.luxe")),
+                      ("luxe", Tx.t("design.vm.options.bg.luxe"))
                   ],
                   selection: Binding(
                       get: { viewModel.request.backgroundStyle ?? "auto" },

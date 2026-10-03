@@ -17,7 +17,7 @@ struct FloristWorkbenchView: View {
 
   @State private var checkedItemIds: Set<String> = []
   @State private var showFullImage = false
-  @State private var workbenchImage: UIImage? = nil
+  @State private var workbenchImage: UIImage?
 
   var associatedDesign: DesignResult? {
     guard let designId = order.designId else { return nil }

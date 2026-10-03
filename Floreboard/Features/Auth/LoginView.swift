@@ -184,7 +184,9 @@ struct LoginView: View {
                     .clipShape(Capsule())
                     .overlay(
                       Capsule()
-                        .stroke(focusedField == .shopName ? royalForestGreen : fieldBorderNormal, lineWidth: focusedField == .shopName ? 1.5 : 1)
+                        .stroke(
+                          focusedField == .shopName ? royalForestGreen : fieldBorderNormal,
+                          lineWidth: focusedField == .shopName ? 1.5 : 1)
                     )
                     .transition(.opacity)
                   }
@@ -216,7 +218,9 @@ struct LoginView: View {
                   .clipShape(Capsule())
                   .overlay(
                     Capsule()
-                      .stroke(focusedField == .email ? royalForestGreen : fieldBorderNormal, lineWidth: focusedField == .email ? 1.5 : 1)
+                      .stroke(
+                        focusedField == .email ? royalForestGreen : fieldBorderNormal,
+                        lineWidth: focusedField == .email ? 1.5 : 1)
                   )
 
                   HStack(spacing: 12) {
@@ -261,7 +265,9 @@ struct LoginView: View {
                   .clipShape(Capsule())
                   .overlay(
                     Capsule()
-                      .stroke(focusedField == .password ? royalForestGreen : fieldBorderNormal, lineWidth: focusedField == .password ? 1.5 : 1)
+                      .stroke(
+                        focusedField == .password ? royalForestGreen : fieldBorderNormal,
+                        lineWidth: focusedField == .password ? 1.5 : 1)
                   )
                 }
 

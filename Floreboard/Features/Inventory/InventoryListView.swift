@@ -5,7 +5,7 @@ struct InventoryView: View {
   @EnvironmentObject var inventoryService: InventoryService
   @StateObject private var viewModel = InventoryViewModel()
   @State private var showingAddSheet = false
-  @State private var editingFlower: FlowerType? = nil
+  @State private var editingFlower: FlowerType?
   @State private var animateItems = false
   @State private var showingExportSheet = false
   @State private var exportText = ""
@@ -112,7 +112,9 @@ struct InventoryView: View {
                     }
                     .opacity(animateItems ? 1 : 0)
                     .offset(y: animateItems ? 0 : 20)
-                    .animation(.spring(response: 0.4, dampingFraction: 0.8).delay(Double(min(index, 15)) * 0.05), value: animateItems)
+                    .animation(
+                      .spring(response: 0.4, dampingFraction: 0.8).delay(Double(min(index, 15)) * 0.05),
+                      value: animateItems)
                 }
               }
             }

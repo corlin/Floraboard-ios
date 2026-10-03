@@ -10,7 +10,7 @@ import UIKit
 
 struct LegalFooterView: View {
   @EnvironmentObject private var loc: LocalizationManager
-  @State private var activeDocument: LegalDocumentType? = nil
+  @State private var activeDocument: LegalDocumentType?
   @State private var showCopiedToast: Bool = false
 
   var body: some View {

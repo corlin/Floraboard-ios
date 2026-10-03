@@ -30,8 +30,7 @@ class AIService: ObservableObject {
 
   private func loadBaseConfig() -> ApiConfig {
     if let data = UserDefaults.standard.data(forKey: "api_config"),
-      let saved = try? JSONDecoder().decode(ApiConfig.self, from: data)
-    {
+      let saved = try? JSONDecoder().decode(ApiConfig.self, from: data) {
       var normalized = saved
       normalized.normalizeEndpoints()
       return normalized
@@ -96,8 +95,7 @@ class AIService: ObservableObject {
 
   /// Generates a floral design plan based on user request
   func generateFlowerPlan(request: DesignRequest, inventory: [FlowerType]) async throws
-    -> DesignResult
-  {
+    -> DesignResult {
     let tenantId = await currentTenantId()
     return try await makeProxyClient().generatePlan(
       tenantId: tenantId,
@@ -109,8 +107,7 @@ class AIService: ObservableObject {
 
   /// Generates design from image (Visual Muse)
   func generateDesignFromImage(image: UIImage, request: DesignRequest, inventory: [FlowerType])
-    async throws -> DesignResult
-  {
+    async throws -> DesignResult {
     let client = try makeProxyClient()
     let tenantId = await currentTenantId()
     return try await client.submitVisualDesign(
@@ -136,8 +133,7 @@ class AIService: ObservableObject {
   private var aiProxyBaseURL: String {
     if let value = Bundle.main.object(forInfoDictionaryKey: "FLOREBOARD_AI_PROXY_BASE_URL")
       as? String,
-      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    {
+      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       var cleanValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
       if !cleanValue.hasPrefix("http") {
         cleanValue = "https://" + cleanValue
@@ -149,8 +145,7 @@ class AIService: ObservableObject {
     }
 
     if let value = UserDefaults.standard.string(forKey: "ai_proxy_base_url"),
-      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    {
+      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       var cleanValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
       if !cleanValue.hasPrefix("http") {
         cleanValue = "https://" + cleanValue
@@ -168,23 +163,20 @@ class AIService: ObservableObject {
   private func configuredProxyToken() -> String? {
     // 1. Prefer JWT access token from AuthService
     if let jwt = AuthService.shared.accessToken,
-      !jwt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    {
+      !jwt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       return jwt
     }
 
     // 2. Fallback: Info.plist
     if let value = Bundle.main.object(forInfoDictionaryKey: ManagedAIConfig.proxyTokenInfoKey)
       as? String,
-      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    {
+      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       return value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // 3. Fallback: Keychain (legacy)
     if let value = KeychainManager.shared.load(forKey: ManagedAIConfig.proxyTokenDefaultsKey),
-      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    {
+      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       return value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
@@ -203,7 +195,6 @@ class AIService: ObservableObject {
     let client = try makeProxyClient()
     return try await client.generateFloralImage(tenantId: tenantId, prompt: prompt)
   }
-
 }
 
 enum AIError: Error, LocalizedError {

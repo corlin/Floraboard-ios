@@ -141,7 +141,7 @@ class HistoryService: ObservableObject {
     if let mapped = mappedItems {
       inventory.deductInventoryExact(items: mapped)
     } else {
-      let _ = inventory.deductInventory(for: design.flowerList)
+      _ = inventory.deductInventory(for: design.flowerList)
     }
     saveDesign(updatedDesign)
   }

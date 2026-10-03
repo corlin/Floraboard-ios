@@ -10,6 +10,8 @@ struct DesignResult {
   var imageUrl: String? = nil; var imageStatus: ImageStatus? = nil; var imageError: String? = nil
   var imagePrompt: String? = nil; var referenceImageUrl: String? = nil
   var rating: Int? = nil; var feedback: String? = nil; var createdAt: Double = 0
+  // 真实类型是 DesignRequestSnapshot / DesignFindings；合并逻辑只关心“有没有”
+  var request: String? = nil; var findings: String? = nil
 }
 var failures = 0
 func check(_ name: String, _ cond: Bool) { if cond { print("PASS  \(name)") } else { failures += 1; print("FAIL  \(name)") } }
@@ -46,6 +48,8 @@ var l3 = DesignResult(); l3.imageStatus = .succeeded
 check("local success overrides cloud failure", DesignMerge.merge(local: l3, cloud: c3).imageStatus == .succeeded && DesignMerge.merge(local: l3, cloud: c3).imageError == nil)
 check("local failure does not override cloud success", DesignMerge.merge(local: c3, cloud: l3).imageStatus == .succeeded)
 check("empty local image never blanks a cloud image", { var c = DesignResult(); c.imageUrl = "https://x/y.jpg"; return DesignMerge.merge(local: DesignResult(), cloud: c).imageUrl == "https://x/y.jpg" }())
+check("cloud copy without request/findings keeps the local ones", { var l = DesignResult(); l.request = "req"; l.findings = "fnd"; let m = DesignMerge.merge(local: l, cloud: DesignResult()); return m.request == "req" && m.findings == "fnd" }())
+check("cloud request/findings win when present", { var l = DesignResult(); l.request = "old"; var c = DesignResult(); c.request = "new"; c.findings = "srv"; let m = DesignMerge.merge(local: l, cloud: c); return m.request == "new" && m.findings == "srv" }())
 
 print(failures == 0 ? "\nALL PASSED" : "\n\(failures) FAILED")
 exit(failures == 0 ? 0 : 1)

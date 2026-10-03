@@ -52,14 +52,14 @@ struct EditFlowerSheet: View {
 
         Section(header: Text(Tx.t("inventory.form.culture"))) {
           ForEach(availableCultures, id: \.self) { culture in
-            Button(action: {
+            Button {
               HapticManager.shared.selection()
               if selectedCultures.contains(culture) {
                 selectedCultures.remove(culture)
               } else {
                 selectedCultures.insert(culture)
               }
-            }) {
+            } label: {
               HStack {
                 Text(Tx.t("inventory.form.cultureOptions.\(culture)"))
                   .foregroundColor(AppTheme.foreground)
@@ -159,9 +159,11 @@ struct EditFlowerSheet: View {
       viewModel.updateFlower(flower)
     } else {
       // Add
-      viewModel.addFlower(
-        name: name, color: color, quantity: quantity, cost: cost, price: price,
-        category: category, cultureTags: Array(selectedCultures), meaning: meaning)
+      var draft = FlowerType(
+        name: name, color: color, quantity: quantity, initialStock: quantity, category: category,
+        unitCost: cost, retailPrice: price, meaning: meaning)
+      draft.cultureTags = Array(selectedCultures)
+      viewModel.addFlower(draft)
     }
   }
 }

@@ -15,7 +15,7 @@ struct DesignFinding: Codable, Equatable, Identifiable {
   var id: String
   var level: Level
   var params: [String: String]
-  var flowers: [String]? = nil
+  var flowers: [String]?
 
   enum CodingKeys: String, CodingKey { case id, level, params, flowers }
 
@@ -34,7 +34,7 @@ struct DesignFinding: Codable, Equatable, Identifiable {
     flowers = try? c.decodeIfPresent([String].self, forKey: .flowers)
     var out: [String: String] = [:]
     if let raw = try? c.decodeIfPresent([String: FlexibleScalar].self, forKey: .params) {
-      for (k, v) in raw { out[k] = v.text }
+      for (key, value) in raw { out[key] = value.text }
     }
     params = out
   }
@@ -45,20 +45,27 @@ private struct FlexibleScalar: Decodable {
   let text: String
   init(from decoder: Decoder) throws {
     let c = try decoder.singleValueContainer()
-    if let s = try? c.decode(String.self) { text = s }
-    else if let i = try? c.decode(Int.self) { text = String(i) }
-    else if let d = try? c.decode(Double.self) {
-      text = d == d.rounded() ? String(Int(d)) : String(d)
-    } else if let b = try? c.decode(Bool.self) { text = String(b) }
-    else { text = "" }
+    if let s = try? c.decode(String.self) {
+      text = s
+    } else if let i = try? c.decode(Int.self) {
+      text = String(i)
+    } else if let double = try? c.decode(Double.self) {
+      text = double == double.rounded() ? String(Int(double)) : String(double)
+    } else if let bool = try? c.decode(Bool.self) { text = String(bool) } else { text = "" }
   }
 }
 
 struct DesignFindings: Codable, Equatable {
   /// 规则库版本；"plan" 表示来自生成接口、尚未被云端重算
-  var v: String
+  var version: String
   var at: String
   var items: [DesignFinding]
+
+  /// 服务端 JSON 用短字段名 "v"
+  enum CodingKeys: String, CodingKey {
+    case version = "v"
+    case at, items
+  }
 
   var errorCount: Int { items.filter { $0.level == .error }.count }
   var warnCount: Int { items.filter { $0.level == .warn }.count }

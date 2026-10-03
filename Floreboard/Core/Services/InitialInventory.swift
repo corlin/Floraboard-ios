@@ -160,7 +160,7 @@ extension FlowerType {
       FlowerType(
         name: "尤加利果", color: "#556B2F", quantity: 50, initialStock: 50, category: .foliage,
         unitCost: 6, retailPrice: 15, meaning: "恩赐、回忆"
-      ).withTags(["western", "universal"]),
+      ).withTags(["western", "universal"])
     ]
   }
 }

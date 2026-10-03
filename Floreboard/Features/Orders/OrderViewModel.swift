@@ -10,7 +10,7 @@ import Foundation
 
 @MainActor
 class OrderViewModel: ObservableObject {
-  @Published var selectedFilter: OrderStatus? = nil
+  @Published var selectedFilter: OrderStatus?
   @Published var searchText: String = ""
 
   func filteredOrders(from orders: [OrderRecord]) -> [OrderRecord] {

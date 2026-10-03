@@ -8,6 +8,9 @@
 
 import SwiftUI
 
+// 法律条文正文按段落保持为单行字符串，便于与网页版（docs/legal）逐字对照，不做折行
+// swiftlint:disable line_length
+
 struct LegalDocumentView: View {
   let documentType: LegalDocumentType
   @Environment(\.dismiss) private var dismiss
@@ -296,3 +299,4 @@ struct LegalDocumentView: View {
     loc.currentLanguage == .zh
   }
 }
+// swiftlint:enable line_length

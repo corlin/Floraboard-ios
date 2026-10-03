@@ -128,7 +128,8 @@ struct FlowerRow: View {
     .padding(.vertical, 14)
     .glassmorphic()
     .accessibilityElement(children: .combine)
-    .accessibilityLabel("\(flower.name), \(Tx.t("inventory.row.stock")) \(flower.quantity), \(CurrencyFormat.compact(flower.retailPrice))")
+    .accessibilityLabel(
+      "\(flower.name), \(Tx.t("inventory.row.stock")) \(flower.quantity), \(CurrencyFormat.compact(flower.retailPrice))")
   }
 }
 

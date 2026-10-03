@@ -21,7 +21,7 @@ class StoreKitManager: ObservableObject {
   @Published var isRestoring = false
   @Published var purchaseError: Error?
   @Published var isProMember = false
-  @Published var subscriptionExpirationDate: Date? = nil
+  @Published var subscriptionExpirationDate: Date?
 
   /// Comprehensive product IDs supporting standard reverse-domain and shorthand IDs
   let productIDs: [String] = [
@@ -39,7 +39,7 @@ class StoreKitManager: ObservableObject {
     "credit_pack_300"
   ]
 
-  private var updatesTask: Task<Void, Never>? = nil
+  private var updatesTask: Task<Void, Never>?
 
   init() {
     updatesTask = listenForTransactions()
@@ -98,7 +98,7 @@ class StoreKitManager: ObservableObject {
   /// Checks current active entitlements directly from Apple's cryptographically secured local StoreKit database
   func checkEntitlements() async {
     var hasActivePro = false
-    var latestExpiry: Date? = nil
+    var latestExpiry: Date?
 
     for await result in Transaction.currentEntitlements {
       do {
@@ -110,10 +110,8 @@ class StoreKitManager: ObservableObject {
 
           if isSubscriptionProduct(transaction.productID) {
             hasActivePro = true
-            if let exp = transaction.expirationDate {
-              if latestExpiry == nil || exp > latestExpiry! {
-                latestExpiry = exp
-              }
+            if let exp = transaction.expirationDate, exp > (latestExpiry ?? .distantPast) {
+              latestExpiry = exp
             }
           }
         }

@@ -96,7 +96,9 @@ final class SyncOutbox {
         AppLogger.sync.info("pushed \(op.kind.rawValue, privacy: .public) \(op.id, privacy: .public)")
       } catch let failure as OpFailure {
         state.fail(op, kind: failure.kind, now: now(), message: failure.message)
-        AppLogger.sync.error("\(op.kind.rawValue, privacy: .public) \(op.id, privacy: .public) failed (\(failure.message, privacy: .public)); will retry")
+        let kind = op.kind.rawValue, opId = op.id, reason = failure.message
+        AppLogger.sync.error(
+          "\(kind, privacy: .public) \(opId, privacy: .public) failed (\(reason, privacy: .public)); will retry")
       } catch {
         state.fail(op, kind: .failure, now: now(), message: error.localizedDescription)
       }
@@ -175,7 +177,7 @@ final class SyncOutbox {
   nonisolated static func isNotFound(_ error: Error) -> Bool {
     switch error {
     case AIProxyError.httpStatus(404): return true
-    case AIProxyError.rejected(let e): return e.code == "NOT_FOUND"
+    case AIProxyError.rejected(let rejection): return rejection.code == "NOT_FOUND"
     default: return false
     }
   }
@@ -189,8 +191,8 @@ final class SyncOutbox {
   nonisolated static func describe(_ error: Error) -> String {
     switch error {
     case AIProxyError.httpStatus(let code): return "HTTP \(code)"
-    case AIProxyError.rejected(let e): return e.code ?? e.message
-    case let e as URLError: return "network \(e.code.rawValue)"
+    case AIProxyError.rejected(let rejection): return rejection.code ?? rejection.message
+    case let urlError as URLError: return "network \(urlError.code.rawValue)"
     default: return error.localizedDescription
     }
   }

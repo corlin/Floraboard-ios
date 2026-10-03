@@ -132,7 +132,7 @@ struct AppTheme {
     LinearGradient(
       gradient: Gradient(colors: [
         background,
-        backgroundAccent,
+        backgroundAccent
       ]),
       startPoint: .topLeading,
       endPoint: .bottomTrailing
@@ -263,7 +263,7 @@ struct SecondaryButtonStyle: ButtonStyle {
 struct SectionHeader: View {
   let title: String
   let icon: String
-  var subtitle: String? = nil
+  var subtitle: String?
 
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
@@ -366,7 +366,9 @@ struct WorkbenchPrimaryActionBar: View {
       .padding(.vertical, 16)
       .background(
         (isEnabled && !isLoading) ?
-        AnyView(LinearGradient(colors: [AppTheme.primary, AppTheme.primary.opacity(0.85)], startPoint: .topLeading, endPoint: .bottomTrailing)) :
+        AnyView(LinearGradient(
+          colors: [AppTheme.primary, AppTheme.primary.opacity(0.85)],
+          startPoint: .topLeading, endPoint: .bottomTrailing)) :
         AnyView(AppTheme.mutedText.opacity(0.45))
       )
       .clipShape(RoundedRectangle(cornerRadius: AppTheme.controlRadius, style: .continuous))
@@ -461,3 +463,6 @@ extension View {
   }
 }
 
+extension AppTheme {
+  static let springDefault = Animation.spring(response: 0.35, dampingFraction: 0.8)
+}

@@ -20,15 +20,15 @@ struct DesignReviewSection: View {
         .font(AppTheme.sansFont(size: 11))
         .foregroundColor(AppTheme.mutedText)
 
-      let rows = findings.items.compactMap { f -> (DesignFinding, String)? in
-        let text = Self.render(f)
-        return text.isEmpty ? nil : (f, text)
+      let rows = findings.items.compactMap { finding -> (DesignFinding, String)? in
+        let text = Self.render(finding)
+        return text.isEmpty ? nil : (finding, text)
       }
       if rows.isEmpty {
         row(icon: "checkmark.seal.fill", color: AppTheme.success, text: ProductionStrings.t("knowledge.allClear"))
       } else {
-        ForEach(rows, id: \.0.id) { f, text in
-          let style = Self.style(f.level)
+        ForEach(rows, id: \.0.id) { finding, text in
+          let style = Self.style(finding.level)
           row(icon: style.icon, color: style.color, text: text)
         }
       }
@@ -57,11 +57,11 @@ struct DesignReviewSection: View {
   }
 
   /// 流派/季节参数是 id，先换成当前语言的名称；找不到对应文案时返回空串（该条不显示）
-  static func render(_ f: DesignFinding) -> String {
-    var params = f.params
+  static func render(_ finding: DesignFinding) -> String {
+    var params = finding.params
     if let s = params["school"] { params["school"] = translated("knowledge.school.\(s)", fallback: s) }
     if let s = params["season"] { params["season"] = translated("knowledge.season.\(s)", fallback: s) }
-    let key = "knowledge.rule.\(f.id)"
+    let key = "knowledge.rule.\(finding.id)"
     let text = ProductionStrings.t(key, params)
     return text == key ? "" : text
   }
@@ -77,17 +77,17 @@ struct ReviewBadge: View {
   let findings: DesignFindings?
 
   var body: some View {
-    if let f = findings, f.badgeCount > 0 {
-      Label("\(f.badgeCount)", systemImage: "exclamationmark.triangle.fill")
+    if let reviewed = findings, reviewed.badgeCount > 0 {
+      Label("\(reviewed.badgeCount)", systemImage: "exclamationmark.triangle.fill")
         .font(.caption2.bold())
-        .foregroundColor(f.errorCount > 0 ? .white : .black.opacity(0.8))
+        .foregroundColor(reviewed.errorCount > 0 ? .white : .black.opacity(0.8))
         .padding(.horizontal, 6)
         .padding(.vertical, 2)
-        .background(Capsule().fill(f.errorCount > 0 ? AppTheme.danger : AppTheme.warning))
+        .background(Capsule().fill(reviewed.errorCount > 0 ? AppTheme.danger : AppTheme.warning))
         .accessibilityLabel(
           ProductionStrings.t(
             "knowledge.badge.title",
-            ["error": "\(f.errorCount)", "warn": "\(f.warnCount)", "info": "\(f.infoCount)"]))
+            ["error": "\(reviewed.errorCount)", "warn": "\(reviewed.warnCount)", "info": "\(reviewed.infoCount)"]))
     }
   }
 }

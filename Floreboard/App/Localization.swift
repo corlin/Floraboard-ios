@@ -9,11 +9,11 @@ import Combine
 import Foundation
 
 enum Language: String, CaseIterable, Identifiable {
-  case zh = "zh"
-  case en = "en"
-  case ja = "ja"
-  case ko = "ko"
-  case fr = "fr"
+  case zh
+  case en
+  case ja
+  case ko
+  case fr
 
   var id: String { rawValue }
 
@@ -68,13 +68,12 @@ class LocalizationManager: ObservableObject {
   }
 
   private(set) var localizedBundle: Bundle = .main
-  private(set) var enBundle: Bundle? = nil
-  private(set) var zhBundle: Bundle? = nil
+  private(set) var enBundle: Bundle?
+  private(set) var zhBundle: Bundle?
 
   private init() {
     if let saved = UserDefaults.standard.string(forKey: "app_language"),
-      let lang = Language(rawValue: saved)
-    {
+      let lang = Language(rawValue: saved) {
       self.currentLanguage = lang
     } else {
       let deviceLang = Locale.current.language.languageCode?.identifier ?? "en"
@@ -163,8 +162,8 @@ struct Tx {
     }
 
     // Parameter interpolation
-    for (k, v) in args {
-      value = value.replacingOccurrences(of: "{{\(k)}}", with: v)
+    for (placeholder, replacement) in args {
+      value = value.replacingOccurrences(of: "{{\(placeholder)}}", with: replacement)
     }
     return value
   }

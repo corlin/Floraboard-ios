@@ -28,7 +28,8 @@ struct ProfessionalFormView: View {
             .font(AppTheme.serifFont(size: 18, weight: .semibold))
             .foregroundColor(AppTheme.foreground)
         
-        let schoolOptions: [(String, String)] = [("", Tx.t("design.pro.school.select"))] + viewModel.filteredSchools.map { ($0, Tx.t("pro.school.\($0).name")) }
+        let schoolOptions: [(String, String)] = [("", Tx.t("design.pro.school.select"))]
+          + viewModel.filteredSchools.map { ($0, Tx.t("pro.school.\($0).name")) }
         
         FlowChipSelector(
           options: schoolOptions,
@@ -48,7 +49,8 @@ struct ProfessionalFormView: View {
             .font(AppTheme.serifFont(size: 18, weight: .semibold))
             .foregroundColor(AppTheme.foreground)
             
-        let techOptions: [(String, String)] = [("", Tx.t("design.pro.technique.select"))] + viewModel.filteredTechniques.map { ($0, Tx.t("pro.tech.\($0).name")) }
+        let techOptions: [(String, String)] = [("", Tx.t("design.pro.technique.select"))]
+          + viewModel.filteredTechniques.map { ($0, Tx.t("pro.tech.\($0).name")) }
         
         FlowChipSelector(
           options: techOptions,

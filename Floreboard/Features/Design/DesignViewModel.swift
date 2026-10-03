@@ -58,7 +58,7 @@ class DesignViewModel: ObservableObject {
     ("japanese_ikenobo", .japanese), ("japanese_ohara", .japanese), ("japanese_sogetsu", .japanese),
     ("chinese_literati", .chinese), ("chinese_zen", .chinese),
     ("western_biedermeier", .western), ("western_english", .western),
-    ("fusion", .western),
+    ("fusion", .western)
   ]
 
   let allTechniques: [(id: String, cultures: [CultureFilter])] = [
@@ -68,7 +68,7 @@ class DesignViewModel: ObservableObject {
     ("pave", [.western]),
     ("cascade", [.western, .chinese]),
     ("oasis", [.western, .chinese, .japanese]),
-    ("wiring", [.western]),
+    ("wiring", [.western])
   ]
 
   var filteredSchools: [String] {
@@ -82,7 +82,8 @@ class DesignViewModel: ObservableObject {
   }
 
   func generateDesign() {
-    guard !isLoading, let aiService = aiService, let inventoryService = inventoryService, let localizationManager = localizationManager, let historyService = historyService, let imagePersistence = imagePersistence else { return }
+    guard !isLoading, let aiService, let inventoryService, let localizationManager, let historyService,
+      let imagePersistence else { return }
 
     isLoading = true
     loadingStep = 0
@@ -91,113 +92,21 @@ class DesignViewModel: ObservableObject {
 
     Task {
       do {
-        // Simulate Steps
-        try await Task.sleep(nanoseconds: 800_000_000)
-        await MainActor.run {
-          self.loadingStep = 1
-          self.loadingStatus = localizationManager.t("design.loading.technique")
-        }  // "Selecting Technique..."
-
-        try await Task.sleep(nanoseconds: 800_000_000)
-        await MainActor.run {
-          self.loadingStep = 2
-          self.loadingStatus = localizationManager.t("design.loading.match")
-        }  // "Matching Inventory..."
-
-        try await Task.sleep(nanoseconds: 800_000_000)
-        await MainActor.run {
-          self.loadingStep = 3
-          self.loadingStatus = localizationManager.t("design.loading.generate")
-        }  // "Generating Design..."
-
-        let inventory = inventoryService.flowers
-        var result: DesignResult
-
-        if let image = selectedImage {
-          // Visual Muse Mode
-          result = try await aiService.generateDesignFromImage(
-            image: image, request: request, inventory: inventory)
-          // Persist the reference image so it can be restored or used as fallback later
-          if let refFilename = imagePersistence.saveImage(image, name: "ref_\(result.id)") {
-            result.referenceImageUrl = refFilename
-          }
-        } else {
-          // Standard Mode
-          // Update request with professional mode flags
-          var currentRequest = request
-          if isProfessionalMode {
-            currentRequest.designMode = "professional"
-          }
-          result = try await aiService.generateFlowerPlan(
-            request: currentRequest, inventory: inventory)
-        }
-
-        // Image Generation Step
-        if let prompt = result.imagePrompt, !prompt.isEmpty {
+        // 加载动画：分析 → 选择技法 → 匹配库存 → 生成方案
+        let steps = ["design.loading.technique", "design.loading.match", "design.loading.generate"]
+        for (index, key) in steps.enumerated() {
+          try await Task.sleep(nanoseconds: 800_000_000)
           await MainActor.run {
-            self.loadingStatus = localizationManager.t("design.loading.dreaming")  // "Dreaming up visual..."
-          }
-
-          // Double-layer resilience: 1 silent retry before surfacing error to user
-          var generatedImage: UIImage? = nil
-          var generatedRemoteURL: String? = nil
-          var lastError: Error? = nil
-
-          for attempt in 1...2 {
-            do {
-              let imageUrlString = try await aiService.generateImage(
-                prompt: prompt,
-                requestId: result.syncId ?? result.requestId
-              )
-              AppLogger.ai.debug("Attempt \(attempt): Received image string length: \(imageUrlString.count)")
-
-              generatedRemoteURL = DesignMerge.isRemoteImage(imageUrlString) ? imageUrlString : nil
-              generatedImage = try await resolveGeneratedImage(from: imageUrlString)
-              if generatedImage != nil {
-                lastError = nil
-                break
-              }
-            } catch {
-              lastError = error
-              AppLogger.ai.warning("Image generation attempt \(attempt) failed: \(error.localizedDescription)")
-              if attempt < 2 {
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-              }
-            }
-          }
-
-          // Save generated image or record structured error
-          if let validImage = generatedImage {
-            // 优先保存云端可访问的 URL（跨设备可见）；没有 URL 就上传；都失败才退回本地文件名
-            if let stored = await ImageSyncService.shared.storedImageValue(
-              image: validImage, remoteURL: generatedRemoteURL, designId: result.id, persistence: imagePersistence)
-            {
-              result.imageUrl = stored
-              result.imageStatus = .succeeded
-              result.imageError = nil
-            } else {
-              AppLogger.image.error("Failed to save image to disk")
-              result.imageError = localizationManager.t("error.saveImage")
-              result.imageStatus = .failed
-            }
-          } else if let error = lastError {
-            AppLogger.ai.error("Image generation completely failed after retries: \(error)")
-            result.imageError = AppError(from: error).localizedDescription
-            result.imageStatus = .failed
-          } else {
-            AppLogger.image.error("Failed to decode image from response")
-            result.imageError = localizationManager.t("error.invalidImageData")
-            result.imageStatus = .failed
-          }
-        } else if let selectedImg = selectedImage {
-          // Visual Muse: Fallback to input image if no imagePrompt returned
-          if let stored = await ImageSyncService.shared.storedImageValue(
-            image: selectedImg, remoteURL: nil, designId: result.id, persistence: imagePersistence)
-          {
-            result.imageUrl = stored
-            result.imageStatus = .succeeded
+            self.loadingStep = index + 1
+            self.loadingStatus = localizationManager.t(key)
           }
         }
+
+        var result = try await requestPlan(
+          aiService: aiService, inventory: inventoryService.flowers, imagePersistence: imagePersistence)
+        await attachImage(
+          to: &result, aiService: aiService, imagePersistence: imagePersistence,
+          localizationManager: localizationManager)
 
         let finalizedResult = result
         await MainActor.run {
@@ -207,7 +116,6 @@ class DesignViewModel: ObservableObject {
           // Save to History
           historyService.saveDesign(finalizedResult)
         }
-
       } catch {
         await MainActor.run {
           let appError = AppError(from: error)
@@ -218,6 +126,97 @@ class DesignViewModel: ObservableObject {
           }
           self.isLoading = false
         }
+      }
+    }
+  }
+
+  /// 以图生花或文字生成方案
+  private func requestPlan(
+    aiService: AIService, inventory: [FlowerType], imagePersistence: ImagePersistence
+  ) async throws -> DesignResult {
+    if let image = selectedImage {
+      // Visual Muse Mode
+      var result = try await aiService.generateDesignFromImage(image: image, request: request, inventory: inventory)
+      // Persist the reference image so it can be restored or used as fallback later
+      if let refFilename = imagePersistence.saveImage(image, name: "ref_\(result.id)") {
+        result.referenceImageUrl = refFilename
+      }
+      return result
+    }
+    // Standard Mode: 专业模式需要带上标记
+    var currentRequest = request
+    if isProfessionalMode {
+      currentRequest.designMode = "professional"
+    }
+    return try await aiService.generateFlowerPlan(request: currentRequest, inventory: inventory)
+  }
+
+  /// 生成效果图（静默重试一次）并保存；没有出图提示词时，以图生花退回使用参考图
+  private func attachImage(
+    to result: inout DesignResult, aiService: AIService, imagePersistence: ImagePersistence,
+    localizationManager: LocalizationManager
+  ) async {
+    if let prompt = result.imagePrompt, !prompt.isEmpty {
+      await MainActor.run {
+        self.loadingStatus = localizationManager.t("design.loading.dreaming")  // "Dreaming up visual..."
+      }
+
+      // Double-layer resilience: 1 silent retry before surfacing error to user
+      var generatedImage: UIImage?
+      var generatedRemoteURL: String?
+      var lastError: Error?
+
+      for attempt in 1...2 {
+        do {
+          let imageUrlString = try await aiService.generateImage(
+            prompt: prompt,
+            requestId: result.syncId ?? result.requestId
+          )
+          AppLogger.ai.debug("Attempt \(attempt): Received image string length: \(imageUrlString.count)")
+
+          generatedRemoteURL = DesignMerge.isRemoteImage(imageUrlString) ? imageUrlString : nil
+          generatedImage = try await resolveGeneratedImage(from: imageUrlString)
+          if generatedImage != nil {
+            lastError = nil
+            break
+          }
+        } catch {
+          lastError = error
+          AppLogger.ai.warning("Image generation attempt \(attempt) failed: \(error.localizedDescription)")
+          if attempt < 2 {
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+          }
+        }
+      }
+
+      // Save generated image or record structured error
+      if let validImage = generatedImage {
+        // 优先保存云端可访问的 URL（跨设备可见）；没有 URL 就上传；都失败才退回本地文件名
+        if let stored = await ImageSyncService.shared.storedImageValue(
+          image: validImage, remoteURL: generatedRemoteURL, designId: result.id, persistence: imagePersistence) {
+          result.imageUrl = stored
+          result.imageStatus = .succeeded
+          result.imageError = nil
+        } else {
+          AppLogger.image.error("Failed to save image to disk")
+          result.imageError = localizationManager.t("error.saveImage")
+          result.imageStatus = .failed
+        }
+      } else if let error = lastError {
+        AppLogger.ai.error("Image generation completely failed after retries: \(error)")
+        result.imageError = AppError(from: error).localizedDescription
+        result.imageStatus = .failed
+      } else {
+        AppLogger.image.error("Failed to decode image from response")
+        result.imageError = localizationManager.t("error.invalidImageData")
+        result.imageStatus = .failed
+      }
+    } else if let selectedImg = selectedImage {
+      // Visual Muse: Fallback to input image if no imagePrompt returned
+      if let stored = await ImageSyncService.shared.storedImageValue(
+        image: selectedImg, remoteURL: nil, designId: result.id, persistence: imagePersistence) {
+        result.imageUrl = stored
+        result.imageStatus = .succeeded
       }
     }
   }
@@ -247,8 +246,7 @@ class DesignViewModel: ObservableObject {
           if let stored = await ImageSyncService.shared.storedImageValue(
             image: validImage,
             remoteURL: DesignMerge.isRemoteImage(imageUrlString) ? imageUrlString : nil,
-            designId: result.id, persistence: imagePersistence)
-          {
+            designId: result.id, persistence: imagePersistence) {
             result.imageUrl = stored
             result.imageError = nil
             result.imageStatus = .succeeded
@@ -285,8 +283,7 @@ class DesignViewModel: ObservableObject {
     if let refImage = imagePersistence.loadImage(named: refPath) {
       Task {
         if let stored = await ImageSyncService.shared.storedImageValue(
-          image: refImage, remoteURL: nil, designId: result.id, persistence: imagePersistence)
-        {
+          image: refImage, remoteURL: nil, designId: result.id, persistence: imagePersistence) {
           var updated = result
           updated.imageUrl = stored
           updated.imageError = nil
@@ -313,8 +310,7 @@ class DesignViewModel: ObservableObject {
     // Check for Standard URL with retry
     if let url = URL(string: imageString),
       let scheme = url.scheme?.lowercased(),
-      scheme == "http" || scheme == "https"
-    {
+      scheme == "http" || scheme == "https" {
       return try await AIProxyClient.downloadImageWithRetry(from: url, maxRetries: 2)
     }
 

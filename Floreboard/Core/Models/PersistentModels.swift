@@ -269,4 +269,3 @@ final class OrderRecord {
     (try? JSONDecoder().decode([OrderItem].self, from: itemsData)) ?? []
   }
 }
-

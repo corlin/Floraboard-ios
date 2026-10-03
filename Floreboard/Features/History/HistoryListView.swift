@@ -5,7 +5,7 @@ struct HistoryView: View {
   @Environment(\.hapticManager) var hapticManager
   @State private var searchText = ""
   @State private var animateItems = false
-  var onStartDesign: (() -> Void)? = nil
+  var onStartDesign: (() -> Void)?
 
   var filteredDesigns: [DesignResult] {
     if searchText.isEmpty {
@@ -102,7 +102,9 @@ struct HistoryView: View {
                   .buttonStyle(PlainButtonStyle())  // Important for custom rows in ScrollView
                   .opacity(animateItems ? 1 : 0)
                   .offset(y: animateItems ? 0 : 20)
-                  .animation(.spring(response: 0.4, dampingFraction: 0.8).delay(Double(min(index, 15)) * 0.05), value: animateItems)
+                  .animation(
+                    .spring(response: 0.4, dampingFraction: 0.8).delay(Double(min(index, 15)) * 0.05),
+                    value: animateItems)
                 }
               }
               .padding(.horizontal)

@@ -9,9 +9,9 @@
 import Foundation
 
 enum LegalDocumentType: String, Identifiable, CaseIterable {
-  case privacy = "privacy"
-  case terms = "terms"
-  case refund = "refund"
+  case privacy
+  case terms
+  case refund
 
   var id: String { rawValue }
 

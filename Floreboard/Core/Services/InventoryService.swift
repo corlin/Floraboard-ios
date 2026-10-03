@@ -95,12 +95,12 @@ class InventoryService: ObservableObject {
           predicate: #Predicate { $0.tenantId == tenantId }
         )
         let oldRecords = (try? context.fetch(descriptor)) ?? []
-        for r in oldRecords {
-          context.delete(r)
+        for record in oldRecords {
+          context.delete(record)
         }
 
-        for f in cloudFlowers {
-          let rec = FlowerRecord(from: f)
+        for flower in cloudFlowers {
+          let rec = FlowerRecord(from: flower)
           rec.tenantId = tenantId
           context.insert(rec)
         }
@@ -109,8 +109,8 @@ class InventoryService: ObservableObject {
       } else if AuthService.shared.isNewlyRegistered {
         // New store registered: initialize cloud inventory with default flowers
         let initial = FlowerType.initialData
-        for f in initial {
-          _ = try? await client.createFlower(tenantId: tenantId, flower: f)
+        for flower in initial {
+          _ = try? await client.createFlower(tenantId: tenantId, flower: flower)
         }
         AuthService.shared.isNewlyRegistered = false
       }
@@ -179,20 +179,20 @@ class InventoryService: ObservableObject {
   /// 只更新本地（不排队推送）：服务端原子执行会自己扣减云端库存，这里仅做乐观显示
   func applyLocalDeductions(_ deductions: [String: Int]) {
     for (id, amount) in deductions {
-      guard var f = flowers.first(where: { $0.id == id }) else { continue }
-      f.quantity = max(0, f.quantity - amount)
-      f.totalUsed = (f.totalUsed ?? 0) + amount
-      setLocalOnly(f)
+      guard var updated = flowers.first(where: { $0.id == id }) else { continue }
+      updated.quantity = max(0, updated.quantity - amount)
+      updated.totalUsed = (updated.totalUsed ?? 0) + amount
+      setLocalOnly(updated)
     }
   }
 
   /// 以服务端返回的库存最新值为准（只更新本地）
   func applyServerInventory(_ items: [FlowerType]) {
     for item in items {
-      guard var f = flowers.first(where: { $0.id == item.id }) else { continue }
-      f.quantity = item.quantity
-      f.totalUsed = item.totalUsed
-      setLocalOnly(f)
+      guard var updated = flowers.first(where: { $0.id == item.id }) else { continue }
+      updated.quantity = item.quantity
+      updated.totalUsed = item.totalUsed
+      setLocalOnly(updated)
     }
   }
 

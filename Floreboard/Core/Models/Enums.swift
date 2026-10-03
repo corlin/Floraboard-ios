@@ -20,7 +20,9 @@ enum FlowerCategory: String, Codable, CaseIterable, Identifiable {
 
 enum OccasionType: String, Codable, CaseIterable, Identifiable {
   case wedding, birthday, comfort, home
-  case graduation, opening, apology, valentine, mother_day, other
+  case graduation, opening, apology, valentine
+  case motherDay = "mother_day" // 与服务端/翻译键保持一致
+  case other
 
   var displayName: String { Tx.t("enum.occasion.\(rawValue)") }
   var id: String { self.rawValue }
@@ -28,7 +30,7 @@ enum OccasionType: String, Codable, CaseIterable, Identifiable {
 
 enum RecipientType: String, Codable, CaseIterable, Identifiable {
   case partner, parent, friend, elder
-  case self_recipient = "self"
+  case selfRecipient = "self" // `self` 是关键字，原始值保持 "self"
   case colleague, child
 
   var id: String { self.rawValue }

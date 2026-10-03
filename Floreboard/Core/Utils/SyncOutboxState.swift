@@ -41,7 +41,7 @@ struct OutboxEntry: Codable, Equatable {
   var op: SyncOp
   var failures: Int = 0
   var nextAttemptAt: Double = 0
-  var lastError: String? = nil
+  var lastError: String?
 }
 
 struct OutboxState: Codable, Equatable {
@@ -54,8 +54,8 @@ struct OutboxState: Codable, Equatable {
 
   /// 5s, 10s, 20s ... 封顶 5 分钟
   static func backoff(failures: Int) -> Double {
-    let n = max(0, failures - 1)
-    return min(baseDelay * pow(2, Double(min(n, 10))), maxDelay)
+    let exponent = max(0, failures - 1)
+    return min(baseDelay * pow(2, Double(min(exponent, 10))), maxDelay)
   }
 
   /// 入队：与同一数据上相反的操作互相抵消；重复入队合并并立刻可重试（有了新的本地修改）

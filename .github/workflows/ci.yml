@@ -26,37 +26,27 @@ jobs:
 
   build:
     name: Build & Test
-    runs-on: macos-15
+    # 部署目标是 iOS 26.2，需要 Xcode 26.2+（macos-15 只有 Xcode 16）
+    runs-on: macos-26
     needs: lint
-    strategy:
-      matrix:
-        destination:
-          - "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.0"
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.0.app
+      - name: Select latest stable Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app | grep -vi beta | sort -V | tail -1)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
 
       - name: Build
         run: |
           xcodebuild build \
             -project Floreboard.xcodeproj \
             -scheme Floreboard \
-            -destination "${{ matrix.destination }}" \
+            -destination 'generic/platform=iOS Simulator' \
             -configuration Debug \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            | xcpretty
+            CODE_SIGNING_ALLOWED=NO
 
-      - name: Test
-        run: |
-          xcodebuild test \
-            -project Floreboard.xcodeproj \
-            -scheme Floreboard \
-            -destination "${{ matrix.destination }}" \
-            -configuration Debug \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            | xcpretty
-        continue-on-error: true  # Tests may not exist yet
+      - name: Logic tests
+        run: scripts/run_logic_tests.sh

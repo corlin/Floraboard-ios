@@ -57,6 +57,7 @@ enum ProductionChecks {
   ///   - price: 成交价（本应用中为 totalCost + profit）；<= 0 时不做预算/利润检查
   ///   - executed: 方案已执行时库存已扣过，不再检查缺口
   static func analyze(items: [ProductionItem], price: Double, executed: Bool) -> ProductionAnalysis {
+    // swiftlint:disable:next empty_count - count 是枝数（Int），不是集合
     let rows: [ProductionRow] = items.filter { $0.count > 0 }.map { item in
       let inInv = item.stock != nil
       let short = (!executed && inInv) ? max(0, item.count - (item.stock ?? 0)) : 0
@@ -79,20 +80,21 @@ enum ProductionChecks {
 
     var checks: [ProductionCheck] = []
 
-    for r in rows where r.shortBy > 0 {
+    for row in rows where row.shortBy > 0 {
       checks.append(.init(id: "stockShort", level: .error, params: [
-        "name": r.item.name, "need": String(r.item.count), "have": String(r.item.stock ?? 0), "short": String(r.shortBy),
+        "name": row.item.name, "need": String(row.item.count), "have": String(row.item.stock ?? 0), "short": String(row.shortBy)
       ]))
     }
-    for r in rows where !r.inInventory {
-      checks.append(.init(id: "notInInventory", level: .warn, params: ["name": r.item.name]))
+    for row in rows where !row.inInventory {
+      checks.append(.init(id: "notInInventory", level: .warn, params: ["name": row.item.name]))
     }
 
+    let budgetParams = ["cost": String(Int(cost.rounded())), "budget": String(Int(price.rounded()))]
     if price > 0 {
       if cost > price {
-        checks.append(.init(id: "budgetOver", level: .error, params: ["cost": String(Int(cost.rounded())), "budget": String(Int(price.rounded()))]))
+        checks.append(.init(id: "budgetOver", level: .error, params: budgetParams))
       } else if cost < price * 0.3 {
-        checks.append(.init(id: "budgetUnder", level: .warn, params: ["cost": String(Int(cost.rounded())), "budget": String(Int(price.rounded()))]))
+        checks.append(.init(id: "budgetUnder", level: .warn, params: budgetParams))
       }
       if cost <= price && margin < 0.35 {
         checks.append(.init(id: "lowMargin", level: .warn, params: ["margin": String(Int((margin * 100).rounded()))]))
@@ -103,9 +105,12 @@ enum ProductionChecks {
       checks.append(.init(id: "noMainFlower", level: .warn, params: [:]))
     }
     if stems >= 8 && Double(foliage + filler) / Double(stems) > 0.75 {
-      checks.append(.init(id: "foliageHeavy", level: .warn, params: ["pct": String(Int((Double(foliage + filler) / Double(stems) * 100).rounded()))]))
+      let pct = Int((Double(foliage + filler) / Double(stems) * 100).rounded())
+      checks.append(.init(id: "foliageHeavy", level: .warn, params: ["pct": String(pct)]))
     }
 
-    return ProductionAnalysis(rows: rows, stems: stems, cost: cost, retail: retail, price: price, profit: profit, margin: margin, checks: checks)
+    return ProductionAnalysis(
+      rows: rows, stems: stems, cost: cost, retail: retail, price: price,
+      profit: profit, margin: margin, checks: checks)
   }
 }

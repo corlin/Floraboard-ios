@@ -2,16 +2,16 @@ import SwiftUI
 
 struct ResultView: View {
   let result: DesignResult
-  var onRetryImage: (() -> Void)? = nil
-  var onUseReferenceImage: (() -> Void)? = nil
+  var onRetryImage: (() -> Void)?
+  var onUseReferenceImage: (() -> Void)?
   var isRetryingImage: Bool = false
   @Environment(\.dismiss) private var dismiss
   @EnvironmentObject var historyService: HistoryService
   @EnvironmentObject var inventoryService: InventoryService
   @Environment(\.imagePersistence) var imagePersistence
 
-  @State private var designImage: UIImage? = nil
-  @State private var posterImage: UIImage? = nil
+  @State private var designImage: UIImage?
+  @State private var posterImage: UIImage?
   @State private var isShowingFullScreen = false
   @State private var showStockWarning = false
   @State private var shortages: [InventoryService.StockShortage] = []
@@ -197,7 +197,9 @@ struct ResultView: View {
 
             // Execute Button
             if !executed && result.status == .draft {
-              Button(action: { showExecutionSheet = true }) {
+              Button {
+                showExecutionSheet = true
+              } label: {
                 HStack {
                   Image(systemName: "checkmark.circle.fill")
                   Text(Tx.t("design.action.execute"))

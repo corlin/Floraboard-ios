@@ -19,11 +19,13 @@ struct FloatingTabBar: View {
     @Namespace private var indicatorNamespace
 
     var items: [TabBarItem] = [
-        TabBarItem(id: 0, iconDefault: "square.grid.2x2", iconSelected: "square.grid.2x2.fill", localizationKey: "app.nav.dashboard"),
+        TabBarItem(
+          id: 0, iconDefault: "square.grid.2x2", iconSelected: "square.grid.2x2.fill",
+          localizationKey: "app.nav.dashboard"),
         TabBarItem(id: 1, iconDefault: "leaf", iconSelected: "leaf.fill", localizationKey: "app.nav.inventory"),
         TabBarItem(id: 2, iconDefault: "wand.and.stars", iconSelected: "wand.and.stars", localizationKey: "app.nav.design"),
         TabBarItem(id: 3, iconDefault: "shippingbox", iconSelected: "shippingbox.fill", localizationKey: "app.nav.orders_hub"),
-        TabBarItem(id: 4, iconDefault: "gearshape", iconSelected: "gearshape.fill", localizationKey: "app.nav.settings"),
+        TabBarItem(id: 4, iconDefault: "gearshape", iconSelected: "gearshape.fill", localizationKey: "app.nav.settings")
     ]
 
     var body: some View {

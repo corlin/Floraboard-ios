@@ -42,10 +42,10 @@ enum DesignMerge {
   }
 
   static func normalizedTimestamps(_ design: DesignResult) -> DesignResult {
-    var d = design
-    d.createdAt = seconds(design.createdAt)
-    if let executed = design.executedAt { d.executedAt = seconds(executed) }
-    return d
+    var normalized = design
+    normalized.createdAt = seconds(design.createdAt)
+    if let executed = design.executedAt { normalized.executedAt = seconds(executed) }
+    return normalized
   }
 
   // MARK: - 合并

@@ -85,8 +85,7 @@ class AuthService: ObservableObject {
 
   var authBaseURL: String {
     if let value = Bundle.main.object(forInfoDictionaryKey: "FLOREBOARD_AI_PROXY_BASE_URL") as? String,
-      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    {
+      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       var cleanValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
       if !cleanValue.hasPrefix("http") {
         cleanValue = "https://" + cleanValue
@@ -98,8 +97,7 @@ class AuthService: ObservableObject {
     }
 
     if let value = UserDefaults.standard.string(forKey: "ai_proxy_base_url"),
-      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    {
+      !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       var cleanValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
       if !cleanValue.hasPrefix("http") {
         cleanValue = "https://" + cleanValue
@@ -116,15 +114,13 @@ class AuthService: ObservableObject {
 
   private init() {
     // Restore session from Keychain & UserDefaults
-    if let _ = KeychainManager.shared.load(forKey: "access_token") {
+    if KeychainManager.shared.load(forKey: "access_token") != nil {
       if let tenantData = UserDefaults.standard.data(forKey: "current_tenant"),
-        let tenant = try? JSONDecoder().decode(Tenant.self, from: tenantData)
-      {
+        let tenant = try? JSONDecoder().decode(Tenant.self, from: tenantData) {
         self.currentTenant = tenant
       }
       if let userData = UserDefaults.standard.data(forKey: "current_user"),
-        let user = try? JSONDecoder().decode(AuthUser.self, from: userData)
-      {
+        let user = try? JSONDecoder().decode(AuthUser.self, from: userData) {
         self.currentUser = user
       }
       self.isAuthenticated = true
@@ -149,7 +145,9 @@ class AuthService: ObservableObject {
     if (email == "test" || email == "test@floreboard.com") && password == "123456" {
       let mockTokens = AuthTokens(accessToken: "mock_access_token", refreshToken: "mock_refresh_token", expiresIn: 3600)
       let mockUser = AuthUser(id: "user_test", email: "test@floreboard.com", createdAt: nil)
-      let mockTenant = Tenant(id: "tenant_test", name: "Test Store", ownerId: "user_test", credits: 100, tier: "pro", subscriptionExpiresAt: nil)
+      let mockTenant = Tenant(
+        id: "tenant_test", name: "Test Store", ownerId: "user_test",
+        credits: 100, tier: "pro", subscriptionExpiresAt: nil)
       saveSession(token: mockTokens.accessToken, user: mockUser, tenant: mockTenant)
       return true
     }
@@ -306,7 +304,7 @@ class AuthService: ObservableObject {
   }
 
   private func saveSession(token: String, user: AuthUser?, tenant: Tenant?) {
-    let _ = KeychainManager.shared.save(token, forKey: "access_token")
+    _ = KeychainManager.shared.save(token, forKey: "access_token")
     self.currentUser = user
     self.currentTenant = tenant
     self.isAuthenticated = true

@@ -15,10 +15,10 @@ struct OrderHubView: View {
   @State private var selectedSegment: Int = 0 // 0: Orders, 1: Archive
   @State private var orderSearchText = ""
   @State private var historySearchText = ""
-  @State private var selectedOrderStatus: OrderStatus? = nil
+  @State private var selectedOrderStatus: OrderStatus?
   @State private var animateItems = false
 
-  var onStartDesign: (() -> Void)? = nil
+  var onStartDesign: (() -> Void)?
 
   var filteredOrders: [OrderRecord] {
     var list = orderService.orders
@@ -273,7 +273,7 @@ struct OrderHubView: View {
           .padding(.horizontal)
         } else {
           LazyVStack(spacing: 14) {
-            ForEach(Array(filteredDesigns.enumerated()), id: \.element.id) { index, design in
+            ForEach(Array(filteredDesigns.enumerated()), id: \.element.id) { _, design in
               NavigationLink(destination: DesignDetailView(design: design)) {
                 HistoryRow(design: design)
               }

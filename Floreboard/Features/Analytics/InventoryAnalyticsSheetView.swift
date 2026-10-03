@@ -66,6 +66,7 @@ struct InventoryAnalyticsSheetView: View {
                                     .cornerRadius(4)
                                     .foregroundStyle(by: .value("Category", categoryName(item.category)))
                                     .annotation(position: .overlay) {
+                                        // swiftlint:disable:next empty_count - count 是数量（Int），不是集合
                                         if item.count > 0 {
                                             Text("\(item.count)")
                                                 .font(.caption.bold())

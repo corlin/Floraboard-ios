@@ -20,11 +20,12 @@ enum ExecutionPlan {
     rows: [(name: String, count: Int)], inventory: [(id: String, name: String)]
   ) -> [String: Int] {
     var byName: [String: String] = [:]
-    for f in inventory where byName[norm(f.name)] == nil { byName[norm(f.name)] = f.id }
+    for flower in inventory where byName[norm(flower.name)] == nil { byName[norm(flower.name)] = flower.id }
     var out: [String: Int] = [:]
-    for r in rows where r.count > 0 {
-      guard let id = byName[norm(r.name)] else { continue }
-      out[id] = min(1_000_000, (out[id] ?? 0) + r.count)
+    // swiftlint:disable:next empty_count - count 是枝数（Int），不是集合
+    for row in rows where row.count > 0 {
+      guard let id = byName[norm(row.name)] else { continue }
+      out[id] = min(1_000_000, (out[id] ?? 0) + row.count)
     }
     return out
   }
@@ -33,7 +34,7 @@ enum ExecutionPlan {
   static func matchesServer(mapped: [(id: String, amount: Int)]?, expected: [String: Int]) -> Bool {
     guard let mapped else { return true }
     var got: [String: Int] = [:]
-    for m in mapped where m.amount > 0 { got[m.id, default: 0] += m.amount }
+    for entry in mapped where entry.amount > 0 { got[entry.id, default: 0] += entry.amount }
     return got == expected
   }
 }

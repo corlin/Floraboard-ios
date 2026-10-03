@@ -40,9 +40,9 @@ struct ProductionSheetView: View {
   }
 
   private static func match(_ name: String, in flowers: [FlowerType]) -> FlowerType? {
-    let n = name.trimmingCharacters(in: .whitespaces)
-    return flowers.first { $0.name.localizedCaseInsensitiveCompare(n) == .orderedSame }
-      ?? flowers.first { $0.name.contains(n) || n.contains($0.name) }
+    let trimmed = name.trimmingCharacters(in: .whitespaces)
+    return flowers.first { $0.name.localizedCaseInsensitiveCompare(trimmed) == .orderedSame }
+      ?? flowers.first { $0.name.contains(trimmed) || trimmed.contains($0.name) }
   }
 
   private func stemLength(for name: String) -> Int? {
@@ -52,12 +52,12 @@ struct ProductionSheetView: View {
   }
 
   var body: some View {
-    let a = analysis
+    let computed = analysis // 只算一次，三个区块共用
     VStack(alignment: .leading, spacing: 22) {
-      header(a)
-      recipe(a)
-      checks(a)
-      if let f = findings { DesignReviewSection(findings: f) }
+      header(computed)
+      recipe(computed)
+      checks(computed)
+      if let reviewFindings = findings { DesignReviewSection(findings: reviewFindings) }
       if let p = production, p.hasContent { craft(p) }
     }
     .padding()
@@ -67,16 +67,16 @@ struct ProductionSheetView: View {
 
   // MARK: - Header
 
-  private func header(_ a: ProductionAnalysis) -> some View {
+  private func header(_ analysis: ProductionAnalysis) -> some View {
     HStack(alignment: .firstTextBaseline) {
       Label(ProductionStrings.t("productionSheet.title"), systemImage: "doc.text.magnifyingglass")
         .font(AppTheme.sansFont(size: 18, weight: .bold))
         .foregroundColor(AppTheme.primary)
       Spacer()
       VStack(alignment: .trailing, spacing: 2) {
-        Text(ProductionStrings.t("productionSheet.stems", ["n": "\(a.stems)"]))
-        if let m = production?.estMinutes, m > 0 {
-          Label(ProductionStrings.t("productionSheet.minutes", ["n": "\(m)"]), systemImage: "clock")
+        Text(ProductionStrings.t("productionSheet.stems", ["n": "\(analysis.stems)"]))
+        if let minutes = production?.estMinutes, minutes > 0 {
+          Label(ProductionStrings.t("productionSheet.minutes", ["n": "\(minutes)"]), systemImage: "clock")
         }
       }
       .font(AppTheme.sansFont(size: 12))
@@ -86,30 +86,30 @@ struct ProductionSheetView: View {
 
   // MARK: - Recipe
 
-  private func recipe(_ a: ProductionAnalysis) -> some View {
+  private func recipe(_ analysis: ProductionAnalysis) -> some View {
     VStack(alignment: .leading, spacing: 10) {
       sectionTitle(ProductionStrings.t("productionSheet.recipe"), icon: "shippingbox")
 
-      ForEach(a.rows) { r in
+      ForEach(analysis.rows) { row in
         HStack(alignment: .top, spacing: 10) {
           Circle()
-            .fill(Color(productionHex: r.item.colorHex) ?? AppTheme.hairline)
+            .fill(Color(productionHex: row.item.colorHex) ?? AppTheme.hairline)
             .overlay(Circle().stroke(AppTheme.hairline, lineWidth: 1))
             .frame(width: 12, height: 12)
             .padding(.top, 5)
 
           VStack(alignment: .leading, spacing: 3) {
-            Text(r.item.name)
+            Text(row.item.name)
               .font(AppTheme.serifFont(size: 16))
               .foregroundColor(AppTheme.foreground)
-            detailLine(r)
+            detailLine(row)
           }
           Spacer(minLength: 8)
           VStack(alignment: .trailing, spacing: 3) {
-            Text("×\(r.item.count)")
+            Text("×\(row.item.count)")
               .font(AppTheme.sansFont(size: 16, weight: .bold))
               .foregroundColor(AppTheme.foreground)
-            Text(CurrencyFormat.compact(r.costSubtotal))
+            Text(CurrencyFormat.compact(row.costSubtotal))
               .font(AppTheme.sansFont(size: 12))
               .foregroundColor(AppTheme.mutedText)
           }
@@ -117,53 +117,54 @@ struct ProductionSheetView: View {
         Divider().opacity(0.5)
       }
 
-      totals(a)
+      totals(analysis)
     }
   }
 
   /// 第二行：角色 · 修剪长度 · 库存
-  private func detailLine(_ r: ProductionRow) -> some View {
-    let role = ProductionStrings.t("productionSheet.role.\(r.item.role.rawValue)")
+  private func detailLine(_ row: ProductionRow) -> some View {
+    let role = ProductionStrings.t("productionSheet.role.\(row.item.role.rawValue)")
     return HStack(spacing: 6) {
       Text(role)
-      if let len = stemLength(for: r.item.name) {
+      if let len = stemLength(for: row.item.name) {
         Text("· \(ProductionStrings.t("productionSheet.col.length")) \(len)cm")
       }
-      if !r.inInventory {
+      if !row.inInventory {
         Text("· \(ProductionStrings.t("productionSheet.notInStock"))").foregroundColor(AppTheme.warning)
       } else if design.status != .completed {
-        Text("· \(ProductionStrings.t("productionSheet.col.stock")) \(r.item.stock ?? 0)")
-          .foregroundColor(r.shortBy > 0 ? AppTheme.danger : AppTheme.mutedText)
+        Text("· \(ProductionStrings.t("productionSheet.col.stock")) \(row.item.stock ?? 0)")
+          .foregroundColor(row.shortBy > 0 ? AppTheme.danger : AppTheme.mutedText)
       }
     }
     .font(AppTheme.sansFont(size: 12))
     .foregroundColor(AppTheme.mutedText)
   }
 
-  private func totals(_ a: ProductionAnalysis) -> some View {
+  private func totals(_ analysis: ProductionAnalysis) -> some View {
     VStack(spacing: 6) {
       HStack {
         Text(ProductionStrings.t("productionSheet.total")).fontWeight(.semibold)
         Spacer()
-        Text("\(a.stems)  ·  \(CurrencyFormat.compact(a.cost))").fontWeight(.semibold)
+        Text("\(analysis.stems)  ·  \(CurrencyFormat.compact(analysis.cost))").fontWeight(.semibold)
       }
-      if a.price > 0 {
+      if analysis.price > 0 {
         HStack(alignment: .firstTextBaseline) {
           Text(ProductionStrings.t("productionSheet.priceProfit")).foregroundColor(AppTheme.mutedText)
           Spacer()
-          Text("\(CurrencyFormat.compact(a.price)) → \(a.profit < 0 ? "-" : "")\(CurrencyFormat.compact(abs(a.profit))) · \(Int((a.margin * 100).rounded()))%")
-            .foregroundColor(a.profit < 0 ? AppTheme.danger : AppTheme.success)
+          let profit = "\(analysis.profit < 0 ? "-" : "")\(CurrencyFormat.compact(abs(analysis.profit)))"
+          Text("\(CurrencyFormat.compact(analysis.price)) → \(profit) · \(Int((analysis.margin * 100).rounded()))%")
+            .foregroundColor(analysis.profit < 0 ? AppTheme.danger : AppTheme.success)
             .fontWeight(.medium)
         }
       }
-      if a.retail > 0 {
+      if analysis.retail > 0 {
         HStack(alignment: .top) {
           Text(ProductionStrings.t("productionSheet.retailHint"))
             .font(AppTheme.sansFont(size: 11))
             .foregroundColor(AppTheme.mutedText)
             .fixedSize(horizontal: false, vertical: true)
           Spacer(minLength: 8)
-          Text(CurrencyFormat.compact(a.retail))
+          Text(CurrencyFormat.compact(analysis.retail))
             .font(AppTheme.sansFont(size: 11))
             .foregroundColor(AppTheme.mutedText)
         }
@@ -175,13 +176,13 @@ struct ProductionSheetView: View {
 
   // MARK: - Pre-production checks
 
-  private func checks(_ a: ProductionAnalysis) -> some View {
+  private func checks(_ analysis: ProductionAnalysis) -> some View {
     VStack(alignment: .leading, spacing: 8) {
       sectionTitle(ProductionStrings.t("productionSheet.checks"), icon: "checklist")
-      if a.checks.isEmpty {
+      if analysis.checks.isEmpty {
         checkRow(level: .ok, text: ProductionStrings.t("productionSheet.check.allGood"))
       } else {
-        ForEach(Array(a.checks.enumerated()), id: \.offset) { _, c in
+        ForEach(Array(analysis.checks.enumerated()), id: \.offset) { _, c in
           checkRow(level: c.level, text: ProductionStrings.t("productionSheet.check.\(c.id)", c.params))
         }
       }
@@ -215,7 +216,7 @@ struct ProductionSheetView: View {
       sectionTitle(ProductionStrings.t("productionSheet.craft"), icon: "hands.sparkles")
 
       if let c = p.container, !c.isEmpty { labeled(ProductionStrings.t("productionSheet.container"), c) }
-      if let m = p.mechanics, !m.isEmpty { labeled(ProductionStrings.t("productionSheet.mechanics"), m) }
+      if let mechanics = p.mechanics, !mechanics.isEmpty { labeled(ProductionStrings.t("productionSheet.mechanics"), mechanics) }
 
       if let prep = p.prep, !prep.isEmpty {
         VStack(alignment: .leading, spacing: 6) {
@@ -284,12 +285,12 @@ struct ProductionSheetView: View {
 private extension Color {
   /// 解析 #RRGGBB / RRGGBB；无法解析返回 nil
   init?(productionHex hex: String?) {
-    guard var h = hex?.trimmingCharacters(in: .whitespaces), !h.isEmpty else { return nil }
-    if h.hasPrefix("#") { h.removeFirst() }
-    guard h.count == 6, let v = UInt32(h, radix: 16) else { return nil }
+    guard var digits = hex?.trimmingCharacters(in: .whitespaces), !digits.isEmpty else { return nil }
+    if digits.hasPrefix("#") { digits.removeFirst() }
+    guard digits.count == 6, let rgb = UInt32(digits, radix: 16) else { return nil }
     self.init(
       .sRGB,
-      red: Double((v >> 16) & 0xFF) / 255, green: Double((v >> 8) & 0xFF) / 255, blue: Double(v & 0xFF) / 255,
+      red: Double((rgb >> 16) & 0xFF) / 255, green: Double((rgb >> 8) & 0xFF) / 255, blue: Double(rgb & 0xFF) / 255,
       opacity: 1)
   }
 }

@@ -6,8 +6,8 @@ struct DesignDetailView: View {
   @EnvironmentObject var inventoryService: InventoryService
   @Environment(\.imagePersistence) var imagePersistence
   @State private var currentDesign: DesignResult
-  @State private var designImage: UIImage? = nil
-  @State private var posterImage: UIImage? = nil
+  @State private var designImage: UIImage?
+  @State private var posterImage: UIImage?
   @State private var isShowingFullScreen = false
   @State private var displayedStatus: DesignStatus?
   @State private var showStockWarning = false
@@ -215,7 +215,9 @@ struct DesignDetailView: View {
 
           // Action Buttons
           if currentStatus == .draft {
-            Button(action: { showExecutionSheet = true }) {
+            Button {
+              showExecutionSheet = true
+            } label: {
               HStack {
                 Image(systemName: "checkmark.circle.fill")
                 Text(Tx.t("design.action.execute"))
@@ -336,8 +338,7 @@ struct DesignDetailView: View {
           if let stored = await ImageSyncService.shared.storedImageValue(
             image: validImage,
             remoteURL: DesignMerge.isRemoteImage(imageUrlString) ? imageUrlString : nil,
-            designId: designId, persistence: imagePersistence)
-          {
+            designId: designId, persistence: imagePersistence) {
             await MainActor.run {
               currentDesign.imageUrl = stored
               currentDesign.imageError = nil
@@ -378,8 +379,7 @@ struct DesignDetailView: View {
       let designId = currentDesign.id
       Task {
         if let stored = await ImageSyncService.shared.storedImageValue(
-          image: refImage, remoteURL: nil, designId: designId, persistence: imagePersistence)
-        {
+          image: refImage, remoteURL: nil, designId: designId, persistence: imagePersistence) {
           await MainActor.run {
             currentDesign.imageUrl = stored
             currentDesign.imageError = nil
@@ -404,8 +404,7 @@ struct DesignDetailView: View {
 
     if let url = URL(string: imageString),
       let scheme = url.scheme?.lowercased(),
-      scheme == "http" || scheme == "https"
-    {
+      scheme == "http" || scheme == "https" {
       return try await AIProxyClient.downloadImageWithRetry(from: url, maxRetries: 2)
     }
 

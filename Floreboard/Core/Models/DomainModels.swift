@@ -64,7 +64,7 @@ struct DesignRequest: Codable, Identifiable {
   init(
     id: String = UUID().uuidString,
     occasion: OccasionType = .home,
-    recipient: RecipientType = .self_recipient,
+    recipient: RecipientType = .selfRecipient,
     style: StyleType = .fresh
   ) {
     self.id = id
@@ -87,17 +87,17 @@ struct DesignFlowerItem: Codable, Identifiable {
 struct DesignProduction: Codable, Equatable {
   struct StemLength: Codable, Equatable {
     var flowerName: String
-    var flowerId: String? = nil
+    var flowerId: String?
     var lengthCm: Int
   }
 
-  var container: String? = nil
-  var mechanics: String? = nil
-  var prep: [String]? = nil
-  var stemLengths: [StemLength]? = nil
-  var assembly: [String]? = nil
-  var care: [String]? = nil
-  var estMinutes: Int? = nil
+  var container: String?
+  var mechanics: String?
+  var prep: [String]?
+  var stemLengths: [StemLength]?
+  var assembly: [String]?
+  var care: [String]?
+  var estMinutes: Int?
 
   /// 是否有任何可展示的内容
   var hasContent: Bool {
@@ -112,31 +112,31 @@ struct DesignResult: Codable, Identifiable {
   var title: String
   var description: String
   var flowerList: [DesignFlowerItem]
-  var reasoning: String? = nil  // Added for CoT
+  var reasoning: String?  // Added for CoT
   var steps: [String]
-  var imageUrl: String? = nil
-  var referenceImageUrl: String? = nil
-  var imageTaskId: String? = nil
-  var imageStatus: ImageStatus? = nil
-  var imageError: String? = nil
-  var imagePrompt: String? = nil  // Added for image generation
+  var imageUrl: String?
+  var referenceImageUrl: String?
+  var imageTaskId: String?
+  var imageStatus: ImageStatus?
+  var imageError: String?
+  var imagePrompt: String?  // Added for image generation
   var meaningText: String
   var totalCost: Double
   var profit: Double
   var profitMargin: Double
   var createdAt: Double
-  var requirements: String? = nil
-  var rating: Int? = nil
-  var feedback: String? = nil
+  var requirements: String?
+  var rating: Int?
+  var feedback: String?
   var status: DesignStatus
-  var executedAt: Double? = nil
-  var production: DesignProduction? = nil  // 制作稿（工艺信息），由服务端生成
-  var request: DesignRequestSnapshot? = nil  // 生成参数快照（服务端据此校验）
-  var findings: DesignFindings? = nil  // 专业校验结果（服务端计算）
+  var executedAt: Double?
+  var production: DesignProduction?  // 制作稿（工艺信息），由服务端生成
+  var request: DesignRequestSnapshot?  // 生成参数快照（服务端据此校验）
+  var findings: DesignFindings?  // 专业校验结果（服务端计算）
 
-  var syncId: String? = nil
-  var syncVersion: Int? = nil
-  var syncedAt: Double? = nil
+  var syncId: String?
+  var syncVersion: Int?
+  var syncedAt: Double?
 }
 
 // MARK: - Professional Mode Models
@@ -144,7 +144,6 @@ struct DesignResult: Codable, Identifiable {
 struct FloralSchool: Identifiable, Hashable {
   let id: String
   let culture: CultureType
-  let _descKey: String
 
   var name: String { Tx.t("pro.school.\(id).name") }
 }
@@ -170,14 +169,14 @@ struct FloralSeason: Identifiable, Hashable {
 // Data Sources
 
 let SCHOOLS: [FloralSchool] = [
-  FloralSchool(id: "japanese_ikenobo", culture: .japanese, _descKey: ""),
-  FloralSchool(id: "japanese_ohara", culture: .japanese, _descKey: ""),
-  FloralSchool(id: "japanese_sogetsu", culture: .japanese, _descKey: ""),
-  FloralSchool(id: "chinese_literati", culture: .chinese, _descKey: ""),
-  FloralSchool(id: "chinese_zen", culture: .chinese, _descKey: ""),
-  FloralSchool(id: "western_biedermeier", culture: .western, _descKey: ""),
-  FloralSchool(id: "western_english", culture: .western, _descKey: ""),
-  FloralSchool(id: "fusion", culture: .western, _descKey: ""),
+  FloralSchool(id: "japanese_ikenobo", culture: .japanese),
+  FloralSchool(id: "japanese_ohara", culture: .japanese),
+  FloralSchool(id: "japanese_sogetsu", culture: .japanese),
+  FloralSchool(id: "chinese_literati", culture: .chinese),
+  FloralSchool(id: "chinese_zen", culture: .chinese),
+  FloralSchool(id: "western_biedermeier", culture: .western),
+  FloralSchool(id: "western_english", culture: .western),
+  FloralSchool(id: "fusion", culture: .western)
 ]
 
 let TECHNIQUES: [FloralTechnique] = [
@@ -187,13 +186,13 @@ let TECHNIQUES: [FloralTechnique] = [
   FloralTechnique(id: "pave", cultures: [.western]),
   FloralTechnique(id: "cascade", cultures: [.western, .chinese]),
   FloralTechnique(id: "oasis", cultures: [.western, .chinese, .japanese]),
-  FloralTechnique(id: "wiring", cultures: [.western]),
+  FloralTechnique(id: "wiring", cultures: [.western])
 ]
 
 let PROPORTIONS: [ProportionRule] = [
   ProportionRule(id: "7_5_3", cultures: [.japanese]),
   ProportionRule(id: "golden_ratio", cultures: [.western]),
-  ProportionRule(id: "free", cultures: [.japanese, .chinese, .western]),
+  ProportionRule(id: "free", cultures: [.japanese, .chinese, .western])
 ]
 
 let SEASONS: [FloralSeason] = [
@@ -201,7 +200,7 @@ let SEASONS: [FloralSeason] = [
   FloralSeason(id: "summer", cultures: [.japanese, .chinese, .western]),
   FloralSeason(id: "autumn", cultures: [.japanese, .chinese, .western]),
   FloralSeason(id: "winter", cultures: [.japanese, .chinese, .western]),
-  FloralSeason(id: "all", cultures: [.japanese, .chinese, .western]),
+  FloralSeason(id: "all", cultures: [.japanese, .chinese, .western])
 ]
 
 struct OrderItem: Codable, Identifiable, Hashable {
@@ -219,4 +218,3 @@ struct OrderItem: Codable, Identifiable, Hashable {
     self.unitPrice = unitPrice
   }
 }
-
