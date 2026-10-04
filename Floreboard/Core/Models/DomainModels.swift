@@ -133,6 +133,8 @@ struct DesignResult: Codable, Identifiable {
   var production: DesignProduction?  // 制作稿（工艺信息），由服务端生成
   var request: DesignRequestSnapshot?  // 生成参数快照（服务端据此校验）
   var findings: DesignFindings?  // 专业校验结果（服务端计算）
+  var share: ProposalShare?  // 分享链接（服务端为准）
+  var clientResponse: ClientResponse?  // 客户在分享页上的反馈（服务端为准）
 
   var syncId: String?
   var syncVersion: Int?

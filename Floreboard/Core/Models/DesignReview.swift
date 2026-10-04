@@ -96,3 +96,21 @@ struct DesignRequestSnapshot: Codable, Equatable {
     self.language = language
   }
 }
+
+/// 方案分享链接（服务端生成；未分享为 nil）
+struct ProposalShare: Codable, Equatable {
+  var token: String
+  var showPrice: Bool?
+
+  /// 发给客户的地址
+  var url: URL? { URL(string: "https://floreboard.com/p/\(token)") }
+}
+
+/// 客户在分享页上的反馈（服务端写入，App 只读）
+struct ClientResponse: Codable, Equatable {
+  var decision: String  // "approved" | "changes"
+  var note: String?
+  var at: String?
+
+  var isApproved: Bool { decision == "approved" }
+}

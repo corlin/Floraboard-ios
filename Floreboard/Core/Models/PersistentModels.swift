@@ -117,6 +117,8 @@ final class DesignRecord {
   var productionData: Data?  // DesignProduction 的 JSON；可空，旧数据无此列也能轻量迁移
   var requestData: Data?  // DesignRequestSnapshot 的 JSON（可空，轻量迁移）
   var findingsData: Data?  // DesignFindings 的 JSON（可空，轻量迁移）
+  var shareData: Data?  // ProposalShare 的 JSON（可空，轻量迁移）
+  var clientResponseData: Data?  // ClientResponse 的 JSON（可空，轻量迁移）
   var syncId: String?
   var syncVersion: Int?
   var syncedAt: Double?
@@ -147,6 +149,8 @@ final class DesignRecord {
     self.productionData = design.production.flatMap { try? JSONEncoder().encode($0) }
     self.requestData = design.request.flatMap { try? JSONEncoder().encode($0) }
     self.findingsData = design.findings.flatMap { try? JSONEncoder().encode($0) }
+    self.shareData = design.share.flatMap { try? JSONEncoder().encode($0) }
+    self.clientResponseData = design.clientResponse.flatMap { try? JSONEncoder().encode($0) }
     self.syncId = design.syncId
     self.syncVersion = design.syncVersion
     self.syncedAt = design.syncedAt
@@ -183,6 +187,8 @@ final class DesignRecord {
     result.production = productionData.flatMap { try? JSONDecoder().decode(DesignProduction.self, from: $0) }
     result.request = requestData.flatMap { try? JSONDecoder().decode(DesignRequestSnapshot.self, from: $0) }
     result.findings = findingsData.flatMap { try? JSONDecoder().decode(DesignFindings.self, from: $0) }
+    result.share = shareData.flatMap { try? JSONDecoder().decode(ProposalShare.self, from: $0) }
+    result.clientResponse = clientResponseData.flatMap { try? JSONDecoder().decode(ClientResponse.self, from: $0) }
     result.syncId = syncId
     result.syncVersion = syncVersion
     result.syncedAt = syncedAt
@@ -215,6 +221,8 @@ final class DesignRecord {
     productionData = design.production.flatMap { try? JSONEncoder().encode($0) }
     requestData = design.request.flatMap { try? JSONEncoder().encode($0) }
     findingsData = design.findings.flatMap { try? JSONEncoder().encode($0) }
+    shareData = design.share.flatMap { try? JSONEncoder().encode($0) }
+    clientResponseData = design.clientResponse.flatMap { try? JSONEncoder().encode($0) }
     syncId = design.syncId
     syncVersion = design.syncVersion
     syncedAt = design.syncedAt

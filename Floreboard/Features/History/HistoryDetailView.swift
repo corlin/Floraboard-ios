@@ -26,6 +26,9 @@ struct DesignDetailView: View {
 
       ScrollView {
         VStack(alignment: .leading, spacing: 24) {
+          // 客户反馈 + 发给客户（分享链接）
+          ShareProposalSection(design: currentDesign)
+
           // Main Image
           if let img = designImage {
             Image(uiImage: img)
@@ -259,6 +262,8 @@ struct DesignDetailView: View {
       // 服务端会重算校验结果、原子执行会写入执行状态：把这些“以云端为准”的字段同步进本页副本
       guard let latest = designs.first(where: { $0.id == currentDesign.id }) else { return }
       if latest.findings != currentDesign.findings { currentDesign.findings = latest.findings }
+      if latest.share != currentDesign.share { currentDesign.share = latest.share }
+      if latest.clientResponse != currentDesign.clientResponse { currentDesign.clientResponse = latest.clientResponse }
       if latest.status == .completed && currentDesign.status != .completed {
         currentDesign.status = .completed
         currentDesign.executedAt = latest.executedAt

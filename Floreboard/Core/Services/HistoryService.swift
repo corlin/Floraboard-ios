@@ -109,6 +109,13 @@ class HistoryService: ObservableObject {
     saveDesign(design, push: false)
   }
 
+  /// 分享链接由服务端生成/撤销：只更新本地，不触发再次推送
+  func applyShare(id: String, _ share: ProposalShare?) {
+    guard var design = savedDesigns.first(where: { $0.id == id }), design.share != share else { return }
+    design.share = share
+    saveDesign(design, push: false)
+  }
+
   /// 服务端原子执行完成：以服务端的执行时间为准，只更新本地
   func applyExecution(id: String, executedAt: Double?) {
     guard var design = savedDesigns.first(where: { $0.id == id }) else { return }

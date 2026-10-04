@@ -2,7 +2,7 @@
 //  ProductionStrings.swift
 //  Floreboard
 //
-//  【自动生成】请勿手改。来源：网页端 src/i18n/locales/*.json 的 productionSheet.* / knowledge.* / designDetail.evaluation.*。
+//  【自动生成】请勿手改。来源：网页端 src/i18n/locales/*.json 的 productionSheet.* / knowledge.* / designDetail.evaluation.* / designDetail.share.*。
 //  重新生成：node scripts/gen-ios-production-strings.mjs <本文件路径>
 //
 //  独立于 Localizable.xcstrings，避免与进行中的字符串目录改动冲突；键名与网页端一致，将来可平移进字符串目录。
@@ -115,6 +115,18 @@ enum ProductionStrings {
       "designDetail.evaluation.feedback": "心得 / 客户反馈",
       "designDetail.evaluation.placeholder": "记录客户的反馈，或设计过程中的心得...",
       "designDetail.evaluation.saveBtn": "保存评价",
+      "designDetail.share.button": "发给客户",
+      "designDetail.share.title": "分享方案给客户",
+      "designDetail.share.hint": "把链接发给客户（微信、短信均可）。客户无需注册即可查看，并能直接“确认”或“提出调整”。",
+      "designDetail.share.showPrice": "在分享页显示报价",
+      "designDetail.share.privacy": "分享页只显示效果图、花材与数量、文案和店名；成本、利润与客户信息不会出现，页面也不会被搜索引擎收录。",
+      "designDetail.share.revoke": "撤销链接",
+      "designDetail.share.revoked": "链接已撤销，旧链接立即失效",
+      "designDetail.share.done": "完成",
+      "designDetail.share.failed": "生成分享链接失败，请稍后重试",
+      "designDetail.share.copyFailed": "复制失败，请手动复制链接",
+      "designDetail.share.clientApproved": "客户已确认这个方案",
+      "designDetail.share.clientChanges": "客户希望调整",
     ],
     .en: [
       "productionSheet.title": "Production Sheet",
@@ -210,6 +222,18 @@ enum ProductionStrings {
       "designDetail.evaluation.feedback": "Feedback / Notes",
       "designDetail.evaluation.placeholder": "Record client feedback or design notes...",
       "designDetail.evaluation.saveBtn": "Save Evaluation",
+      "designDetail.share.button": "Send to client",
+      "designDetail.share.title": "Share this design with your client",
+      "designDetail.share.hint": "Send the link by message or email. Your client can view it without signing up and approve it or ask for changes right there.",
+      "designDetail.share.showPrice": "Show the quote on the shared page",
+      "designDetail.share.privacy": "The shared page shows only the image, flowers and quantities, the text and your shop name. Costs, margins and client details never appear, and the page is hidden from search engines.",
+      "designDetail.share.revoke": "Revoke link",
+      "designDetail.share.revoked": "Link revoked — the old link stops working immediately",
+      "designDetail.share.done": "Done",
+      "designDetail.share.failed": "Could not create the share link. Please try again.",
+      "designDetail.share.copyFailed": "Copy failed — please copy the link manually",
+      "designDetail.share.clientApproved": "Your client approved this design",
+      "designDetail.share.clientChanges": "Your client asked for changes",
     ],
     .ja: [
       "productionSheet.title": "制作シート",
@@ -305,6 +329,18 @@ enum ProductionStrings {
       "designDetail.evaluation.feedback": "メモ / 顧客フィードバック",
       "designDetail.evaluation.placeholder": "お客様の反応や、デザイン時のメモを記録...",
       "designDetail.evaluation.saveBtn": "評価を保存",
+      "designDetail.share.button": "お客様に送る",
+      "designDetail.share.title": "デザインをお客様に共有",
+      "designDetail.share.hint": "リンクをメッセージやメールで送ってください。お客様は登録なしで閲覧でき、その場で「承認」または「修正依頼」ができます。",
+      "designDetail.share.showPrice": "共有ページにお見積もりを表示",
+      "designDetail.share.privacy": "共有ページには画像、花材と本数、説明文、店名のみが表示されます。原価・利益・顧客情報は表示されず、検索エンジンにも登録されません。",
+      "designDetail.share.revoke": "リンクを無効化",
+      "designDetail.share.revoked": "リンクを無効化しました。以前のリンクはすぐに使えなくなります",
+      "designDetail.share.done": "完了",
+      "designDetail.share.failed": "共有リンクを作成できませんでした。もう一度お試しください。",
+      "designDetail.share.copyFailed": "コピーできませんでした。手動でコピーしてください",
+      "designDetail.share.clientApproved": "お客様がこのデザインを承認しました",
+      "designDetail.share.clientChanges": "お客様から修正の依頼があります",
     ],
     .ko: [
       "productionSheet.title": "제작 시트",
@@ -400,6 +436,18 @@ enum ProductionStrings {
       "designDetail.evaluation.feedback": "메모 / 고객 피드백",
       "designDetail.evaluation.placeholder": "고객 반응이나 디자인 과정의 메모를 기록하세요...",
       "designDetail.evaluation.saveBtn": "평가 저장",
+      "designDetail.share.button": "고객에게 보내기",
+      "designDetail.share.title": "디자인을 고객과 공유",
+      "designDetail.share.hint": "링크를 메시지나 이메일로 보내세요. 고객은 가입 없이 보고, 그 자리에서 승인하거나 수정을 요청할 수 있습니다.",
+      "designDetail.share.showPrice": "공유 페이지에 견적 표시",
+      "designDetail.share.privacy": "공유 페이지에는 이미지, 꽃 소재와 수량, 설명, 매장 이름만 표시됩니다. 원가·이익·고객 정보는 나타나지 않으며 검색 엔진에도 노출되지 않습니다.",
+      "designDetail.share.revoke": "링크 해제",
+      "designDetail.share.revoked": "링크를 해제했습니다. 이전 링크는 즉시 사용할 수 없습니다",
+      "designDetail.share.done": "완료",
+      "designDetail.share.failed": "공유 링크를 만들지 못했습니다. 다시 시도해 주세요.",
+      "designDetail.share.copyFailed": "복사하지 못했습니다. 직접 복사해 주세요",
+      "designDetail.share.clientApproved": "고객이 이 디자인을 승인했습니다",
+      "designDetail.share.clientChanges": "고객이 수정을 요청했습니다",
     ],
     .fr: [
       "productionSheet.title": "Fiche de fabrication",
@@ -495,6 +543,18 @@ enum ProductionStrings {
       "designDetail.evaluation.feedback": "Notes / Retour Client",
       "designDetail.evaluation.placeholder": "Enregistrez la réaction du client ou vos notes...",
       "designDetail.evaluation.saveBtn": "Sauvegarder",
+      "designDetail.share.button": "Envoyer au client",
+      "designDetail.share.title": "Partager cette composition avec votre client",
+      "designDetail.share.hint": "Envoyez le lien par message ou e-mail. Votre client peut la consulter sans inscription et la valider ou demander des modifications directement.",
+      "designDetail.share.showPrice": "Afficher le devis sur la page partagée",
+      "designDetail.share.privacy": "La page partagée n’affiche que l’image, les fleurs et quantités, le texte et le nom de la boutique. Coûts, marges et données client n’apparaissent jamais, et la page n’est pas indexée.",
+      "designDetail.share.revoke": "Révoquer le lien",
+      "designDetail.share.revoked": "Lien révoqué — l’ancien lien ne fonctionne plus",
+      "designDetail.share.done": "Terminé",
+      "designDetail.share.failed": "Impossible de créer le lien. Veuillez réessayer.",
+      "designDetail.share.copyFailed": "Copie impossible — copiez le lien manuellement",
+      "designDetail.share.clientApproved": "Votre client a validé cette composition",
+      "designDetail.share.clientChanges": "Votre client demande des modifications",
     ],
   ]
 }

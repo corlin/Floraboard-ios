@@ -113,6 +113,21 @@ extension AIProxyClient {
   }
 
   /// 服务端原子执行：在一个事务里扣减库存并标记已执行，并发/重复请求安全（只会扣一次）。
+  /// 生成（或沿用）分享链接并更新“是否显示报价”
+  func shareDesign(tenantId: String, designId: String, showPrice: Bool) async throws -> ProposalShare {
+    var req = try makeRequest(path: "api/v1/designs/\(designId)/share", method: "POST", tenantId: tenantId)
+    req.httpBody = try JSONSerialization.data(withJSONObject: ["showPrice": showPrice])
+    let wrapper: APIResponseWrapper<ProposalShare> = try await perform(req)
+    guard let share = wrapper.data else { throw AIProxyError.invalidResponse }
+    return share
+  }
+
+  /// 撤销分享链接（旧链接立即失效）
+  func unshareDesign(tenantId: String, designId: String) async throws {
+    let req = try makeRequest(path: "api/v1/designs/\(designId)/share", method: "DELETE", tenantId: tenantId)
+    _ = try await performRaw(req)
+  }
+
   func executeDesign(tenantId: String, designId: String) async throws -> ExecuteResult {
     struct Body: Decodable {
       struct Payload: Decodable { var executed: Bool?; var executedAt: Double?; var inventory: [FlowerType]? }

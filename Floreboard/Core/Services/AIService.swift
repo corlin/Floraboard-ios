@@ -67,6 +67,16 @@ class AIService: ObservableObject {
     return try await makeProxyClient().fetchCredits(tenantId: tenantId)
   }
 
+  func shareDesign(id: String, showPrice: Bool) async throws -> ProposalShare {
+    let tenantId = await currentTenantId()
+    return try await makeProxyClient().shareDesign(tenantId: tenantId, designId: id, showPrice: showPrice)
+  }
+
+  func unshareDesign(id: String) async throws {
+    let tenantId = await currentTenantId()
+    try await makeProxyClient().unshareDesign(tenantId: tenantId, designId: id)
+  }
+
   func appleAccountToken() async throws -> UUID {
     let tenantId = await currentTenantId()
     return try await makeProxyClient().fetchAppleAccountToken(tenantId: tenantId)
