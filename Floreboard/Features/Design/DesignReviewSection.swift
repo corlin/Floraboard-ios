@@ -61,6 +61,7 @@ struct DesignReviewSection: View {
     var params = finding.params
     if let s = params["school"] { params["school"] = translated("knowledge.school.\(s)", fallback: s) }
     if let s = params["season"] { params["season"] = translated("knowledge.season.\(s)", fallback: s) }
+    if let s = params["holiday"] { params["holiday"] = translated("knowledge.holiday.\(s)", fallback: s) }
     let key = "knowledge.rule.\(finding.id)"
     let text = ProductionStrings.t(key, params)
     return text == key ? "" : text
